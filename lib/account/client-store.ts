@@ -1,6 +1,6 @@
 import { applyChange, type Account, type Change, type ChangeInput } from './changes.ts';
 
-export type SaveStatus = 'saved' | 'saving' | 'failed' | 'rejected' | 'signedOut';
+export type SaveStatus = 'saved' | 'saving' | 'failed' | 'rejected' | 'nameTaken' | 'signedOut';
 export type Snapshot = { account: Account; status: SaveStatus };
 
 const TYPING_PAUSE = 350;
@@ -38,7 +38,7 @@ export class AccountStore {
   };
 
   private emit(status: SaveStatus) {
-    const account = this.pending.reduce((value, change) => applyChange(value, change, Date.now()), this.confirmed);
+    const account = this.pending.reduce(applyChange, this.confirmed);
     this.snapshot = { account, status };
     this.listeners.forEach((listener) => listener());
   }
@@ -84,10 +84,11 @@ export class AccountStore {
         signal: AbortSignal.timeout(15000),
       });
       if (response.ok) {
-        this.confirmed = ((await response.json()) as { account: Account }).account;
+        const { account, taken } = (await response.json()) as { account: Account; taken: boolean };
+        this.confirmed = account;
         this.pending.splice(0, batch.length);
-        this.emit(this.pending.length ? 'saving' : 'saved');
-        return true;
+        this.emit(this.pending.length ? 'saving' : taken ? 'nameTaken' : 'saved');
+        return !taken || this.pending.length > 0;
       }
       if (response.status === 401 || response.status === 409) {
         this.emit('signedOut');

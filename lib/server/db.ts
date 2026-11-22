@@ -88,6 +88,60 @@ const SCHEMA = `
     seq      INTEGER NOT NULL,
     PRIMARY KEY (user_id, other_id)
   ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS chat_clears (
+    user_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    other_id TEXT NOT NULL,
+    seq      INTEGER NOT NULL,
+    PRIMARY KEY (user_id, other_id)
+  ) STRICT;
+
+  -- Real people. A declined request stays, silently, so it can't be sent again as a new one.
+  CREATE TABLE IF NOT EXISTS requests (
+    from_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    to_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    state      TEXT NOT NULL CHECK (state IN ('pending', 'accepted', 'declined', 'withdrawn')),
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY (from_id, to_id)
+  ) STRICT;
+
+  CREATE INDEX IF NOT EXISTS requests_by_recipient ON requests(to_id, state);
+
+  CREATE TABLE IF NOT EXISTS request_log (
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    at      INTEGER NOT NULL
+  ) STRICT;
+
+  CREATE INDEX IF NOT EXISTS request_log_by_user ON request_log(user_id, at);
+
+  CREATE TABLE IF NOT EXISTS blocks (
+    blocker_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    username   TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    PRIMARY KEY (blocker_id, blocked_id)
+  ) STRICT;
+
+  CREATE INDEX IF NOT EXISTS blocks_by_blocked ON blocks(blocked_id);
+
+  -- No link to users on purpose: deleting an account must not delete the evidence against it.
+  CREATE TABLE IF NOT EXISTS reports (
+    id            TEXT PRIMARY KEY,
+    reporter_id   TEXT,
+    reported_id   TEXT NOT NULL,
+    reported_name TEXT NOT NULL,
+    reason        TEXT NOT NULL,
+    details       TEXT NOT NULL,
+    evidence      TEXT,
+    created_at    INTEGER NOT NULL,
+    status        TEXT NOT NULL CHECK (status IN ('received', 'closed'))
+  ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS suspensions (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    reason  TEXT NOT NULL,
+    at      INTEGER NOT NULL
+  ) STRICT;
 `;
 
 export function openDatabase(file: string) {
@@ -103,9 +157,21 @@ export function databaseFile() {
 
 // Kept on globalThis so saving a file during development doesn't open a second connection.
 // Change the version in the name when the schema changes, so a running preview picks it up.
-const shared = globalThis as typeof globalThis & { appDatabaseV3?: DatabaseSync };
+const shared = globalThis as typeof globalThis & { appDatabaseV4?: DatabaseSync };
 
 export function getDb() {
-  shared.appDatabaseV3 ??= openDatabase(databaseFile());
-  return shared.appDatabaseV3;
+  shared.appDatabaseV4 ??= openDatabase(databaseFile());
+  return shared.appDatabaseV4;
+}
+
+export function inTransaction<T>(db: DatabaseSync, work: () => T): T {
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    const result = work();
+    db.exec('COMMIT');
+    return result;
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
 }

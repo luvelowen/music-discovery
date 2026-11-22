@@ -4,23 +4,12 @@ import type { ReportReason, RequestRule } from '../social/types.ts';
 export const communityEn = {
   nav: { label: 'Main menu', discover: 'Discover', chats: 'Chats', connections: 'Connections', profile: 'Profile', settings: 'Settings' },
 
-  demo: {
-    badge: 'Sample person',
-    notice: 'The people here are fictional for now. What you do is saved to your account, and no one else receives it.',
-    title: 'Prototype tools',
-    body: 'These stand in for other people until real people can meet here.',
-    receive: 'Receive a sample request',
-    received: (name: string) => `${name} sent you a request.`,
-    hidden: 'No one can send you a request while you’re hidden from Discover.',
-    nobody: 'Your settings don’t allow new requests.',
-    none: 'No other sample people can send you a request under your current settings.',
-    acceptAs: 'Accept as them (prototype)',
-  },
-
   gate: {
     incompleteTitle: 'Make your music profile first',
     incompleteBody: 'People here meet through music, so yours comes first.',
     incompleteAction: 'Make my profile',
+    emailTitle: 'Confirm your email first',
+    emailBody: 'Everyone you meet here has a confirmed email. It takes one code.',
   },
 
   discover: {
@@ -33,14 +22,18 @@ export const communityEn = {
     communities: 'Categories',
     everyone: 'Everyone',
     joinedLabel: 'following',
-    communityBody: 'Following keeps this category first in your list. Other people can’t see what you follow.',
+    communityBody: 'Following keeps it first in your list. Only you see that.',
     join: 'Follow',
     leave: 'Unfollow',
     peopleTitle: 'People',
     both: 'You both love',
     differentTaste: 'A different sound from yours',
-    emptyTitle: 'No one here yet',
-    emptyBody: 'Try another category, or look at everyone.',
+    search: 'Search names and artists',
+    more: 'Show more',
+    earlyTitle: 'You’re early',
+    earlyBody: 'Nobody else is visible yet. Switch yourself on and finish your profile, so the next person to arrive finds you.',
+    emptyTitle: 'No one matches that',
+    emptyBody: 'Try another category or search, or look at everyone.',
     showEveryone: 'Show everyone',
   },
 
@@ -81,7 +74,8 @@ export const communityEn = {
 
   report: {
     title: (name: string) => `Report ${name}`,
-    prototype: 'Prototype: this report is saved to your account only. No moderator receives it yet.',
+    note: 'This goes to the moderator. The person you report isn’t told.',
+    attach: 'Attach our last 30 messages for the moderator',
     question: 'What’s wrong?',
     reasons: {
       underage: 'They may be under 18',
@@ -96,8 +90,8 @@ export const communityEn = {
     required: 'Choose a reason.',
     details: 'Details (optional)',
     alsoBlock: 'Block this person too',
-    submit: 'Save report',
-    done: 'Report saved to your account. It wasn’t sent to anyone. If you’re in danger, get somewhere safe and contact the police.',
+    submit: 'Send report',
+    done: 'Report sent to the moderator. If you’re in danger, get somewhere safe and contact the police.',
   },
 
   connections: {
@@ -115,7 +109,7 @@ export const communityEn = {
   },
 
   settings: {
-    dataBody: 'Saved in a database file on the computer running this app.',
+    dataBody: 'See or download everything saved about you.',
     dates: 'Meeting someone',
     datesBody: 'For a first date or a first gig together.',
     dateTips: [
@@ -148,13 +142,13 @@ export const communityEn = {
     reports: 'Your reports',
     reportsBody: 'To report someone, open their profile and choose Report.',
     reportsEmpty: 'You haven’t reported anyone.',
-    notSent: 'Saved here, not sent',
+    reportStatus: { received: 'Waiting for the moderator', closed: 'Reviewed' },
     language: 'Language',
     account: 'Delete account',
-    accountBody: 'This erases your account and everything in it from the database.',
+    accountBody: 'This erases your account from the database. Reports stay for safety.',
     deleteAction: 'Delete my account',
     deleteTitle: 'Delete your account?',
-    deleteBody: 'This erases your email, password, profile, picture, connections, messages, settings, blocks, reports and log-ins. You can’t undo it.',
+    deleteBody: 'This erases your email, password, profile, picture, connections, messages, settings, blocks and log-ins. Reports stay for safety, and backups until they are deleted. You can’t undo it.',
     understand: 'I understand this is permanent',
     deleteConfirm: 'Delete everything',
   },

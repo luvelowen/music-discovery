@@ -14,7 +14,7 @@ type Variant = { variant?: keyof typeof VARIANTS };
 
 function styles(variant: keyof typeof VARIANTS, className?: string) {
   return cn(
-    'inline-flex min-h-12 items-center justify-center gap-2 rounded-control px-5 py-2 text-center font-medium transition-colors',
+    'inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-5 py-2 text-center font-medium transition-colors',
     VARIANTS[variant],
     className,
   );

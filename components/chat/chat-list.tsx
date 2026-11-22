@@ -7,26 +7,20 @@ import { ButtonLink } from '@/components/ui/button';
 import { cn } from '@/components/ui/cn';
 import { PageTitle } from '@/components/ui/page-title';
 import { useChat } from '@/lib/chat/provider';
-import { usePeople } from '@/lib/demo/use-people';
+import { usePeople } from '@/lib/people/provider';
 import { formatDateTime } from '@/lib/format-date';
 import { useI18n } from '@/lib/i18n/provider';
-import { useProfile } from '@/lib/profile/store';
-import { seePerson } from '@/lib/social/policy';
-import { useSocial } from '@/lib/social/store';
 
 export function ChatListPane({ open }: { open: boolean }) {
   const { t } = useI18n();
   const words = t.chat;
   const path = usePathname();
   const { list, problem } = useChat();
-  const { social } = useSocial();
-  const { profile } = useProfile();
-  const people = usePeople();
+  const { overview } = usePeople();
   const today = formatDateTime(Date.now()).slice(0, 10);
 
   const rows = (list?.chats ?? []).flatMap((chat) => {
-    const person = people.find((item) => item.id === chat.personId);
-    const seen = person && social.relations[person.id] === 'connected' ? seePerson(social, profile, person) : null;
+    const seen = overview?.connected.find((item) => item.id === chat.personId)?.profile;
     return seen ? [{ ...chat, seen }] : [];
   });
 
@@ -50,7 +44,7 @@ export function ChatListPane({ open }: { open: boolean }) {
                   aria-current={active ? 'page' : undefined}
                   className={cn('flex min-h-18 items-center gap-3 rounded-control px-2 py-2.5', active ? 'bg-raised' : 'hover:bg-surface')}
                 >
-                  <Avatar profile={seen} className="size-11" />
+                  <Avatar profile={seen} className="size-11 text-lg" />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="min-w-0 truncate font-semibold">{seen.username}</span>

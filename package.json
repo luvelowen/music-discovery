@@ -9,7 +9,9 @@
     "build": "next build",
     "start": "next start --hostname localhost",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --test tests/*.test.ts"
+    "test": "node --test tests/*.test.ts",
+    "moderate": "node scripts/moderate.ts",
+    "backup": "node scripts/backup.ts"
   },
   "dependencies": {
     "lucide-react": "1.70.0",

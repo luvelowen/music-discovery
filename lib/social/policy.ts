@@ -1,60 +1,43 @@
 import type { Profile } from '../profile/types.ts';
 import { getVisibleProfile } from '../profile/visibility.ts';
-import { isEligible } from './eligibility.ts';
-import { DAY, SOCIAL_LIMITS, type Person, type Social } from './types.ts';
+import { SOCIAL_LIMITS, type Privacy, type Relation } from './types.ts';
 
 /*
- * Every "is this allowed?" question is answered in this file.
- * Screens and actions both ask here, and the Supabase database rules must match it.
+ * Every "is this allowed?" question about two people is answered in this file, and asked only on the server.
+ * Before any of it, lib/server/people.ts has removed anyone who is blocked, suspended, unconfirmed or incomplete.
  */
-
-/** The wall that everything else stands behind: both eligible adults, and no block. */
-export function canInteract(social: Social, person: Person) {
-  return isEligible(social.eligibility) && person.age === 'adult' && !social.blocked.includes(person.id);
-}
+export type Member = { id: string; profile: Profile; privacy: Privacy };
 
 /** People meet only over something they both want. This keeps dating-only people away from friends-only people. */
 export function sharesSeeking(me: Profile, them: Profile) {
   return me.seeking.some((item) => them.seeking.includes(item));
 }
 
-export function isInDiscover(social: Social, me: Profile, person: Person) {
-  return canInteract(social, person) && person.privacy.discoverable && sharesSeeking(me, person.profile);
-}
-
-export function canViewPerson(social: Social, me: Profile, person: Person) {
-  if (!canInteract(social, person)) return false;
-  const relation = social.relations[person.id];
-  return relation === 'incoming' || relation === 'outgoing' || relation === 'connected' || isInDiscover(social, me, person);
-}
-
-/** What I may see of someone. Always use this instead of person.profile. */
-export function seePerson(social: Social, me: Profile, person: Person): Profile | null {
-  if (!canViewPerson(social, me, person)) return null;
-  const viewer = social.relations[person.id] === 'connected' ? 'connection' : 'stranger';
-  return getVisibleProfile(person.profile, viewer, person.privacy, me.seeking.includes('dating'));
-}
-
 // Genres only. They are always visible, so this rule can't reveal someone's hidden artists or songs.
-export function sharesGenre(a: Profile, b: Profile) {
-  return a.genres.some((genre) => b.genres.includes(genre));
+export function sharesGenre(me: Profile, them: Profile) {
+  return me.genres.some((genre) => them.genres.includes(genre));
+}
+
+export function isInDiscover(me: Member, them: Member) {
+  return me.id !== them.id && them.privacy.discoverable && sharesSeeking(me.profile, them.profile);
+}
+
+export function canView(me: Member, them: Member, relation: Relation) {
+  return me.id !== them.id && (relation !== 'none' || isInDiscover(me, them));
+}
+
+/** What I may see of someone. Never send a profile to a browser without it. */
+export function seeMember(me: Member, them: Member, relation: Relation): Profile | null {
+  if (!canView(me, them, relation)) return null;
+  const viewer = relation === 'connected' ? 'connection' : 'stranger';
+  return getVisibleProfile(them.profile, viewer, them.privacy, me.profile.seeking.includes('dating'));
 }
 
 export type RequestProblem = 'unavailable' | 'notAccepting' | 'needsSharedGenre' | 'dailyLimit';
 
-export function requestProblem(social: Social, me: Profile, person: Person, now: number): RequestProblem | null {
-  const relation = social.relations[person.id];
-  if (!isInDiscover(social, me, person) || (relation && relation !== 'declined')) return 'unavailable';
-  if (person.privacy.requests === 'nobody') return 'notAccepting';
-  if (person.privacy.requests === 'sharedMusic' && !sharesGenre(me, person.profile)) return 'needsSharedGenre';
-  if (social.requestLog.filter((time) => now - time < DAY).length >= SOCIAL_LIMITS.requestsPerDay) return 'dailyLimit';
-  return null;
-}
-
-/** The same rule in the other direction: can this person send me a request? */
-export function canReceiveFrom(social: Social, me: Profile, person: Person) {
-  if (!canInteract(social, person) || social.relations[person.id] || !social.privacy.discoverable) return false;
-  if (!sharesSeeking(me, person.profile)) return false;
-  if (social.privacy.requests === 'nobody') return false;
-  return social.privacy.requests === 'everyone' || sharesGenre(me, person.profile);
+export function requestProblem(me: Member, them: Member, relation: Relation, sentToday: number): RequestProblem | null {
+  if (relation !== 'none' || !isInDiscover(me, them)) return 'unavailable';
+  if (them.privacy.requests === 'nobody') return 'notAccepting';
+  if (them.privacy.requests === 'sharedMusic' && !sharesGenre(me.profile, them.profile)) return 'needsSharedGenre';
+  return sentToday >= SOCIAL_LIMITS.requestsPerDay ? 'dailyLimit' : null;
 }

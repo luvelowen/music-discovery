@@ -2,6 +2,9 @@ import type { Dictionary } from './en.ts';
 import { accountMn } from './account.mn.ts';
 import { chatMn } from './chat.mn.ts';
 import { communityMn } from './community.mn.ts';
+import { legalMn } from './legal.mn.ts';
+import { peopleMn } from './people.mn.ts';
+import { profileMn } from './profile.mn.ts';
 
 /*
  * Written as Mongolian, not translated word for word. The voice is informal "чи",
@@ -88,6 +91,7 @@ export const mn: Dictionary = {
   },
 
   errors: {
+    usernameTaken: 'Ийм эсвэл ижил харагдах нэртэй хүн байна. Өөр нэр сонгоорой.',
     usernameLength: '3–24 тэмдэгт ашиглаарай.',
     usernameCharacters: 'Зөвхөн үсэг, тоо, цэг, доогуур зураас ашиглана. Зай авахгүй.',
     contactInfo: 'Аюулгүй байдлынхаа үүднээс утас, имэйл, сошиал хаяг, холбоос бүү бичээрэй.',
@@ -105,8 +109,6 @@ export const mn: Dictionary = {
   },
 
   profile: {
-    title: 'Профайл чинь ингэж харагдана',
-    body: 'Бусад хүнд харагдах боломжтой хэсэг.',
     viewAs: 'Хэний нүдээр харах',
     stranger: 'Танихгүй хүн',
     connection: 'Танил',
@@ -119,19 +121,19 @@ export const mn: Dictionary = {
     tracks: 'Дуртай дуунууд',
     links: 'Холбоос',
     newTab: '(шинэ цонхонд нээгдэнэ)',
-    edit: 'Профайлаа засах',
     incompleteTitle: 'Профайл чинь бэлэн болоогүй байна',
     incompleteBody: 'Харахын тулд дор хаяж нэг төрөл, хэрэглэгчийн нэр сонгоорой.',
     incompleteAction: 'Профайлаа дуусгах',
-    comingNext: 'Бүртгэлд чинь хадгалагдсан. Бусад жинхэнэ хүнд профайл хараахан харагдахгүй.',
-    discover: 'Хүмүүстэй танилцах',
-    hiddenNote: '«Хүмүүс» хэсэгт харагдахгүй байна. Тохиргооноос өөрчилж болно.',
   },
 
   account: accountMn,
   chat: chatMn,
   community: communityMn,
+  legal: legalMn,
+  people: peopleMn,
+  me: profileMn,
 
+  failed: { title: 'Алдаа гарлаа', body: 'Хадгалсан өөрчлөлт чинь хэвээрээ. Дахин оролдоорой.', action: 'Дахин оролдох' },
   notFound: { title: 'Ийм хуудас алга', action: 'Эхлэл рүү буцах' },
 
   genres: {

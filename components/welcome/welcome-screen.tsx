@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { LegalLinks } from '@/components/legal/legal-links';
 import { ButtonLink } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n/provider';
 
@@ -16,6 +17,7 @@ export function WelcomeScreen() {
           <ButtonLink href="/signup">{t.account.signUp}</ButtonLink>
           <ButtonLink href="/login" variant="secondary">{t.account.logIn}</ButtonLink>
         </div>
+        <LegalLinks className="mt-3" />
       </div>
       <figure className="max-md:order-first">
         <div className="relative aspect-[16/9] overflow-hidden rounded-dialog md:aspect-[4/5]">

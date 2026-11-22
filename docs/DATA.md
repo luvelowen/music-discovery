@@ -1,57 +1,54 @@
 # Where users' data goes
 
-Researched 2026-11-22. **This is not legal advice. A Mongolian lawyer must confirm it before real users join.**
+Researched 2026-11-22. **This is not legal advice. A Mongolian lawyer must confirm it before strangers join.**
 
 ## Today: one file on the computer running the app
 
-**`data/app.db`**, an SQLite database in the project folder. It is created by the first sign-up and is never committed to Git.
-Signed-in people see their own record at **Settings → See my saved data** (`/account/data`).
+**`data/app.db`**, an SQLite database in the project folder. It is never committed to Git.
+Signed-in people see and download their own record at **Settings → See my saved data**.
 
-| Data | Table | How it is kept |
+| Data | Table | How it is kept, and until when |
 | --- | --- | --- |
-| Email | `users` | As written, in lower case |
-| Password | `users` | Only a salted scrypt value. The password can't be read back |
-| Age check and consent | `users` | "Adult", and when they agreed |
-| Profile, photo, friends/dating choice | `users.profile` | JSON text |
-| Privacy, connections, blocks, reports, followed categories | `users.social` | JSON text |
+| Email, age result, sign-up consent | `users` | Until the account is deleted |
+| Password | `users` | Only a salted scrypt value. It can't be read back |
+| Profile: photo, music, links, answers, choices | `users.profile` | JSON text, until changed or deleted |
+| Privacy and followed categories | `users.social` | JSON text. Older accounts may also hold unused sample connections |
+| Requests and connections | `requests` | Who, whom, the state and when |
+| Request limit | `request_log` | Who sent a request and when |
+| Blocks | `blocks` | Who blocked whom, with the name at the time |
+| Reports | `reports` | **Kept after an account is deleted.** Attached messages are erased when closed |
+| Suspensions | `suspensions` | Who, why and when |
 | Log-ins | `sessions` | A fingerprint of the cookie, for 30 days |
-| Failed log-ins | `login_attempts` | A fingerprint of the email. Expired rows are cleared at the next log-in attempt |
+| Failed log-ins | `login_attempts` | A fingerprint of the email, cleared at a later attempt |
 | Email confirmed | `email_checks` | When it was confirmed |
-| Waiting codes | `email_codes` | Email, a fingerprint of the code and, during sign-up, the scrambled password. Cleared after about a day |
+| Waiting codes | `email_codes` | A fingerprint of the code and, at sign-up, the email and scrambled password. About a day |
 | Emails sent | `email_sends` | A fingerprint of the email, to limit sending |
-| Links, including Instagram | `users.profile` | Shown only to connections |
-| Chat consent | `chat_consents` | When they agreed. Separate from sign-up consent |
-| Messages | `messages` | **Readable text**, with sender, receiver and time. Not end-to-end encrypted |
-| Chat read markers | `chat_reads` | The newest message each person has read |
+| Chat consent | `chat_consents` | Separate from sign-up consent |
+| Messages | `messages` | **Readable text**, until both people clear them, the sender turns chat off or either account is deleted |
+| Read and clear markers | `chat_reads`, `chat_clears` | The newest message read or cleared |
 | Language | none | A cookie |
 | Date of birth | none | Used once and never saved |
 | Location, gender, sexual orientation | none | Never asked |
 
-Deleting an account removes its rows and overwrites the freed space.
-
-**Chat**
+**Chat and the law**
 
 - Messages are private correspondence, which article 4.1.12 calls sensitive. Chat stays off until separate consent.
-- Turning chat off withdraws consent and erases that person's messages. Deleting an account does the same.
-- Removing or blocking someone closes the chat but keeps the saved messages until one of those deletions.
-- Before real people chat: encrypt at rest with a key kept away from the database, decide how long messages and
-  reported evidence are kept, and have the lawyer confirm where they may be stored.
+- Turning chat off withdraws consent and erases that person's messages.
+- Removing or blocking someone closes the chat but keeps the saved messages until one of the deletions above.
 
 **Email**
 
-- Without SMTP settings, emails are text files in `data/outbox`, with the code readable inside. They are cleared
-  after a day at the next send, and when that account is deleted.
-- With SMTP settings (`.env.local`, see `.env.example`), the email service receives the address and the code, and
-  nothing about dating, music or the profile. **With Gmail that is a transfer abroad**, so sign-up asks for consent.
+- Without SMTP settings, emails are text files in `data/outbox`, with readable codes. They are cleared after a day
+  at the next send, and when that account is deleted. A public address never does this.
+- With SMTP settings, the email service receives the address and the code, and nothing about dating, music or
+  the profile. **With Gmail that is a transfer abroad**, so sign-up asks for consent.
 
 **What this does not protect against**
 
 - The file is not encrypted. Anyone who can open files on this computer can read everything except passwords.
-- `data/backups` holds only copies made by hand before upgrades. They are not updated, and deleting an account
-  does not remove it from them.
-- There is no automatic backup. Deleting `data/`, or running `git clean -x`, loses every account.
-- A copy of the file, such as a USB backup, is a copy of everyone's data.
-- If the app goes online the host sees IP addresses, and the file needs a server with a permanent disk.
+- `npm run backup` makes a copy only when someone runs it. Copies hold everyone's data, including accounts deleted later.
+- Deleting `data/`, or running `git clean -x`, loses every account.
+- If the app goes online the host sees IP addresses, and needs a permanent disk.
 
 The Next.js developer tool reports anonymous usage about the developer's machine, never users' data.
 Switch it off with `npx.cmd next telemetry disable`.

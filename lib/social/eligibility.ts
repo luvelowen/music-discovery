@@ -1,4 +1,4 @@
-import type { AgeGroup, Eligibility } from './types.ts';
+import type { AgeGroup } from './types.ts';
 
 export const ADULT_AGE = 18;
 
@@ -15,7 +15,7 @@ function todayInUlaanbaatar(now: Date) {
 }
 
 /** Returns null when it is not a real, possible date of birth. */
-export function getAgeGroup(year: number, month: number, day: number, now: Date): Exclude<AgeGroup, 'unknown'> | null {
+export function getAgeGroup(year: number, month: number, day: number, now: Date): AgeGroup | null {
   if (![year, month, day].every(Number.isInteger)) return null;
 
   const date = new Date(Date.UTC(year, month - 1, day));
@@ -27,8 +27,4 @@ export function getAgeGroup(year: number, month: number, day: number, now: Date)
 
   if (age < 0 || age > 110) return null;
   return age >= ADULT_AGE ? 'adult' : 'minor';
-}
-
-export function isEligible({ age }: Eligibility) {
-  return age === 'adult';
 }

@@ -7,8 +7,7 @@ import { cleanMessage } from '@/lib/chat/clean';
 import { CHAT_LIMITS, type ChatProblem } from '@/lib/chat/types';
 import { useI18n } from '@/lib/i18n/provider';
 
-/** With `text` it sends a message. Without, it asks for a test reply. */
-type Props = { onSend: (requestId: string, text?: string) => Promise<ChatProblem | null> };
+type Props = { onSend: (requestId: string, text: string) => Promise<ChatProblem | null> };
 
 export function Composer({ onSend }: Props) {
   const { t } = useI18n();
@@ -76,10 +75,7 @@ export function Composer({ onSend }: Props) {
           <ArrowUp className="size-5" aria-hidden />
         </Button>
       </form>
-      <div className="flex min-h-11 items-center justify-between gap-3">
-        <button type="button" onClick={() => run(() => onSend(crypto.randomUUID()))} className="min-h-11 text-left text-xs text-muted underline underline-offset-4 hover:text-chalk">
-          {words.testReply}
-        </button>
+      <div className="flex min-h-6 items-center justify-end gap-3 pt-1">
         {error && <p role="alert" className="text-right text-xs text-danger">{words.errors[error]}</p>}
         {!error && text.length >= CHAT_LIMITS.length - 100 && <p className="text-xs text-muted tabular-nums">{text.length}/{CHAT_LIMITS.length}</p>}
       </div>

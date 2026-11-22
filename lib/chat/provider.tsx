@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { usePeople } from '../people/provider.tsx';
 import { useAccount } from '../account/provider.tsx';
 import type { ChatInput, ChatList, ChatProblem, Thread } from './types.ts';
 
@@ -38,7 +39,8 @@ async function request<T>(url: string, init?: RequestInit): Promise<Result<T>> {
 }
 
 function Live({ userId, children }: { userId: string; children: ReactNode }) {
-  const { account, status, flush } = useAccount();
+  const { status, flush } = useAccount();
+  const { overview } = usePeople();
   const [list, setList] = useState<ChatList | null>(null);
   const [problem, setProblem] = useState<ChatProblem | null>(null);
   const latest = useRef(0);
@@ -62,7 +64,7 @@ function Live({ userId, children }: { userId: string; children: ReactNode }) {
   }, [userId]);
 
   // New connections, removals and blocks change the list once they have been saved.
-  const connected = Object.keys(account.social.relations).filter((id) => account.social.relations[id] === 'connected').join();
+  const connected = overview?.connected.map((person) => person.id).join() ?? '';
   const settled = status === 'saved';
   useEffect(() => {
     if (settled) void refresh();

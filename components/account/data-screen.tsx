@@ -13,7 +13,9 @@ import type { UserRow } from '@/lib/server/accounts';
 
 type Props = {
   file: string;
-  record: Omit<UserRow, 'profile' | 'social'> & Account;
+  record: Omit<UserRow, 'profile' | 'social'> & { profile: Account['profile']; social: object };
+  social: Account['social'];
+  counts: { connections: number; requests: number; blocked: number; reports: number };
   photoSize: number | null;
   sessions: { created_at: number; expires_at: number }[];
   attempts: number;
@@ -34,23 +36,25 @@ function Rows({ rows }: { rows: [label: string, value: ReactNode][] }) {
   );
 }
 
-export function DataScreen({ file, record, photoSize, sessions, attempts, checkedAt, chat }: Props) {
+export function DataScreen({ file, record, photoSize, sessions, attempts, checkedAt, chat, social, counts }: Props) {
   const { t, locale } = useI18n();
   const words = t.account.data;
   const router = useRouter();
-  const { profile, social } = record;
+  const { profile } = record;
   const list = (items: string[]) => (items.length ? items.join(', ') : words.none);
-  const relations = Object.values(social.relations);
 
   return (
     <div className="gutter pt-8 pb-14">
       <div className="flex flex-col items-start justify-between gap-4 pb-8 sm:flex-row sm:items-end">
         <PageTitle title={words.title} body={words.body} />
-        <Button variant="secondary" onClick={() => router.refresh()}>{words.refresh}</Button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-control bg-accent px-5 py-2 font-semibold text-night hover:bg-chalk">{words.download}</a>
+          <Button variant="secondary" onClick={() => router.refresh()}>{words.refresh}</Button>
+        </div>
       </div>
 
       <SettingsSection title={words.where} body={words.whereBody}>
-        <p className="font-medium"><code>{file}</code></p>
+        <p className="font-medium [overflow-wrap:anywhere]">{file}</p>
       </SettingsSection>
 
       <SettingsSection title={words.account}>
@@ -78,6 +82,10 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
             [t.profile.tracks, list(profile.tracks.map((track) => `${track.title} (${track.artist})`))],
             [t.profile.links, list(profile.links.map((link) => link.url))],
             [t.aboutStep.bio, profile.bio || words.none],
+            [t.me.anthem, profile.anthem ? profile.anthem.title : words.none],
+            [t.me.answers, list(profile.answers.map((answer) => `${t.me.prompts[answer.id]}: ${answer.text}`))],
+            [t.me.momentsTitle, list(profile.moments.map((id) => t.me.moments[id]))],
+            [t.me.outingsTitle, list(profile.outings.map((id) => t.me.outings[id]))],
             [words.photo, photoSize === null ? words.none : words.photoValue(photoSize)],
           ]}
         />
@@ -88,13 +96,13 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
           rows={[
             [words.discoverable, social.privacy.discoverable ? words.yes : words.no],
             [t.community.settings.requests, t.community.settings.rules[social.privacy.requests]],
-            [words.connections, relations.filter((value) => value === 'connected').length],
-            [words.requests, relations.filter((value) => value === 'incoming' || value === 'outgoing').length],
+            [words.connections, counts.connections],
+            [words.requests, counts.requests],
             [words.communities, list(social.communities.map((id) => t.genres[id]))],
             [t.chat.data.consent, chat.consentAt === null ? t.chat.data.none : formatDateTime(chat.consentAt)],
             [t.chat.data.messages, chat.messages],
-            [words.blocked, social.blocked.length],
-            [words.reports, social.reports.length],
+            [words.blocked, counts.blocked],
+            [words.reports, counts.reports],
             [words.sessions, <ul key="sessions">{sessions.map((session, index) => <li key={index}>{formatDateTime(session.created_at)}, {words.until(formatDateTime(session.expires_at))}</li>)}</ul>],
             [words.attempts, attempts],
           ]}

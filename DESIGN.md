@@ -52,6 +52,10 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
 - A new font must contain Ө ө Ү ү. "Supports Cyrillic" is not proof.
 - Desktop: a 16rem sidebar inside the app. Phones: a tab bar. Welcome, sign-in and setup have neither.
 - Chat fills the window: list beside the thread on wide screens, one pane on phones. My messages are flat purple with black text.
+- A profile reads like an artist's page: photo and name, the anthem, numbered lists, then words and facts.
+- Selected filters and tabs are raised with purple text. Filled purple is for the main button and picked choices in forms.
+- Block and Report are quiet, at the end of a profile. A category with nobody in it shows no number.
+- Saving shows itself while editing, and on Profile and Settings only when it fails.
 - A 60rem content column. Forms are one column. Corners: controls 10px, groups 14px, dialogs 16px.
 - **Music categories are words only. No pictures, tiles or covers.**
 

@@ -1,99 +1,126 @@
 'use client';
 
 import { ArrowLeft, Ban, Flag } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Avatar } from '@/components/profile/avatar';
+import { useEffect, useRef, useState } from 'react';
 import { ProfileCard } from '@/components/profile/profile-card';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageTitle } from '@/components/ui/page-title';
-import { usePeople } from '@/lib/demo/use-people';
 import { useI18n } from '@/lib/i18n/provider';
+import { artistName } from '@/lib/music/artists';
+import { usePeople } from '@/lib/people/provider';
+import type { PeopleProblem, Seen } from '@/lib/people/types';
 import { useProfile } from '@/lib/profile/store';
-import { seePerson } from '@/lib/social/policy';
-import { useSocial } from '@/lib/social/store';
+import { compareMusic } from '@/lib/social/shared';
 import { RelationActions } from './relation-actions';
 import { ReportDialog } from './report-dialog';
 
+const CHECK_EVERY = 7000;
+
 export function PersonScreen({ id }: { id: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const mine = useProfile().profile;
   const words = t.community.person;
-  const { social, change } = useSocial();
-  const { profile } = useProfile();
-  const person = usePeople().find((item) => item.id === id);
+  const { act, getPerson, revision, overview } = usePeople();
+  const [person, setPerson] = useState<Seen | null | undefined>(undefined);
+  const [problem, setProblem] = useState<PeopleProblem | null>(null);
   const [reported, setReported] = useState(false);
   const blockDialog = useRef<HTMLDialogElement>(null);
   const reportDialog = useRef<HTMLDialogElement>(null);
 
-  const seen = person ? seePerson(social, profile, person) : null;
-  const notice = reported && <p role="status" className="mt-5 max-w-xl rounded-control bg-surface p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
+  useEffect(() => {
+    let current = true;
+    async function load() {
+      const result = await getPerson(id);
+      if (!current) return;
+      setProblem(result.ok ? null : result.error);
+      if (result.ok) setPerson(result.value.person);
+    }
+    void load();
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void load();
+    }, CHECK_EVERY);
+    return () => {
+      current = false;
+      clearInterval(timer);
+    };
+  }, [id, revision, getPerson]);
 
-  if (!person || !seen) {
-    const blocked = person && social.blocked.includes(id);
+  async function blockThem() {
+    const result = await act({ kind: 'block', personId: id });
+    if (!result.ok) setProblem(result.error);
+  }
+
+  const notice = reported && <p role="status" className="my-5 max-w-xl rounded-panel bg-surface p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
+
+  if (person === undefined) {
+    return <p role="status" className="gutter py-12 text-muted">{problem ? t.people.errors[problem] : t.people.loading}</p>;
+  }
+
+  if (!person) {
+    const blocked = overview?.blocked.find((item) => item.id === id);
     return (
-      <div className="gutter py-16">
-        <PageTitle
-          focus
-          title={blocked ? words.blockedTitle(person.profile.username) : words.unavailableTitle}
-          body={blocked ? words.blockedBody : undefined}
-        />
+      <div className="gutter py-14">
+        <PageTitle focus title={blocked ? words.blockedTitle(blocked.username) : words.unavailableTitle} body={blocked ? words.blockedBody : undefined} />
         {notice}
-        <ButtonLink href="/discover" className="mt-8">{words.back}</ButtonLink>
+        <ButtonLink href="/discover" className="mt-6">{words.back}</ButtonLink>
       </div>
     );
   }
 
-  const relation = social.relations[id];
-  const note = relation === 'connected' ? words.connectedNote : relation === 'incoming' ? words.incomingNote : words.privateNote;
+  const { relation, profile } = person;
+  const note = { connected: words.connectedNote, incoming: words.incomingNote, outgoing: words.privateNote, none: words.privateNote }[relation];
+
+  const music = compareMusic(mine, profile);
+  const shared = [
+    ...music.artists.map((artist) => artistName(artist, locale)),
+    ...music.genres.map((genre) => t.genres[genre]),
+    ...music.tracks.map((track) => track.title),
+  ];
 
   return (
-    <div className="pb-14">
-      <div className="gutter pt-4 lg:pt-7">
-        <ButtonLink href="/discover" variant="quiet" className="-ml-3 px-3!">
-          <ArrowLeft className="size-5" aria-hidden />
-          {words.back}
-        </ButtonLink>
-        <div className="mt-3 mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-4">
-              <Avatar profile={seen} className="size-14" />
-              <div className="min-w-0">
-                <PageTitle title={seen.username} />
-                <p className="mt-3 text-sm text-muted">{t.community.demo.badge}</p>
-              </div>
-            </div>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{note}</p>
-          </div>
-          <div className="lg:max-w-sm">
-            <RelationActions person={person} />
-            {(!relation || relation === 'declined') && <p className="mt-2 text-sm leading-relaxed text-muted">{words.requestNote}</p>}
-          </div>
-        </div>
-        {notice}
-      </div>
+    <div className="gutter pt-4 pb-14 lg:pt-7">
+      <ButtonLink href="/discover" variant="quiet" className="mb-5 px-0!">
+        <ArrowLeft className="size-5" aria-hidden />
+        {words.back}
+      </ButtonLink>
+      {notice}
+      {problem && <p role="alert" className="mb-4 text-sm text-danger">{t.people.errors[problem]}</p>}
 
-      <div className="gutter mt-5">
-        <ProfileCard profile={seen} showIdentity={false} />
-      </div>
+      <ProfileCard
+        profile={profile}
+        note={
+          <>
+            {shared.length > 0 && (
+              <p className="mt-3 max-w-lg leading-relaxed [overflow-wrap:anywhere]">
+                <span className="text-muted">{t.community.discover.both}: </span>
+                <span className="font-semibold">{shared.join(', ')}</span>
+              </p>
+            )}
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">{note}{relation === 'none' && ` ${words.requestNote}`}</p>
+          </>
+        }
+        actions={<RelationActions person={person} />}
+      />
 
-      <div className="gutter mt-6 flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => blockDialog.current?.showModal()}>
-          <Ban className="size-5" aria-hidden />
+      <div className="mt-9 flex flex-wrap gap-x-2 border-t border-line pt-2">
+        <Button variant="quiet" className="px-3! text-muted!" onClick={() => blockDialog.current?.showModal()}>
+          <Ban className="size-4" aria-hidden />
           {words.block}
         </Button>
-        <Button variant="secondary" onClick={() => reportDialog.current?.showModal()}>
-          <Flag className="size-5" aria-hidden />
+        <Button variant="quiet" className="px-3! text-muted!" onClick={() => reportDialog.current?.showModal()}>
+          <Flag className="size-4" aria-hidden />
           {words.report}
         </Button>
       </div>
 
       <ConfirmDialog
         ref={blockDialog}
-        title={words.blockTitle(seen.username)}
+        title={words.blockTitle(profile.username)}
         body={words.blockConfirmBody}
         confirm={words.block}
         cancel={words.keep}
-        onConfirm={() => change({ kind: 'block', personId: id })}
+        onConfirm={blockThem}
       />
       <ReportDialog ref={reportDialog} person={person} onDone={() => setReported(true)} />
     </div>

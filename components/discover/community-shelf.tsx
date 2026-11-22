@@ -15,6 +15,16 @@ export function CommunityShelf({ communities, selected }: Props) {
 
   return (
     <ul className="flex gap-x-5 overflow-x-auto md:flex-wrap md:overflow-visible">
+      <li className="shrink-0">
+        <Link
+          href="/discover"
+          scroll={false}
+          aria-current={selected ? undefined : 'true'}
+          className={cn('inline-flex min-h-11 items-center text-sm whitespace-nowrap', selected ? 'hover:text-accent' : 'text-accent')}
+        >
+          {words.everyone}
+        </Link>
+      </li>
       {communities.map(({ id, count, joined }) => {
         const active = id === selected;
         return (
@@ -27,10 +37,9 @@ export function CommunityShelf({ communities, selected }: Props) {
               className={cn('inline-flex min-h-11 items-center gap-1.5 text-sm whitespace-nowrap', active ? 'text-accent' : 'hover:text-accent')}
             >
               {t.genres[id]}
-              <span className="text-muted">
-                {count}
-                {joined && `, ${words.joinedLabel}`}
-              </span>
+              {(count > 0 || joined) && (
+                <span className="text-muted">{[count || null, joined ? words.joinedLabel : null].filter(Boolean).join(', ')}</span>
+              )}
             </Link>
           </li>
         );

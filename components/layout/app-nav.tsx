@@ -7,10 +7,9 @@ import { Avatar } from '@/components/profile/avatar';
 import { cn } from '@/components/ui/cn';
 import { useAccount } from '@/lib/account/provider';
 import { useChat } from '@/lib/chat/provider';
-import { usePeople } from '@/lib/demo/use-people';
+import { usePeople } from '@/lib/people/provider';
 import { useI18n } from '@/lib/i18n/provider';
 import { isComplete } from '@/lib/profile/validation';
-import { canViewPerson } from '@/lib/social/policy';
 import { LanguageSwitcher } from './language-switcher';
 
 const ITEMS = [
@@ -25,17 +24,17 @@ const ITEMS = [
 export function useInApp() {
   const path = usePathname();
   const { signedIn, account } = useAccount();
-  return signedIn && /^\/(discover|chats|connections|profile|settings|people|account)(\/|$)/.test(path) && isComplete(account.profile);
+  return signedIn && /^\/(discover|chats|connections|profile|settings|people|account)(\/|$)/.test(path) && (path === '/profile/edit' || isComplete(account.profile));
 }
 
 export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
   const { t } = useI18n();
   const path = usePathname();
-  const { account: { profile, social } } = useAccount();
-  const people = usePeople();
+  const { account: { profile } } = useAccount();
+  const { overview } = usePeople();
   const { unread } = useChat();
 
-  const waiting = people.filter((person) => social.relations[person.id] === 'incoming' && canViewPerson(social, profile, person)).length;
+  const waiting = overview?.incoming.length ?? 0;
   const side = placement === 'side';
 
   const list = (

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { AppShell } from '@/components/layout/app-shell';
 import { AccountProvider } from '@/lib/account/provider';
 import { ChatProvider } from '@/lib/chat/provider';
+import { PeopleProvider } from '@/lib/people/provider';
 import { I18nProvider } from '@/lib/i18n/provider';
 import { getI18n } from '@/lib/i18n/server';
 import { emailCheckedAt, toAccount } from '@/lib/server/accounts';
@@ -18,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: t.appName, template: `%s | ${t.appName}` },
     description: `${t.welcome.title} ${t.welcome.body}`,
+    robots: { index: false, follow: false }, // Until the launch checklist is done.
   };
 }
 
@@ -31,9 +33,11 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         <I18nProvider initialLocale={locale}>
           {/* Only this person's own data is passed on, and never the password's scrambled value. */}
           <AccountProvider user={user ? { id: user.id, email: user.email, emailChecked: emailCheckedAt(getDb(), user.id) !== null, account: toAccount(user) } : null}>
-            <ChatProvider>
-              <AppShell>{children}</AppShell>
-            </ChatProvider>
+            <PeopleProvider>
+              <ChatProvider>
+                <AppShell>{children}</AppShell>
+              </ChatProvider>
+            </PeopleProvider>
           </AccountProvider>
         </I18nProvider>
       </body>

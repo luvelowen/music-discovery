@@ -6,7 +6,7 @@ import { getDb } from './db.ts';
 
 const COOKIE = 'session';
 const CODE_COOKIE = 'email_code';
-const ALLOWED_HOSTS = (process.env.APP_HOSTS ?? 'localhost,127.0.0.1,[::1]').split(',');
+const ALLOWED_HOSTS = (process.env.APP_HOSTS || 'localhost,127.0.0.1,[::1]').split(',').map((host) => host.trim().toLowerCase());
 
 /** Another website can point its own address at this computer. Answer only to our own addresses. */
 export async function isOurHost() {

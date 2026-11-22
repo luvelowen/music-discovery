@@ -3,6 +3,9 @@ import type { GenreId } from '../music/genres.ts';
 import { accountEn } from './account.en.ts';
 import { chatEn } from './chat.en.ts';
 import { communityEn } from './community.en.ts';
+import { legalEn } from './legal.en.ts';
+import { peopleEn } from './people.en.ts';
+import { profileEn } from './profile.en.ts';
 
 export const en = {
   // A description, not a brand. Change it here and in mn.ts once a name is chosen.
@@ -86,6 +89,7 @@ export const en = {
   },
 
   errors: {
+    usernameTaken: 'Someone already has that name, or one that looks the same. Choose another.',
     usernameLength: 'Use 3 to 24 characters.',
     usernameCharacters: 'Use only letters, numbers, dots and underscores, without spaces.',
     contactInfo: 'For your safety, leave out phone numbers, emails, handles and links.',
@@ -103,8 +107,6 @@ export const en = {
   },
 
   profile: {
-    title: 'Your profile preview',
-    body: 'What other people are allowed to see.',
     viewAs: 'Preview as',
     stranger: 'Someone new',
     connection: 'A connection',
@@ -117,19 +119,19 @@ export const en = {
     tracks: 'Favorite songs',
     links: 'Links',
     newTab: '(opens in a new tab)',
-    edit: 'Edit your profile',
     incompleteTitle: 'Your profile isn’t ready yet',
     incompleteBody: 'Pick at least one genre and a username to see your preview.',
     incompleteAction: 'Finish my profile',
-    comingNext: 'Saved to your account. Other real people can’t see profiles yet.',
-    discover: 'Discover people',
-    hiddenNote: 'You’re hidden from Discover. You can change this in Settings.',
   },
 
   account: accountEn,
   chat: chatEn,
   community: communityEn,
+  legal: legalEn,
+  people: peopleEn,
+  me: profileEn,
 
+  failed: { title: 'Something went wrong', body: 'Your saved changes are safe. Try again.', action: 'Try again' },
   notFound: { title: 'This page doesn’t exist', action: 'Go to the start' },
 
   genres: {

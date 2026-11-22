@@ -4,7 +4,7 @@ import { getI18n } from '@/lib/i18n/server';
 import { requireUser } from '@/lib/server/session';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: (await getI18n()).t.profile.title };
+  return { title: (await getI18n()).t.community.nav.profile };
 }
 
 export default async function Page() {

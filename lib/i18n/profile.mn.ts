@@ -1,0 +1,48 @@
+import type { profileEn } from './profile.en.ts';
+
+export const profileMn: typeof profileEn = {
+  edit: 'Профайл засах',
+  editTitle: 'Профайл засах',
+  editBody: 'Өөрчлөлт шууд хадгалагдана.',
+  identity: 'Зураг, нэр, танилцуулга',
+  music: 'Хөгжим, холбоос',
+  notAdded: 'Нэмээгүй',
+  about: 'Миний тухай',
+  anthem: 'Миний гол дуу',
+  anthemShort: 'Гол дуу',
+  anthemBody: 'Дуртай дуунаасаа нэгийг профайлынхаа дээд талд томоор харуулна. Дууны нууцлалын тохиргоо үйлчилнэ.',
+  anthemEmpty: 'Эхлээд дуртай дуугаа нэм.',
+  noAnthem: 'Гол дуугүй',
+  answers: 'Өөрийн үгээр',
+  answersBody: 'Гурав хүртэл. Профайлыг чинь харж чадах бүх хүн уншина.',
+  momentsTitle: 'Хөгжим сонсдог үе',
+  outingsTitle: 'Хамт явах газар',
+  pickThree: 'Гурав хүртэл. Профайлыг чинь харж чадах бүх хүнд харагдана.',
+  done: 'Болсон',
+  prompts: {
+    neverSkip: 'Хэзээ ч алгасдаггүй дуу',
+    firstConcert: 'Анх үзсэн тоглолт',
+    perfectNight: 'Миний төгс үдшийн ая',
+    secretFavourite: 'Нууцаар дуртай дуу',
+    introduceMe: 'Намайг энэ хөгжимтэй танилцуулаач',
+  },
+  moments: {
+    commute: 'Автобусанд', lateNight: 'Шөнө орой', gettingReady: 'Гарахаар бэлдэхдээ', workout: 'Дасгал хийхдээ',
+    working: 'Ажил, хичээл дээр', cooking: 'Хоол хийхдээ', walking: 'Алхахдаа', driving: 'Машин барихдаа',
+  },
+  outings: {
+    concerts: 'Том тоглолт', festivals: 'Фестиваль', smallGigs: 'Жижиг тоглолт', karaoke: 'Караоке',
+    dancing: 'Бүжиг', recordShops: 'Пянзны дэлгүүр', listeningIn: 'Гэртээ хөгжим сонсох', jamming: 'Хамт тоглох',
+  },
+  nextTitle: 'Өөр шигээ болго',
+  nextBody: 'Энэ жагсаалт зөвхөн чамд харагдана.',
+  goVisible: '«Хүмүүс» хэсэгт харагдах',
+  next: {
+    photo: 'Зураг нэмэх',
+    bio: 'Товч танилцуулга бичих',
+    anthem: 'Гол дуугаа сонгох',
+    answers: 'Нэг асуултад хариулах',
+    moments: 'Хэзээ сонсдогоо сонгох',
+    outings: 'Хаашаа явахаа сонгох',
+  },
+};

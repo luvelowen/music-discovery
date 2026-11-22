@@ -1,105 +1,85 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, ButtonLink } from '@/components/ui/button';
+import { PersonCard } from '@/components/people/person-card';
+import { ButtonLink } from '@/components/ui/button';
 import { cn } from '@/components/ui/cn';
 import { PageTitle } from '@/components/ui/page-title';
-import { usePeople } from '@/lib/demo/use-people';
 import { useI18n } from '@/lib/i18n/provider';
-import { useProfile } from '@/lib/profile/store';
-import { seePerson } from '@/lib/social/policy';
-import { useSocial } from '@/lib/social/store';
-import type { Relation } from '@/lib/social/types';
-import { ConnectionRow } from './connection-row';
-import { DemoTools } from './demo-tools';
+import { usePeople } from '@/lib/people/provider';
+import type { Seen } from '@/lib/people/types';
+
+type Tab = 'accepted' | 'requests';
+
+function People({ people, empty }: { people: Seen[]; empty: string }) {
+  if (!people.length) return <p className="py-4 text-muted">{empty}</p>;
+  return (
+    <ul className="divide-y divide-line">
+      {people.map((person) => <li key={person.id}><PersonCard person={person} /></li>)}
+    </ul>
+  );
+}
 
 export function ConnectionsScreen() {
   const { t } = useI18n();
   const words = t.community.connections;
-  const { social, change } = useSocial();
-  const { profile } = useProfile();
-  const people = usePeople();
+  const { overview, problem } = usePeople();
+  const [picked, setPicked] = useState<Tab | null>(null);
 
-  const list = (relation: Relation) =>
-    people.flatMap((person) => {
-      const seen = social.relations[person.id] === relation ? seePerson(social, profile, person) : null;
-      return seen ? [{ person, seen }] : [];
-    });
-  const connected = list('connected');
-  const received = list('incoming');
-  const sent = list('outgoing');
-  const waiting = received.length + sent.length;
+  if (!overview) {
+    return (
+      <div className="gutter pt-8">
+        <PageTitle title={words.title} body={words.body} />
+        <p role="status" className="mt-6 text-muted">{problem ? t.people.errors[problem] : t.people.loading}</p>
+      </div>
+    );
+  }
 
-  // Open on requests when something is waiting.
-  const [tab, setTab] = useState<'accepted' | 'requests'>(waiting ? 'requests' : 'accepted');
-  const tabs = [['accepted', connected.length], ['requests', waiting]] as const;
+  const { connected, incoming, outgoing } = overview;
+  // Until a tab is chosen, open on requests when someone is waiting for an answer.
+  const tab = picked ?? (incoming.length || (!connected.length && outgoing.length) ? 'requests' : 'accepted');
+  const tabs = [['accepted', connected.length], ['requests', incoming.length + outgoing.length]] as const;
 
   return (
-    <div className="gutter pt-7 pb-16 lg:pt-10">
+    <div className="gutter pt-8 pb-16">
       <PageTitle title={words.title} body={words.body} />
-      <div className="mt-7 flex gap-6 border-b border-line">
+      <div className="mt-5 flex gap-1.5">
         {tabs.map(([key, count]) => (
           <button
             key={key}
             type="button"
             aria-pressed={tab === key}
-            onClick={() => setTab(key)}
-            className={cn('-mb-px min-h-12 border-b-2 font-medium', tab === key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-chalk')}
+            onClick={() => setPicked(key)}
+            className={cn('min-h-11 rounded-control px-3.5 text-sm', tab === key ? 'bg-raised font-semibold text-accent' : 'text-muted hover:text-chalk')}
           >
-            {words[key]} <span className="tabular-nums">{count}</span>
+            {words[key]}{count > 0 && <span className="tabular-nums"> {count}</span>}
           </button>
         ))}
       </div>
+      {problem && <p role="alert" className="mt-3 text-sm text-danger">{t.people.errors[problem]}</p>}
 
-      <div className="max-w-4xl">
-        {tab === 'accepted' ? (
-          connected.length ? (
-            <ul className="divide-y divide-line">
-              {connected.map((item) => <ConnectionRow key={item.person.id} {...item} />)}
-            </ul>
-          ) : (
-            <div className="py-10">
-              <h2 className="font-semibold">{words.acceptedEmptyTitle}</h2>
-              <p className="mt-2 mb-6 max-w-md leading-relaxed text-muted">{words.acceptedEmptyBody}</p>
-              <ButtonLink href="/discover">{words.find}</ButtonLink>
-            </div>
-          )
+      {tab === 'accepted' ? (
+        connected.length ? (
+          <div className="mt-3"><People people={connected} empty="" /></div>
         ) : (
-          <>
-            <section className="pt-7">
-              <h2 className="text-lg font-semibold">{words.received}</h2>
-              {received.length ? (
-                <ul className="divide-y divide-line">
-                  {received.map((item) => <ConnectionRow key={item.person.id} {...item} />)}
-                </ul>
-              ) : (
-                <p className="py-4 text-muted">{words.receivedEmpty}</p>
-              )}
-            </section>
-            <section className="pt-7">
-              <h2 className="text-lg font-semibold">{words.sent}</h2>
-              {sent.length ? (
-                <ul className="divide-y divide-line">
-                  {sent.map((item) => (
-                    <ConnectionRow
-                      key={item.person.id}
-                      {...item}
-                      extra={
-                        <Button variant="quiet" className="text-accent" onClick={() => change({ kind: 'demoAccept', personId: item.person.id })}>
-                          {t.community.demo.acceptAs}
-                        </Button>
-                      }
-                    />
-                  ))}
-                </ul>
-              ) : (
-                <p className="py-4 text-muted">{words.sentEmpty}</p>
-              )}
-            </section>
-          </>
-        )}
-        <DemoTools onReceived={() => setTab('requests')} />
-      </div>
+          <div className="py-10">
+            <h2 className="text-xl font-bold">{words.acceptedEmptyTitle}</h2>
+            <p className="mt-2 mb-6 max-w-md leading-relaxed text-muted">{words.acceptedEmptyBody}</p>
+            <ButtonLink href="/discover">{words.find}</ButtonLink>
+          </div>
+        )
+      ) : (
+        <>
+          <section className="pt-6">
+            <h2 className="text-lg font-bold">{words.received}</h2>
+            <People people={incoming} empty={words.receivedEmpty} />
+          </section>
+          <section className="pt-6">
+            <h2 className="text-lg font-bold">{words.sent}</h2>
+            <People people={outgoing} empty={words.sentEmpty} />
+          </section>
+        </>
+      )}
     </div>
   );
 }

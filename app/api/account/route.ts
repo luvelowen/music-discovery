@@ -38,6 +38,6 @@ export async function POST(request: Request) {
   const changes = body.changes.map(parseChange);
   if (changes.some((change) => !change)) return reply({ error: 'changes' }, 400);
 
-  const account = saveChanges(getDb(), user.id, changes as Change[]);
-  return account ? reply({ account }) : reply({ error: 'signedOut' }, 401);
+  const saved = saveChanges(getDb(), user.id, changes as Change[]);
+  return saved ? reply(saved) : reply({ error: 'signedOut' }, 401);
 }

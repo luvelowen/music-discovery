@@ -1,19 +1,17 @@
 import { DEFAULT_PRIVACY, type Privacy } from '../social/types.ts';
-import type { Profile } from './types.ts';
+import type { Profile, Track } from './types.ts';
 
 export type Viewer = 'stranger' | 'connection';
 
-function visibleTracks(profile: Profile, connected: boolean, privacy: Privacy) {
-  if (connected) return profile.tracks;
-  if (!privacy.showTracks) return [];
+function visibleTrack(track: Track, connected: boolean, privacy: Privacy): Track {
   // A song names its artist, so hiding artists has to hide that name here as well.
-  return privacy.showArtists ? profile.tracks : profile.tracks.map(({ title }) => ({ title, artist: '' }));
+  return connected || privacy.showArtists ? track : { title: track.title, artist: '' };
 }
 
 /**
  * The single rule for who sees what. It copies fields in one by one, so a field added
  * to Profile later stays hidden from strangers until someone deliberately adds it here.
- * With Supabase, this rule must also be enforced by the database.
+ * It runs on the server, before anything is sent to another person.
  */
 export function getVisibleProfile(
   profile: Profile,
@@ -22,12 +20,18 @@ export function getVisibleProfile(
   viewerDates = false,
 ): Profile {
   const connected = viewer === 'connection';
+  const songs = connected || privacy.showTracks;
   return {
     username: profile.username,
     seeking: profile.seeking.filter((item) => item === 'friends' || viewerDates),
     genres: profile.genres,
     artists: connected || privacy.showArtists ? profile.artists : [],
-    tracks: visibleTracks(profile, connected, privacy),
+    tracks: songs ? profile.tracks.map((track) => visibleTrack(track, connected, privacy)) : [],
+    anthem: songs && profile.anthem ? visibleTrack(profile.anthem, connected, privacy) : null,
+    // These three are labeled as public where people write them.
+    answers: profile.answers,
+    moments: profile.moments,
+    outings: profile.outings,
     bio: connected ? profile.bio : '',
     photo: connected ? profile.photo : null,
     links: connected ? profile.links : [],

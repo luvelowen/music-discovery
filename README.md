@@ -3,8 +3,10 @@
 Dating, friends and music for adults (18+) in Ulaanbaatar.
 *Find the person you’d give your left earbud to.*
 
-Sign up, log in, profile, Discover, connections, chat and settings work, in Mongolian and English. Accounts are saved
-in `data/app.db` on the computer running the app. The other people in Discover are still fictional.
+Real accounts find each other, ask to connect, chat, block and report, in Mongolian and English.
+Everything is saved in `data/app.db` on the computer running the app.
+
+**It is not online and not yet safe to open to the public.** Read [the launch checklist](docs/LAUNCH.md) first.
 
 ## Running it
 
@@ -20,6 +22,30 @@ In Windows PowerShell, type `npm.cmd` wherever this page says `npm`.
 | `npm test` | Checks the safety, privacy, link and translation rules | After changes |
 | `npm run build` | Creates the optimized version for real users | Before publishing |
 | `npm start` | Runs the version made by `npm run build` | To try the real version |
+| `npm run moderate` | Lists open reports | Every day once people use it |
+| `npm run backup` | Saves a copy of the database in `data/backups` | Every day, and before updates |
+
+## Trying it as two people
+
+1. Open http://localhost:3000 in two different browsers, or one normal and one private window.
+2. Sign up in each with a different email. Until email is set up, codes are the newest files in `data/outbox`.
+3. Give both the same genre. In both, press **Show me in Discover**.
+4. Connect from one, accept in the other, then turn on chat in both.
+
+An account made before email codes existed must press **Confirm email** before it can meet people.
+
+## Handling reports
+
+| Command | What it does |
+| --- | --- |
+| `npm run moderate` | Open reports, most urgent first. Each starts with a short id |
+| `npm run moderate -- show <report>` | One report, with any messages the reporter chose to attach |
+| `npm run moderate -- suspend <report>` | Suspends the reported person, logs them out and closes the report |
+| `npm run moderate -- close <report>` | Closes it without suspending, and erases attached messages |
+| `npm run moderate -- suspended` | Who is suspended |
+| `npm run moderate -- restore <user id>` | Lifts a suspension |
+
+Type the id without the `<` and `>`. Closing can't be undone. Attached messages are private: don't screenshot or forward them.
 
 ## Sending real emails
 
@@ -39,24 +65,26 @@ app/                 Pages. Each folder is a web address.
   signup/ login/       Email and password
   forgot/ code/        Password reset and emailed codes
   account/data/        My data: what the database holds
+  profile/edit/        The profile editor
   chats/               Text chat with connected people
-  api/account/         Where every change is saved
-  api/chat/            Where messages are read and saved
+  privacy/ rules/      The privacy notice and community rules
+  api/                 Where the screens read and save: account, people, chat, photo, export
   auth-actions.ts      Sign up, codes, log in, reset, log out, delete
   setup/[step]/        Genres, artists, songs, links, about
   profile/ discover/ people/[id]/ connections/ settings/
   globals.css          Colors and base styles
 components/          Reusable visual pieces, one folder for each area
 lib/                 Rules and data, with no visual design
-  server/              Database, passwords, sessions, email. Runs only on the server
+  server/              Database, passwords, people, chat, moderation, email. Runs only on the server
   account/             What can change, and how the screen saves it
+  people/              What screens know about other people
   chat/                Message limits, tidying, and live updates
   i18n/                All English and Mongolian wording
   music/ profile/ safety/ social/   The rules
-  demo/                Fictional people. Delete when real matching arrives
+scripts/             The moderator and backup commands
 data/                The database. Private, never committed
 tests/               Automatic checks of the rules
-docs/                Safety plan, data plan and roadmap
+docs/                Launch checklist, safety plan, data plan and roadmap
 public/              One photo
 DESIGN.md            The design rules. Read before any visual change
 CLAUDE.md            Standing instructions for Claude
@@ -76,8 +104,9 @@ CLAUDE.md            Standing instructions for Claude
 | Limits, such as five genres | `lib/profile/types.ts`, then the numbers mentioned in both wording files |
 | Who can see which field | `lib/profile/visibility.ts` |
 | Who can find or contact whom | `lib/social/policy.ts`, then run `npm test` |
-| Wording for milestone 2 screens | `lib/i18n/community.en.ts` and `community.mn.ts` |
-| The sample people | `lib/demo/people.ts` |
+| Discover, Connections and Settings wording | `lib/i18n/community.en.ts` and `community.mn.ts` |
+| Profile wording, questions and choices | `lib/i18n/profile.en.ts` and `profile.mn.ts` |
+| Privacy notice and rules | `lib/i18n/legal.en.ts` and `legal.mn.ts` |
 | Sign-up and log-in wording | `lib/i18n/account.en.ts` and `account.mn.ts` |
 
 If a translation is missing, `npm run typecheck` says so.

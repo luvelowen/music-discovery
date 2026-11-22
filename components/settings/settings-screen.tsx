@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
 import { EmailSecurity } from '@/components/account/email-security';
 import { LogOutButton } from '@/components/account/log-out-button';
 import { SaveStatus } from '@/components/account/save-status';
@@ -7,10 +9,10 @@ import { ChatSettings } from '@/components/chat/chat-settings';
 import { LanguageSwitcher } from '@/components/layout/language-switcher';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { PageTitle } from '@/components/ui/page-title';
-import { useAccount } from '@/lib/account/provider';
-import { usePeople } from '@/lib/demo/use-people';
 import { formatDateTime } from '@/lib/format-date';
 import { useI18n } from '@/lib/i18n/provider';
+import { usePeople } from '@/lib/people/provider';
+import type { PeopleProblem } from '@/lib/people/types';
 import { DeleteAccount } from './delete-account';
 import { PrivacySettings } from './privacy-settings';
 import { SettingsSection } from './settings-section';
@@ -18,15 +20,18 @@ import { SettingsSection } from './settings-section';
 export function SettingsScreen() {
   const { t } = useI18n();
   const words = t.community.settings;
-  const { account: { social }, change } = useAccount();
-  const people = usePeople();
+  const { overview, act } = usePeople();
+  const [error, setError] = useState<PeopleProblem | null>(null);
+
+  async function unblock(id: string) {
+    const result = await act({ kind: 'unblock', personId: id });
+    setError(result.ok ? null : result.error);
+  }
 
   return (
-    <div className="gutter pt-8 pb-12">
-      <div className="pb-7">
-        <PageTitle title={words.title} body={words.body} />
-        <SaveStatus className="mt-2" />
-      </div>
+    <div className="gutter pt-8 pb-14">
+      <PageTitle title={words.title} body={words.body} />
+      <SaveStatus quiet className="mt-2" />
 
       <SettingsSection id="data" title={t.account.account} body={words.dataBody}>
         <EmailSecurity />
@@ -36,7 +41,7 @@ export function SettingsScreen() {
         </div>
       </SettingsSection>
 
-      <SettingsSection title={words.privacy} body={words.privacyBody}>
+      <SettingsSection id="privacy" title={words.privacy} body={words.privacyBody}>
         <PrivacySettings />
       </SettingsSection>
 
@@ -45,31 +50,33 @@ export function SettingsScreen() {
       </SettingsSection>
 
       <SettingsSection title={words.blocked} body={words.blockedBody}>
-        {social.blocked.length ? (
+        {!overview ? (
+          <p className="text-muted">{t.people.loading}</p>
+        ) : overview.blocked.length ? (
           <ul className="divide-y divide-line">
-            {social.blocked.map((id) => {
-              const name = people.find((person) => person.id === id)?.profile.username ?? id;
-              return (
-                <li key={id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <span className="[overflow-wrap:anywhere]">{name}</span>
-                  <Button variant="secondary" aria-label={`${words.unblock}: ${name}`} onClick={() => change({ kind: 'unblock', personId: id })}>{words.unblock}</Button>
-                </li>
-              );
-            })}
+            {overview.blocked.map(({ id, username }) => (
+              <li key={id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="[overflow-wrap:anywhere]">{username}</span>
+                <Button variant="secondary" aria-label={`${words.unblock}: ${username}`} onClick={() => unblock(id)}>{words.unblock}</Button>
+              </li>
+            ))}
           </ul>
         ) : (
           <p className="text-muted">{words.blockedEmpty}</p>
         )}
+        {error && <p role="alert" className="mt-2 text-sm text-danger">{t.people.errors[error]}</p>}
       </SettingsSection>
 
       <SettingsSection title={words.reports} body={words.reportsBody}>
-        {social.reports.length ? (
+        {!overview ? (
+          <p className="text-muted">{t.people.loading}</p>
+        ) : overview.reports.length ? (
           <ul className="divide-y divide-line">
-            {social.reports.map((report) => (
+            {overview.reports.map((report) => (
               <li key={report.id} className="py-3">
                 <p className="font-medium [overflow-wrap:anywhere]">{report.username}</p>
                 <p className="text-sm">{t.community.report.reasons[report.reason]}</p>
-                <p className="mt-1 text-sm text-muted">{words.notSent}, {formatDateTime(report.createdAt)}</p>
+                <p className="mt-1 text-sm text-muted">{words.reportStatus[report.status]}, {formatDateTime(report.at)}</p>
               </li>
             ))}
           </ul>
@@ -79,8 +86,15 @@ export function SettingsScreen() {
       </SettingsSection>
 
       <SettingsSection title={words.dates} body={words.datesBody}>
-        <ul className="space-y-2 text-sm leading-relaxed">
+        <ul className="space-y-2 py-1 text-sm leading-relaxed">
           {words.dateTips.map((tip) => <li key={tip}>{tip}</li>)}
+        </ul>
+      </SettingsSection>
+
+      <SettingsSection title={t.legal.title}>
+        <ul className="divide-y divide-line text-accent">
+          <li><Link href="/privacy" className="flex min-h-12 items-center hover:underline">{t.legal.privacy.title}</Link></li>
+          <li><Link href="/rules" className="flex min-h-12 items-center hover:underline">{t.legal.rules.title}</Link></li>
         </ul>
       </SettingsSection>
 

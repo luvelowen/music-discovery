@@ -2,7 +2,7 @@ import { toArtist } from '../music/artists.ts';
 import { isGenreId } from '../music/genres.ts';
 import { parseSavedLink, PROVIDERS, type MusicLink } from '../music/providers.ts';
 import { hasContactInfo } from '../safety/contact-info.ts';
-import { EMPTY_PROFILE, LIMITS, SEEKING, type Profile, type Seeking } from './types.ts';
+import { EMPTY_PROFILE, LIMITS, MOMENTS, OUTINGS, PROMPTS, SEEKING, type Answer, type Profile, type Seeking } from './types.ts';
 import { cleanText } from './validation.ts';
 
 const asRecord = (value: unknown) =>
@@ -25,12 +25,22 @@ export function parseProfile(raw: string | null): Profile {
     .filter((name) => name && !hasContactInfo(name))
     .map(toArtist);
 
-  const tracks = asList(data.tracks)
+  const allTracks = asList(data.tracks)
     .map((item) => ({
       title: cleanText(asText(asRecord(item).title, LIMITS.name)),
       artist: cleanText(asText(asRecord(item).artist, LIMITS.name)),
     }))
     .filter(({ title, artist }) => title && artist && !hasContactInfo(title) && !hasContactInfo(artist));
+  const tracks = [...new Map(allTracks.map((item) => [`${item.title}\n${item.artist}`, item])).values()].slice(0, LIMITS.tracks);
+  const favourite = asRecord(data.anthem);
+  const anthem = tracks.find((item) => item.title === favourite.title && item.artist === favourite.artist) ?? null;
+
+  const answers: Answer[] = [];
+  for (const item of asList(data.answers)) {
+    const id = PROMPTS.find((prompt) => prompt === asRecord(item).id);
+    const text = cleanText(asText(asRecord(item).text, LIMITS.answer));
+    if (id && text && !hasContactInfo(text) && answers.length < LIMITS.answers && !answers.some((answer) => answer.id === id)) answers.push({ id, text });
+  }
 
   const links: MusicLink[] = [];
   for (const item of asList(data.links)) {
@@ -46,12 +56,16 @@ export function parseProfile(raw: string | null): Profile {
 
   return {
     username: asText(data.username, LIMITS.usernameMax),
-    bio: asText(data.bio, LIMITS.bio),
+    bio: asText(data.bio, LIMITS.bio).replace(/\p{Bidi_Control}/gu, ''),
     seeking,
     photo: /^data:image\/jpeg;base64,[A-Za-z\d+/]+=*$/.test(photo) ? photo : null,
     genres: [...new Set(asList(data.genres).filter(isGenreId))].slice(0, LIMITS.genres),
     artists: [...new Map(artists.map((item) => [item.id, item])).values()].slice(0, LIMITS.artists),
-    tracks: [...new Map(tracks.map((item) => [`${item.title}\n${item.artist}`, item])).values()].slice(0, LIMITS.tracks),
+    tracks,
+    anthem,
+    answers,
+    moments: MOMENTS.filter((item) => asList(data.moments).includes(item)).slice(0, LIMITS.moments),
+    outings: OUTINGS.filter((item) => asList(data.outings).includes(item)).slice(0, LIMITS.outings),
     links,
   };
 }

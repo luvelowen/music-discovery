@@ -1,12 +1,11 @@
-import { getI18n } from '@/lib/i18n/server';
+import type { ChatError } from '@/lib/chat/types';
 import { applyChat, listChats, parseChatInput, readThread } from '@/lib/server/chat';
 import { getDb } from '@/lib/server/db';
+import { readWrite, reply } from '@/lib/server/http';
 import { currentUser } from '@/lib/server/session';
-import type { ChatError } from '@/lib/chat/types';
 
-const MAX_BODY = 12_000;
-const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
-const refused = (error: ChatError) => reply({ error }, error === 'consent' || error === 'notConnected' ? 403 : error === 'tooMany' ? 429 : 400);
+const refused = (error: ChatError) =>
+  reply({ error }, error === 'consent' || error === 'notConnected' || error === 'theyOff' ? 403 : error === 'tooMany' ? 429 : 400);
 
 export async function GET(request: Request) {
   const user = await currentUser();
@@ -23,29 +22,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  // Only our own page may write. A form or script on another website or port is refused.
-  const origin = request.headers.get('origin');
-  const host = request.headers.get('host');
-  if (!origin || !host || (origin !== `http://${host}` && origin !== `https://${host}`)) return reply({ error: 'invalid' }, 403);
-  if (!request.headers.get('content-type')?.startsWith('application/json')) return reply({ error: 'invalid' }, 415);
-
-  const user = await currentUser();
-  if (!user) return reply({ error: 'signedOut' }, 401);
-  if (Number(request.headers.get('content-length')) > MAX_BODY) return reply({ error: 'tooLong' }, 413);
-  const raw = await request.text();
-  if (raw.length > MAX_BODY) return reply({ error: 'tooLong' }, 413);
-
-  let body: { userId?: unknown; input?: unknown };
-  try {
-    body = JSON.parse(raw) ?? {};
-  } catch {
-    return refused('invalid');
-  }
-  // A tab left open by one person must never write into the next person's chats.
-  if (body.userId !== user.id) return reply({ error: 'signedOut' }, 409);
-  const input = parseChatInput(body.input);
+  const read = await readWrite(request, 12_000);
+  if (read instanceof Response) return read;
+  const input = parseChatInput(read.input);
   if (!input) return refused('invalid');
 
-  const result = applyChat(getDb(), user.id, input, (await getI18n()).t.chat.testReplyText);
+  const result = applyChat(getDb(), read.userId, input);
   return result.ok ? reply({ ok: true }) : refused(result.error);
 }

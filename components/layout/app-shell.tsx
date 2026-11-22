@@ -12,7 +12,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const inApp = useInApp();
   // An open chat uses the whole phone screen, so the box to type in sits where the thumb is.
-  const inThread = usePathname().startsWith('/chats/');
+  const path = usePathname();
+  const inThread = path.startsWith('/chats/') || path === '/profile/edit';
   return (
     <>
       <a href="#content" className="sr-only z-40 rounded-control bg-chalk p-3 text-night focus:not-sr-only focus:fixed focus:top-3 focus:left-4">

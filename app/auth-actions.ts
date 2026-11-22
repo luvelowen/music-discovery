@@ -7,6 +7,7 @@ import { getI18n } from '@/lib/i18n/server';
 import { isComplete } from '@/lib/profile/validation';
 import * as accounts from '@/lib/server/accounts';
 import { getDb } from '@/lib/server/db';
+import { canTakeSignUps } from '@/lib/server/operator';
 import { clearOutbox, sendMail, type Mail } from '@/lib/server/mail';
 import { clearCodeToken, clearSession, currentUser, isOurHost, readCodeToken, saveCodeToken, startSession } from '@/lib/server/session';
 import * as verification from '@/lib/server/verification';
@@ -45,6 +46,7 @@ async function deliverLater(message: verification.CodeMail) {
 
 export async function signUpAction(_: AuthState, form: FormData): Promise<AuthState> {
   if (!(await isOurHost())) return { error: 'wrong' };
+  if (!canTakeSignUps()) return { error: 'closed' };
   const store = await cookies();
   // A short lock, so changing the year and pressing again doesn't work.
   if (store.get(AGE_LOCK)) return { error: 'minor' };

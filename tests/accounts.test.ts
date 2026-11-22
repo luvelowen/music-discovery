@@ -79,28 +79,44 @@ test('changes are saved, and only to that account', async () => {
 
 test('the server ignores forged fields and repeats the safety rules', async () => {
   const { db, id } = await withUser();
-  const saved = accounts.saveChanges(db, id, [
-    change({ kind: 'profile', patch: { genres: ['jazz', 'fake'], photo: 'https://tracker.example/x.png', admin: true, seeking: ['friends'] } }),
+  accounts.saveChanges(db, id, [change({ kind: 'profile', patch: { username: 'fine_name', bio: 'fine bio' } })], NOW);
+  const { account } = accounts.saveChanges(db, id, [
+    change({ kind: 'profile', patch: { genres: ['jazz', 'fake'], photo: 'https://tracker.example/x.png', admin: true, seeking: ['friends'], username: 'call99112233', bio: 'ig @someone' } }),
     change({ kind: 'privacy', patch: { discoverable: 'yes', admin: true } }),
-    change({ kind: 'send', personId: 'sample-09' }), // dating only
-    change({ kind: 'send', personId: 'sample-12' }), // hidden
-    change({ kind: 'accept', personId: 'sample-04' }), // never asked
   ], NOW)!;
-  assert.deepEqual(saved.profile.genres, ['jazz']);
-  assert.equal(saved.profile.photo, null);
-  assert.ok(!('admin' in saved.profile) && !('admin' in saved.social.privacy));
-  assert.equal(saved.social.privacy.discoverable, false);
-  assert.deepEqual(saved.social.relations, {});
+  assert.deepEqual(account.profile.genres, ['jazz']);
+  assert.equal(account.profile.photo, null);
+  assert.equal(account.profile.username, 'fine_name');
+  assert.equal(account.profile.bio, 'fine bio');
+  assert.ok(!('admin' in account.profile) && !('admin' in account.social.privacy));
+  assert.equal(account.social.privacy.discoverable, false);
 });
 
-test('unknown changes are refused and a retried report is saved once', async () => {
-  for (const bad of [null, [], {}, { id: 'x', kind: 'eligibility', patch: {} }, { id: 'x', kind: 'block' }, { id: 'a b', kind: 'block', personId: 'p' }]) {
+test('unknown changes are refused, including anything between two people', () => {
+  for (const bad of [null, [], {}, { id: 'x', kind: 'eligibility', patch: {} }, { id: 'x', kind: 'accept', personId: 'p' }, { id: 'a b', kind: 'privacy', patch: {} }]) {
     assert.equal(parseChange(bad), null);
   }
+});
+
+test('a username belongs to one person, look-alikes included', async () => {
   const { db, id } = await withUser();
-  const report = change({ kind: 'report', personId: 'sample-03', reason: 'spam', details: '', block: false });
-  accounts.saveChanges(db, id, [report], NOW);
-  assert.equal(accounts.saveChanges(db, id, [report], NOW + 1)!.social.reports.length, 1);
+  const other = (await makeUser(db, { ...GOOD, email: 'other@example.com' }))!;
+  accounts.saveChanges(db, id, [change({ kind: 'profile', patch: { username: 'copa' } })], NOW);
+  for (const username of ['copa', 'COPA', String.fromCodePoint(0x0441, 0x043e, 0x0440, 0x0430)]) {
+    const saved = accounts.saveChanges(db, other, [change({ kind: 'profile', patch: { username, bio: 'still saved' } })], NOW)!;
+    assert.equal(saved.taken, true, username);
+    assert.equal(saved.account.profile.username, '');
+    assert.equal(saved.account.profile.bio, 'still saved');
+  }
+});
+
+test('saving keeps what older versions stored, rather than erasing it', async () => {
+  const { db, id } = await withUser();
+  db.prepare('UPDATE users SET social = ? WHERE id = ?').run('{"privacy":{},"relations":{"sample-03":"connected"}}', id);
+  accounts.saveChanges(db, id, [change({ kind: 'privacy', patch: { discoverable: true } })], NOW);
+  const saved = JSON.parse((db.prepare('SELECT social FROM users WHERE id = ?').get(id) as { social: string }).social);
+  assert.deepEqual(saved.relations, { 'sample-03': 'connected' });
+  assert.equal(saved.privacy.discoverable, true);
 });
 
 test('deleting an account needs the password and leaves no rows', async () => {

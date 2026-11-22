@@ -1,84 +1,88 @@
 'use client';
 
 import { Check } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/button';
+import { cn } from '@/components/ui/cn';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useI18n } from '@/lib/i18n/provider';
-import { useProfile } from '@/lib/profile/store';
-import { requestProblem } from '@/lib/social/policy';
-import { useSocial } from '@/lib/social/store';
-import type { Person } from '@/lib/social/types';
+import { usePeople } from '@/lib/people/provider';
+import type { PeopleInput, PeopleProblem, Seen } from '@/lib/people/types';
+
+type Kind = Exclude<PeopleInput['kind'], 'report'>;
 
 /** The right buttons for wherever two people stand. `compact` leaves out removal. */
-export function RelationActions({ person, compact }: { person: Person; compact?: boolean }) {
+export function RelationActions({ person, compact }: { person: Seen; compact?: boolean }) {
   const { t } = useI18n();
   const words = t.community.relation;
-  const { profile } = useProfile();
-  const { social, change } = useSocial();
+  const { act } = usePeople();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<PeopleProblem | null>(null);
   const removeDialog = useRef<HTMLDialogElement>(null);
-  const relation = social.relations[person.id];
+  const { relation, problem, id } = person;
   const name = person.profile.username;
 
-  if (relation === 'connected') {
-    return (
-      <div className="flex flex-wrap items-center gap-2">
-        <p role="status" className="flex min-h-12 items-center gap-2 text-sm text-muted">
-          <Check className="size-5" aria-hidden />
-          {words.connected}
-        </p>
-        <ButtonLink href={`/chats/${person.id}`} variant={compact ? 'secondary' : 'primary'} aria-label={t.chat.messageTo(name)}>
-          {t.chat.message}
-        </ButtonLink>
-        {!compact && (
-          <>
-            <Button variant="quiet" onClick={() => removeDialog.current?.showModal()}>{words.remove}</Button>
-            <ConfirmDialog
-              ref={removeDialog}
-              title={t.community.person.removeTitle(name)}
-              body={t.community.person.removeBody}
-              confirm={words.remove}
-              cancel={t.community.person.keep}
-              onConfirm={() => change({ kind: 'remove', personId: person.id })}
-            />
-          </>
-        )}
-      </div>
-    );
+  async function run(kind: Kind) {
+    if (busy) return;
+    setBusy(true);
+    const result = await act({ kind, personId: id });
+    setBusy(false);
+    setError(result.ok ? null : result.error);
   }
-
-  if (relation === 'incoming') {
-    return (
-      <div className="flex flex-wrap gap-2">
-        <Button aria-label={`${words.accept}: ${name}`} onClick={() => change({ kind: 'accept', personId: person.id })}>{words.accept}</Button>
-        <Button variant="secondary" aria-label={`${words.decline}: ${name}`} onClick={() => change({ kind: 'decline', personId: person.id })}>{words.decline}</Button>
-      </div>
-    );
-  }
-
-  if (relation === 'outgoing') {
-    return (
-      <div className="flex flex-wrap items-center gap-x-2">
-        <p role="status" className="flex min-h-12 items-center gap-2 text-sm text-muted">
-          <Check className="size-5" aria-hidden />
-          {words.requested}
-        </p>
-        <Button variant="quiet" aria-label={`${words.cancel}: ${name}`} onClick={() => change({ kind: 'cancel', personId: person.id })}>{words.cancel}</Button>
-      </div>
-    );
-  }
-
-  const problem = requestProblem(social, profile, person, Date.now());
-  if (problem) return <p className="flex min-h-12 items-center text-sm text-muted">{words.problems[problem]}</p>;
 
   return (
-    <Button
-      variant={compact ? 'secondary' : 'primary'}
-      aria-label={`${words.connect}: ${name}`}
-      className="w-full sm:w-auto sm:min-w-36"
-      onClick={() => change({ kind: 'send', personId: person.id })}
-    >
-      {words.connect}
-    </Button>
+    <div className="flex flex-wrap items-center gap-2" aria-busy={busy}>
+      {relation === 'connected' && (
+        <>
+          {!compact && (
+            <p role="status" className="flex min-h-11 items-center gap-2 text-sm text-muted">
+              <Check className="size-4" aria-hidden />
+              {words.connected}
+            </p>
+          )}
+          <ButtonLink href={`/chats/${id}`} variant={compact ? 'secondary' : 'primary'} aria-label={t.chat.messageTo(name)}>{t.chat.message}</ButtonLink>
+          {!compact && (
+            <>
+              <Button variant="quiet" onClick={() => removeDialog.current?.showModal()}>{words.remove}</Button>
+              <ConfirmDialog
+                ref={removeDialog}
+                title={t.community.person.removeTitle(name)}
+                body={t.community.person.removeBody}
+                confirm={words.remove}
+                cancel={t.community.person.keep}
+                onConfirm={() => run('remove')}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {relation === 'incoming' && (
+        <>
+          <Button disabled={busy} aria-label={`${words.accept}: ${name}`} onClick={() => run('accept')}>{words.accept}</Button>
+          <Button disabled={busy} variant="secondary" aria-label={`${words.decline}: ${name}`} onClick={() => run('decline')}>{words.decline}</Button>
+        </>
+      )}
+
+      {relation === 'outgoing' && (
+        <>
+          <p role="status" className="flex min-h-11 items-center gap-2 text-sm text-muted">
+            <Check className="size-4" aria-hidden />
+            {words.requested}
+          </p>
+          <Button disabled={busy} variant="quiet" aria-label={`${words.cancel}: ${name}`} onClick={() => run('cancel')}>{words.cancel}</Button>
+        </>
+      )}
+
+      {relation === 'none' && (problem ? (
+        <p className={cn('flex items-center text-muted', compact ? 'text-xs' : 'min-h-11 text-sm')}>{words.problems[problem]}</p>
+      ) : (
+        <Button disabled={busy} variant={compact ? 'secondary' : 'primary'} aria-label={`${words.connect}: ${name}`} className="min-w-32" onClick={() => run('send')}>
+          {words.connect}
+        </Button>
+      ))}
+
+      {error && <p role="alert" className="w-full text-sm text-danger">{t.people.errors[error]}</p>}
+    </div>
   );
 }

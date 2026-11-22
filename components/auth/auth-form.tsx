@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { startTransition, useActionState } from 'react';
 import { forgotAction, logInAction, signUpAction, type AuthState } from '@/app/auth-actions';
+import { LegalLinks } from '@/components/legal/legal-links';
 import { Button } from '@/components/ui/button';
 import { Choice } from '@/components/ui/choice';
 import { TextField } from '@/components/ui/field';
@@ -75,12 +76,13 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
             <div>
               <Choice type="checkbox" name="consent" label={words.consent} className="items-start! text-sm leading-relaxed" />
               <p className="mt-1 text-xs leading-relaxed text-muted">{words.consentNote}</p>
+              <LegalLinks newTab />
               {error === 'consent' && <p role="alert" className="mt-2 text-sm text-danger">{words.errors.consent}</p>}
             </div>
           </>
         )}
 
-        {(error === 'minor' || error === 'wrong' || error === 'tooMany' || error === 'sendFailed') && (
+        {(error === 'minor' || error === 'wrong' || error === 'tooMany' || error === 'sendFailed' || error === 'suspended' || error === 'closed') && (
           <p role="alert" className="text-sm leading-relaxed text-danger">{words.errors[error]}</p>
         )}
         <Button type="submit" disabled={pending} className="w-full disabled:opacity-70">{pending ? words.working : submit}</Button>

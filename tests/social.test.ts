@@ -1,31 +1,26 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { PEOPLE } from '../lib/demo/people.ts';
-import { GENRE_IDS } from '../lib/music/genres.ts';
+import type { PeopleInput } from '../lib/people/types.ts';
 import { EMPTY_PROFILE, type Profile } from '../lib/profile/types.ts';
-import { checkBio, checkUsername } from '../lib/profile/validation.ts';
 import { getVisibleProfile } from '../lib/profile/visibility.ts';
-import * as act from '../lib/social/actions.ts';
-import { getAgeGroup, isEligible } from '../lib/social/eligibility.ts';
+import { parseProfile } from '../lib/profile/parse.ts';
+import * as accounts from '../lib/server/accounts.ts';
+import { exportData } from '../lib/server/export.ts';
+import * as moderation from '../lib/server/moderation.ts';
+import { applyPeople, discover, getOverview, getPerson, parsePeopleInput } from '../lib/server/people.ts';
+import { photoFor, stripJpeg } from '../lib/server/photo.ts';
+import { getAgeGroup } from '../lib/social/eligibility.ts';
 import { parseSocial } from '../lib/social/parse.ts';
-import * as policy from '../lib/social/policy.ts';
-import { compareMusic } from '../lib/social/shared.ts';
-import { DAY, DEFAULT_PRIVACY, EMPTY_SOCIAL, type Person, type Social } from '../lib/social/types.ts';
+import { DAY, DEFAULT_PRIVACY, EMPTY_SOCIAL } from '../lib/social/types.ts';
+import { connect, NOW, PASS, world } from './world.ts';
 
-const NOW = Date.UTC(2026, 10, 22, 4);
-const me: Profile = { ...EMPTY_PROFILE, username: 'tester', genres: ['rock', 'jazz'], artists: [{ id: 'the-hu', name: 'The HU' }] };
-const adult: Social = { ...EMPTY_SOCIAL, eligibility: { age: 'adult' } };
-const open: Social = { ...adult, privacy: { ...DEFAULT_PRIVACY, discoverable: true } };
-const person = (change: Partial<Person> = {}): Person => ({
-  id: 'p1',
-  age: 'adult',
-  privacy: { ...DEFAULT_PRIVACY, discoverable: true },
-  profile: {
-    ...EMPTY_PROFILE, username: 'other', bio: 'private', genres: ['rock'],
-    artists: [{ id: 'the-hu', name: 'The HU' }], tracks: [{ title: 'Song', artist: 'Band' }],
-  },
-  ...change,
-});
+type DB = ReturnType<typeof world>['db'];
+type Simple = Exclude<PeopleInput['kind'], 'report'>;
+const go = (db: DB, me: string, kind: Simple, personId: string, now = NOW) => applyPeople(db, me, { kind, personId }, now);
+const report = (db: DB, me: string, personId: string, change: object = {}) =>
+  applyPeople(db, me, { kind: 'report', personId, id: crypto.randomUUID(), reason: 'spam', details: ' details ', block: false, evidence: false, ...change }, NOW);
+const names = (db: DB, me: string, query: object = {}) => discover(db, me, query, NOW).people.map((person) => person.profile.username);
+const relation = (db: DB, me: string, them: string) => getPerson(db, me, them, NOW)?.relation ?? null;
 
 test('age: the 18th birthday counts, the day before does not', () => {
   const now = new Date(NOW);
@@ -49,156 +44,301 @@ test('age: impossible dates are rejected', () => {
   }
 });
 
-test('eligibility needs an adult, and nothing about studying', () => {
-  assert.equal(isEligible({ age: 'adult' }), true);
-  for (const age of ['minor', 'unknown'] as const) assert.equal(isEligible({ age }), false);
+test('the database cannot hold an account that is not an adult', () => {
+  const { db, person } = world();
+  const id = person('myself');
+  assert.throws(() => db.prepare('UPDATE users SET adult = 0 WHERE id = ?').run(id));
 });
 
-test('saved answers from the student pilot carry over safely', () => {
-  assert.equal(isEligible(parseSocial('{"eligibility":{"age":"adult","student":false}}').eligibility), true);
-  assert.equal(isEligible(parseSocial('{"eligibility":{"age":"minor","student":true}}').eligibility), false);
+test('only confirmed, finished, visible people appear, and never me', () => {
+  const { db, person } = world();
+  const me = person('myself');
+  person('shown');
+  person('hidden', { privacy: { discoverable: false } });
+  person('unconfirmed', { checked: false });
+  person('unfinished', { profile: { genres: [] } });
+  assert.deepEqual(names(db, me), ['shown']);
 });
 
-test('adults and minors can never reach each other, whatever the state says', () => {
-  const minor = person({ age: 'minor' });
-  const unknown = person({ age: 'unknown' });
-  for (const other of [minor, unknown]) {
-    for (const relation of ['incoming', 'outgoing', 'connected'] as const) {
-      const state: Social = { ...open, relations: { p1: relation } };
-      assert.equal(policy.canViewPerson(state, me, other), false);
-      assert.equal(policy.seePerson(state, me, other), null);
-      assert.equal(act.acceptRequest(state, other), state);
-      assert.equal(act.demoAcceptMyRequest(state, other), state);
-    }
-    assert.equal(policy.isInDiscover(open, me, other), false);
-    assert.equal(act.sendRequest(open, me, other, NOW), open);
-    assert.equal(policy.canReceiveFrom(open, me, other), false);
-  }
-  const iAmMinor: Social = { ...open, eligibility: { age: 'minor' } };
-  assert.equal(policy.isInDiscover(iAmMinor, me, person()), false);
-  assert.equal(act.sendRequest(iAmMinor, me, person(), NOW), iAmMinor);
+test('someone unconfirmed sees nobody and can do nothing', () => {
+  const { db, person } = world();
+  const me = person('myself', { checked: false });
+  const them = person('them');
+  assert.deepEqual(names(db, me), []);
+  assert.equal(getPerson(db, me, them), null);
+  assert.deepEqual(go(db, me, 'send', them), { ok: false, error: 'notReady' });
 });
 
-test('hidden people are not in Discover and cannot be requested', () => {
-  const hidden = person({ privacy: DEFAULT_PRIVACY });
-  assert.equal(policy.isInDiscover(adult, me, hidden), false);
-  assert.equal(policy.seePerson(adult, me, hidden), null);
-  assert.equal(policy.requestProblem(adult, me, hidden, NOW), 'unavailable');
-  assert.equal(policy.seePerson({ ...adult, relations: { p1: 'declined' } }, me, hidden), null);
-  assert.ok(policy.seePerson({ ...adult, relations: { p1: 'connected' } }, me, hidden));
+test('dating is shown only to people who chose it, and intentions must overlap', () => {
+  const { db, person } = world();
+  const friends = person('friends');
+  const both = person('both', { profile: { seeking: ['friends', 'dating'] } });
+  const dater = person('dater', { profile: { seeking: ['dating'] } });
+  assert.deepEqual(names(db, friends), ['both']);
+  assert.deepEqual(getPerson(db, friends, both)!.profile.seeking, ['friends']);
+  assert.equal(getPerson(db, friends, dater), null);
+  assert.deepEqual(go(db, friends, 'send', dater), { ok: false, error: 'unavailable' });
+  assert.deepEqual(getPerson(db, dater, both)!.profile.seeking, ['friends', 'dating']);
+  assert.deepEqual(names(db, friends, { seeking: 'dating' }), [], 'the filter cannot reveal who dates');
+});
+
+test('a request and an acceptance connect both people', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  assert.ok(go(db, a, 'send', b).ok);
+  assert.equal(relation(db, a, b), 'outgoing');
+  assert.equal(relation(db, b, a), 'incoming');
+  assert.deepEqual(getOverview(db, b).incoming.map((seen) => seen.id), [a]);
+  assert.ok(go(db, b, 'accept', a).ok);
+  assert.equal(relation(db, a, b), 'connected');
+  assert.equal(relation(db, b, a), 'connected');
+});
+
+test('nobody can accept their own request or one that was never sent', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  assert.equal(go(db, a, 'accept', b).ok, false);
+  go(db, a, 'send', b);
+  assert.equal(go(db, a, 'accept', b).ok, false);
+  assert.equal(go(db, a, 'send', a).ok, false);
+  assert.equal(relation(db, b, a), 'incoming');
+});
+
+test('someone hidden can ask, and is seen only by the person they asked', () => {
+  const { db, person } = world();
+  const quiet = person('quiet', { privacy: { discoverable: false } });
+  const [asked, other] = [person('asked'), person('other')];
+  go(db, quiet, 'send', asked);
+  assert.equal(relation(db, asked, quiet), 'incoming');
+  assert.equal(getPerson(db, other, quiet), null);
+});
+
+test('declining is silent and cannot be got around', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  go(db, a, 'send', b);
+  go(db, b, 'decline', a);
+  assert.equal(relation(db, a, b), 'outgoing', 'the sender still sees "sent"');
+  assert.equal(relation(db, b, a), 'none');
+  go(db, a, 'cancel', b);
+  assert.equal(relation(db, a, b), 'none');
+  assert.ok(go(db, a, 'send', b).ok);
+  assert.equal(relation(db, a, b), 'outgoing');
+  assert.equal(getOverview(db, b).incoming.length, 0, 'asking again never reaches them');
+});
+
+test('the person who declined can change their mind', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  go(db, a, 'send', b);
+  go(db, b, 'decline', a);
+  assert.ok(go(db, b, 'send', a).ok);
+  assert.ok(go(db, a, 'accept', b).ok);
+  assert.equal(relation(db, b, a), 'connected');
 });
 
 test('request rules are enforced', () => {
-  const rule = (requests: 'sharedMusic' | 'everyone' | 'nobody') => person({ privacy: { ...DEFAULT_PRIVACY, discoverable: true, requests } });
-  const stranger = { ...me, genres: ['classical' as const] };
-  assert.equal(policy.requestProblem(adult, me, rule('sharedMusic'), NOW), null);
-  assert.equal(policy.requestProblem(adult, stranger, rule('sharedMusic'), NOW), 'needsSharedGenre');
-  assert.equal(policy.requestProblem(adult, stranger, rule('everyone'), NOW), null);
-  assert.equal(policy.requestProblem(adult, me, rule('nobody'), NOW), 'notAccepting');
+  const { db, person } = world();
+  const me = person('myself', { profile: { genres: ['classical'] } });
+  const picky = person('picky');
+  const open = person('open', { privacy: { requests: 'everyone' } });
+  const closed = person('closed', { privacy: { requests: 'nobody' }, profile: { genres: ['classical'] } });
+  assert.deepEqual(go(db, me, 'send', picky), { ok: false, error: 'needsSharedGenre' });
+  assert.ok(go(db, me, 'send', open).ok);
+  assert.deepEqual(go(db, me, 'send', closed), { ok: false, error: 'notAccepting' });
 });
 
 test('ten requests a day, and cancelling does not refund one', () => {
-  let state = adult;
-  for (let i = 0; i < 10; i++) state = act.cancelRequest(act.sendRequest(state, me, person({ id: `p${i}` }), NOW + i), `p${i}`);
-  assert.equal(policy.requestProblem(state, me, person({ id: 'late' }), NOW + 20), 'dailyLimit');
-  assert.equal(policy.requestProblem(state, me, person({ id: 'late' }), NOW + DAY + 20), null);
-});
-
-test('bio appears only after the request is accepted', () => {
-  const sent = act.sendRequest(adult, me, person(), NOW);
-  assert.equal(policy.seePerson(sent, me, person())!.bio, '');
-  assert.equal(policy.seePerson(act.demoAcceptMyRequest(sent, person()), me, person())!.bio, 'private');
-});
-
-test('incoming requests follow my own privacy settings', () => {
-  assert.equal(policy.canReceiveFrom(adult, me, person()), false, 'hidden by default');
-  assert.equal(policy.canReceiveFrom(open, me, person()), true);
-  assert.equal(policy.canReceiveFrom({ ...open, privacy: { ...open.privacy, requests: 'nobody' } }, me, person()), false);
-  assert.equal(policy.canReceiveFrom(open, { ...me, genres: ['classical'] }, person()), false);
-});
-
-test('a declined person cannot ask again', () => {
-  const declined = act.declineRequest(act.demoReceiveRequest(open, me, person()), 'p1');
-  assert.equal(declined.relations.p1, 'declined');
-  assert.equal(policy.canReceiveFrom(declined, me, person()), false);
-  assert.equal(act.acceptRequest(declined, person()), declined);
-});
-
-test('blocking ends everything, and unblocking does not restore it', () => {
-  for (const relation of ['incoming', 'outgoing', 'connected'] as const) {
-    const blocked = act.block({ ...open, relations: { p1: relation } }, 'p1');
-    assert.equal(blocked.relations.p1, undefined);
-    assert.equal(policy.seePerson(blocked, me, person()), null);
-    assert.equal(policy.isInDiscover(blocked, me, person()), false);
-    assert.equal(policy.canReceiveFrom(blocked, me, person()), false);
-    assert.equal(act.sendRequest(blocked, me, person(), NOW), blocked);
-    assert.equal(act.unblock(blocked, 'p1').relations.p1, undefined);
+  const { db, person } = world();
+  const me = person('myself');
+  for (let i = 0; i < 10; i++) {
+    const them = person(`them${i}`);
+    go(db, me, 'send', them, NOW + i);
+    go(db, me, 'cancel', them, NOW + i);
   }
+  const late = person('late');
+  assert.deepEqual(go(db, me, 'send', late, NOW + 20), { ok: false, error: 'dailyLimit' });
+  assert.ok(go(db, me, 'send', late, NOW + DAY + 20).ok);
 });
 
-test('reports keep a copy of the username and survive a block', () => {
-  const state = act.block(act.report(open, person(), 'underage', ' details ', NOW), 'p1');
-  assert.deepEqual([state.reports[0]!.username, state.reports[0]!.reason, state.reports[0]!.details], ['other', 'underage', 'details']);
+test('photo, bio and links reach connections only, and the picture is never inside the list', () => {
+  const { db, person } = world();
+  const [a, b, c] = [person('a_person'), person('b_person', {
+    profile: { bio: 'private bio', photo: 'data:image/jpeg;base64,/9j/4AAQ', links: [{ provider: 'instagram', kind: 'profile', url: 'https://www.instagram.com/secret/' }] },
+  }), person('c_person')];
+  go(db, a, 'send', b);
+  for (const viewer of [a, c]) {
+    const text = JSON.stringify([getPerson(db, viewer, b), discover(db, viewer), getOverview(db, viewer)]);
+    for (const secret of ['private bio', 'base64', 'secret', '/api/photo']) assert.ok(!text.includes(secret), secret);
+  }
+  go(db, b, 'accept', a);
+  const seen = getPerson(db, a, b)!.profile;
+  assert.equal(seen.bio, 'private bio');
+  assert.match(seen.photo!, /^\/api\/photo\//);
+  assert.equal(seen.links.length, 1);
+  assert.ok(!JSON.stringify(getOverview(db, a)).includes('base64'));
 });
 
-test('artist and song switches hide them from strangers only', () => {
-  const privacy = { ...DEFAULT_PRIVACY, showArtists: false, showTracks: false };
-  const profile = person().profile;
-  assert.deepEqual(getVisibleProfile(profile, 'stranger', privacy).artists, []);
-  assert.deepEqual(getVisibleProfile(profile, 'stranger', privacy).tracks, []);
-  assert.deepEqual(getVisibleProfile(profile, 'connection', privacy), profile);
+test('nothing about the account leaks with a profile', () => {
+  const { db, person } = world();
+  const me = person('myself');
+  person('them');
+  const text = JSON.stringify(discover(db, me));
+  for (const secret of ['@example.com', 'scrypt', 'password', 'discoverable', 'showArtists']) assert.ok(!text.includes(secret), secret);
 });
 
-test('hidden artists do not leak through songs', () => {
-  const seen = getVisibleProfile(person().profile, 'stranger', { ...DEFAULT_PRIVACY, showArtists: false });
-  assert.deepEqual(seen.tracks, [{ title: 'Song', artist: '' }]);
+test('hidden artists cannot be found by searching or through songs', () => {
+  const { db, person } = world();
+  const me = person('myself');
+  person('secretive', { privacy: { showArtists: false }, profile: { artists: [{ id: 'the-hu', name: 'The HU' }], tracks: [{ title: 'Song', artist: 'The HU' }], anthem: { title: 'Song', artist: 'The HU' } } });
+  assert.deepEqual(names(db, me, { search: 'the hu' }), []);
+  assert.deepEqual(names(db, me, { search: 'secret' }), ['secretive']);
+  assert.ok(!JSON.stringify(discover(db, me)).includes('The HU'));
 });
 
-test('shared music cannot leak hidden artists', () => {
-  const secret = person({ privacy: { ...DEFAULT_PRIVACY, discoverable: true, showArtists: false } });
-  assert.deepEqual(compareMusic(me, policy.seePerson(adult, me, secret)!).artists, []);
+test('filters, counts and order', () => {
+  const { db, person } = world();
+  const me = person('myself', { profile: { genres: ['rock', 'jazz'], artists: [{ id: 'the-hu', name: 'The HU' }] } });
+  person('far', { profile: { genres: ['classical'] } });
+  person('near', { profile: { genres: ['rock', 'jazz'], artists: [{ id: 'the-hu', name: 'The HU' }] } });
+  assert.deepEqual(names(db, me), ['near', 'far']);
+  assert.deepEqual(names(db, me, { genre: 'classical' }), ['far']);
+  assert.equal(discover(db, me).counts.classical, 1);
+  assert.equal(discover(db, me, { limit: 1 }).total, 2);
 });
 
-test('dating is seen only by people who chose dating too', () => {
-  const both = person({ profile: { ...person().profile, seeking: ['friends', 'dating'] } });
-  assert.deepEqual(policy.seePerson(adult, me, both)!.seeking, ['friends']);
-  assert.deepEqual(policy.seePerson({ ...adult, relations: { p1: 'connected' } }, me, both)!.seeking, ['friends']);
-  assert.deepEqual(policy.seePerson(adult, { ...me, seeking: ['friends', 'dating'] }, both)!.seeking, ['friends', 'dating']);
+test('blocking works both ways at once, and unblocking restores nothing', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  connect(db, a, b);
+  assert.ok(go(db, a, 'block', b).ok);
+  for (const [me, them] of [[a, b], [b, a]] as const) {
+    assert.equal(getPerson(db, me, them), null);
+    assert.deepEqual(names(db, me), []);
+    assert.equal(getOverview(db, me).connected.length, 0);
+    assert.equal(go(db, me, 'send', them).ok, false);
+  }
+  assert.deepEqual(getOverview(db, a).blocked, [{ id: b, username: 'b_person' }]);
+  assert.deepEqual(getOverview(db, b).blocked, [], 'they are not told');
+  go(db, b, 'unblock', a);
+  assert.equal(getPerson(db, b, a), null, 'only the blocker can unblock');
+  go(db, a, 'unblock', b);
+  assert.equal(relation(db, a, b), 'none');
 });
 
-test('dating-only and friends-only people cannot find or request each other', () => {
-  const dater = person({ profile: { ...person().profile, seeking: ['dating'] } });
-  assert.equal(policy.isInDiscover(open, me, dater), false);
-  assert.equal(policy.seePerson(open, me, dater), null);
-  assert.equal(policy.requestProblem(open, me, dater, NOW), 'unavailable');
-  assert.equal(policy.canReceiveFrom(open, me, dater), false);
-  const iDateOnly: Profile = { ...me, seeking: ['dating'] };
-  assert.equal(policy.isInDiscover(open, iDateOnly, person()), false);
-  assert.equal(policy.isInDiscover(open, iDateOnly, dater), true);
+test('removing ends it for both', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  connect(db, a, b);
+  go(db, b, 'remove', a);
+  assert.equal(relation(db, a, b), 'none');
+  assert.equal(relation(db, b, a), 'none');
+});
+
+test('reports reach the moderator, once, and the reported person is not told', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  const id = crypto.randomUUID();
+  assert.ok(report(db, a, b, { id, reason: 'underage', block: true }).ok);
+  assert.ok(report(db, a, b, { id, reason: 'underage' }).ok);
+  const open = moderation.openReports(db);
+  assert.equal(open.length, 1);
+  assert.deepEqual([open[0]!.reported_id, open[0]!.details, open[0]!.evidence], [b, 'details', null]);
+  assert.equal(getPerson(db, a, b), null, 'blocked as asked');
+  assert.deepEqual(getOverview(db, b).reports, []);
+  assert.equal(report(db, b, a, { id }).ok, false, 'an id cannot be reused by someone else');
+});
+
+test('nobody can report or block a person they have no way of seeing', () => {
+  const { db, person } = world();
+  const [a, hidden] = [person('a_person'), person('hidden', { privacy: { discoverable: false } })];
+  assert.equal(report(db, a, hidden).ok, false);
+  assert.equal(go(db, a, 'block', hidden).ok, false);
+});
+
+test('suspension removes someone everywhere until restored', async () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  connect(db, a, b);
+  const token = accounts.createSession(db, b, NOW);
+  assert.ok(moderation.suspend(db, b, 'spam', NOW));
+  assert.equal(getPerson(db, a, b), null);
+  assert.deepEqual(names(db, a), []);
+  assert.equal(getOverview(db, a).connected.length, 0);
+  assert.equal(accounts.userForSession(db, token, NOW), undefined);
+  assert.deepEqual(await accounts.logIn(db, 'person2@example.com', PASS, NOW), { ok: false, error: 'suspended' });
+  assert.ok(moderation.restore(db, b));
+  assert.equal(relation(db, a, b), 'connected');
+});
+
+test('deleting an account removes the person and keeps the report about them', async () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person')];
+  connect(db, a, b);
+  report(db, a, b);
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(b) as unknown as accounts.UserRow;
+  assert.equal(await accounts.deleteAccount(db, user, PASS, NOW), null);
+  assert.equal(getOverview(db, a).connected.length, 0);
+  assert.equal(moderation.openReports(db).length, 1);
+});
+
+test('photos are served to the owner and connections only', () => {
+  const { db, person } = world();
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xda, 0, 2, 1, 2, 0xff, 0xd9]).toString('base64');
+  const [a, b, c] = [person('a_person', { profile: { photo: `data:image/jpeg;base64,${jpeg}` } }), person('b_person'), person('c_person')];
+  connect(db, a, b);
+  assert.ok(photoFor(db, a, a));
+  assert.ok(photoFor(db, b, a));
+  assert.equal(photoFor(db, c, a), null);
+  go(db, b, 'block', a);
+  assert.equal(photoFor(db, b, a), null);
+});
+
+test('photo details and smuggled data are stripped', () => {
+  const gps = [...Buffer.from('GPS-SECRET')];
+  const bytes = [0xff, 0xd8, 0xff, 0xe1, 0, gps.length + 2, ...gps, 0xff, 0xfe, 0, 3, 7, 0xff, 0xda, 0, 2, 9, 9, 0xff, 0xd9, ...Buffer.from('HIDDEN')];
+  assert.deepEqual([...stripJpeg(Uint8Array.from(bytes))!], [0xff, 0xd8, 0xff, 0xda, 0, 2, 9, 9, 0xff, 0xd9]);
+  assert.equal(stripJpeg(Uint8Array.from(Buffer.from('<html>not a picture'))), null);
+});
+
+test('a downloaded copy holds only that person’s data and no password', () => {
+  const { db, person } = world();
+  const [a, b] = [person('a_person'), person('b_person', { profile: { bio: 'their private bio' } })];
+  connect(db, a, b);
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(a) as unknown as accounts.UserRow;
+  const text = JSON.stringify(exportData(db, user));
+  assert.ok(text.includes('person1@example.com') && text.includes('b_person'));
+  for (const secret of ['person2@example.com', 'their private bio', 'scrypt']) assert.ok(!text.includes(secret), secret);
+});
+
+test('profile extras are checked when loaded', () => {
+  const parsed = parseProfile(JSON.stringify({
+    tracks: [{ title: 'Song', artist: 'Band' }],
+    anthem: { title: 'Not mine', artist: 'Band' },
+    answers: [{ id: 'neverSkip', text: 'Song' }, { id: 'neverSkip', text: 'again' }, { id: 'fake', text: 'x' }, { id: 'firstConcert', text: 'call 99112233' }],
+    moments: ['commute', 'cooking', 'walking', 'driving', 'fake'],
+    outings: ['karaoke', 'my house address'],
+  }));
+  assert.equal(parsed.anthem, null);
+  assert.deepEqual(parsed.answers, [{ id: 'neverSkip', text: 'Song' }]);
+  assert.equal(parsed.moments.length, 3);
+  assert.deepEqual(parsed.outings, ['karaoke']);
+});
+
+test('artist and song switches also cover the anthem, for strangers only', () => {
+  const profile: Profile = { ...EMPTY_PROFILE, tracks: [{ title: 'Song', artist: 'Band' }], anthem: { title: 'Song', artist: 'Band' } };
+  assert.equal(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showTracks: false }).anthem, null);
+  assert.deepEqual(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showArtists: false }).anthem, { title: 'Song', artist: '' });
+  assert.deepEqual(getVisibleProfile(profile, 'connection', { ...DEFAULT_PRIVACY, showTracks: false }), profile);
 });
 
 test('damaged social data falls back to the safe defaults', () => {
   for (const raw of [null, '', '{bad', '[]', 'null']) assert.deepEqual(parseSocial(raw), EMPTY_SOCIAL);
-  const state = parseSocial(JSON.stringify({
-    eligibility: { age: 'grown-up' }, privacy: { discoverable: 'yes', requests: 'all' },
-    relations: { a: 'connected', b: 'best friend', c: 'connected' }, blocked: ['c'], communities: ['jazz', 'fake'],
-    reports: [{ id: 'x', personId: 'a', username: 'a', reason: 'spam', createdAt: 1e20 }],
-  }));
-  assert.deepEqual(state.eligibility, EMPTY_SOCIAL.eligibility);
-  assert.deepEqual(state.privacy, DEFAULT_PRIVACY);
-  assert.deepEqual(state.relations, { a: 'connected' });
-  assert.deepEqual(state.communities, ['jazz']);
-  assert.deepEqual(state.reports, []);
+  assert.deepEqual(parseSocial('{"privacy":{"discoverable":"yes","requests":"all"}}').privacy, DEFAULT_PRIVACY);
 });
 
-test('sample people are valid, adult and cover every genre', () => {
-  for (const list of Object.values(PEOPLE)) {
-    for (const { profile, age } of list) {
-      assert.equal(checkUsername(profile.username), null, profile.username);
-      assert.equal(checkBio(profile.bio), null, profile.bio);
-      assert.equal(age, 'adult');
-      assert.deepEqual([profile.photo, profile.links], [null, []]);
-    }
-    for (const id of GENRE_IDS) assert.ok(list.some(({ profile }) => profile.genres.includes(id)), id);
+test('malformed people requests are refused', () => {
+  for (const bad of [null, 4, {}, { kind: 'send' }, { kind: 'admin', personId: 'x' }, { kind: 'report', personId: 'x', id: 'r', reason: 'made-up', details: '', block: false, evidence: false }]) {
+    assert.equal(parsePeopleInput(bad), null);
   }
 });

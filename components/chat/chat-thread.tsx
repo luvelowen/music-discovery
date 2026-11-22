@@ -11,14 +11,10 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageTitle } from '@/components/ui/page-title';
 import { useChat } from '@/lib/chat/provider';
 import type { ChatProblem, Message, Thread } from '@/lib/chat/types';
-import { usePeople } from '@/lib/demo/use-people';
+import { usePeople } from '@/lib/people/provider';
+import type { Seen } from '@/lib/people/types';
 import { formatDateTime } from '@/lib/format-date';
 import { useI18n } from '@/lib/i18n/provider';
-import { useProfile } from '@/lib/profile/store';
-import type { Profile } from '@/lib/profile/types';
-import { seePerson } from '@/lib/social/policy';
-import { useSocial } from '@/lib/social/store';
-import type { Person } from '@/lib/social/types';
 import { Composer } from './composer';
 
 const CHECK_EVERY = 2500;
@@ -26,13 +22,12 @@ const NEAR_BOTTOM = 80;
 
 export function ChatThread({ id }: { id: string }) {
   const { t } = useI18n();
-  const { profile } = useProfile();
-  const { social } = useSocial();
-  const person = usePeople().find((item) => item.id === id);
+  const { overview } = usePeople();
   const [reported, setReported] = useState(false);
 
-  const seen = person && social.relations[id] === 'connected' ? seePerson(social, profile, person) : null;
-  if (person && seen) return <OpenThread person={person} seen={seen} reported={reported} onReported={() => setReported(true)} />;
+  if (!overview) return <p role="status" className="gutter py-12 text-muted">{t.chat.loading}</p>;
+  const person = overview.connected.find((item) => item.id === id);
+  if (person) return <OpenThread person={person} reported={reported} onReported={() => setReported(true)} />;
 
   return (
     <div className="gutter py-12">
@@ -43,9 +38,10 @@ export function ChatThread({ id }: { id: string }) {
   );
 }
 
-type Props = { person: Person; seen: Profile; reported: boolean; onReported: () => void };
+type Props = { person: Seen; reported: boolean; onReported: () => void };
 
-function OpenThread({ person, seen, reported, onReported }: Props) {
+function OpenThread({ person, reported, onReported }: Props) {
+  const seen = person.profile;
   const { t } = useI18n();
   const words = t.chat;
   const id = person.id;
@@ -53,6 +49,7 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
 
   const [messages, setMessages] = useState<Message[] | null>(null);
   const [more, setMore] = useState(false);
+  const [theyOn, setTheyOn] = useState(true);
   const [problem, setProblem] = useState<ChatProblem | null>(null);
 
   const scroller = useRef<HTMLDivElement>(null);
@@ -92,7 +89,10 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
     const result = await getThread(id);
     if (mine !== turn.current) return;
     setProblem(result.ok ? null : result.error);
-    if (result.ok) merge(result.value);
+    if (result.ok) {
+      setTheyOn(result.value.theyOn);
+      merge(result.value);
+    }
   }, [id, getThread, merge]);
 
   const markRead = useCallback(() => {
@@ -156,10 +156,8 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
     show([...added, ...(current.current ?? [])], result.value.more);
   }
 
-  async function send(requestId: string, text?: string): Promise<ChatProblem | null> {
-    const result = await act(text === undefined
-      ? { kind: 'testReply', personId: id, id: requestId }
-      : { kind: 'send', personId: id, id: requestId, text });
+  async function send(requestId: string, text: string): Promise<ChatProblem | null> {
+    const result = await act({ kind: 'send', personId: id, id: requestId, text });
     if (!result.ok) return result.error;
     atBottom.current = true;
     await refresh();
@@ -181,10 +179,10 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
           <ArrowLeft className="size-5" aria-hidden />
         </Link>
         <Link href={`/people/${id}`} className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-control px-1">
-          <Avatar profile={seen} className="size-10" />
+          <Avatar profile={seen} className="size-10 text-lg" />
           <div className="min-w-0">
             <h1 className="truncate font-bold">{seen.username}</h1>
-            <p className="truncate text-xs text-muted">{t.community.demo.badge}</p>
+            <p className="truncate text-xs text-muted">{seen.seeking.map((item) => t.seeking[item]).join(', ')}</p>
           </div>
         </Link>
         <Button variant="quiet" className="w-11 shrink-0 px-0!" aria-label={t.community.person.report} onClick={() => reportDialog.current?.showModal()}>
@@ -207,7 +205,7 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
         }}
         className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 -outline-offset-2 sm:px-6"
       >
-        <p className="mx-auto max-w-sm text-center text-xs leading-relaxed text-muted">{words.fictional} {words.safety}</p>
+        <p className="mx-auto max-w-sm text-center text-xs leading-relaxed text-muted">{words.safety}</p>
         {reported && <p role="status" className="mx-auto mt-3 max-w-sm rounded-panel bg-surface p-3 text-center text-sm leading-relaxed">{t.community.report.done}</p>}
         {more && (
           <div className="mt-2 text-center">
@@ -220,7 +218,7 @@ function OpenThread({ person, seen, reported, onReported }: Props) {
       </div>
 
       {problem && <p role="alert" className="border-t border-line px-4 py-2 text-sm text-danger">{words.errors[problem]}</p>}
-      <Composer onSend={send} />
+      {theyOn ? <Composer onSend={send} /> : <p role="status" className="border-t border-line px-4 py-4 text-sm text-muted">{words.errors.theyOff}</p>}
 
       <ReportDialog ref={reportDialog} person={person} onDone={onReported} />
       <ConfirmDialog
