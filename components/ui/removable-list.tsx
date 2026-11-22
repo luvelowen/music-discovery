@@ -11,7 +11,7 @@ export function RemovableList({ items }: { items: Item[] }) {
   if (items.length === 0) return null;
 
   return (
-    <ul className="divide-y divide-seam">
+    <ul className="divide-y divide-line">
       {items.map(({ key, title, detail, leading, onRemove }) => (
         <li key={key} className="flex items-center gap-3 py-2.5">
           {leading}
@@ -23,7 +23,7 @@ export function RemovableList({ items }: { items: Item[] }) {
             type="button"
             onClick={onRemove}
             aria-label={t.setup.remove(title)}
-            className="grid size-11 shrink-0 place-items-center rounded-control text-muted transition-colors hover:bg-cherry hover:text-chalk"
+            className="grid size-11 shrink-0 place-items-center rounded-control text-muted transition-colors hover:bg-surface hover:text-chalk"
           >
             <X className="size-5" aria-hidden />
           </button>

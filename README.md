@@ -3,8 +3,8 @@
 Dating, friends and music for adults (18+) in Ulaanbaatar.
 *Find the person you’d give your left earbud to.*
 
-Milestones 1 and 2 are built, in Mongolian and English: onboarding, profile, Discover, connections,
-settings and safety. It is a local prototype. Other people are fictional and nothing is sent anywhere.
+Sign up, log in, profile, Discover, connections, chat and settings work, in Mongolian and English. Accounts are saved
+in `data/app.db` on the computer running the app. The other people in Discover are still fictional.
 
 ## Running it
 
@@ -21,36 +21,43 @@ In Windows PowerShell, type `npm.cmd` wherever this page says `npm`.
 | `npm run build` | Creates the optimized version for real users | Before publishing |
 | `npm start` | Runs the version made by `npm run build` | To try the real version |
 
+## Sending real emails
+
+Until this is set up, every email is a text file in `data/outbox`.
+
+1. In your Google account, turn on 2-Step Verification.
+2. Create an app password at https://myaccount.google.com/apppasswords
+3. In PowerShell, in this folder: `Copy-Item .env.example .env.local`
+4. Open `.env.local`, type your Gmail address after `SMTP_USER=` and the app password after `SMTP_PASS=`, and save.
+
+Type the password only into `.env.local`. Never into `.env.example`, the code or a chat.
+
 ## Where things are
 
 ```
 app/                 Pages. Each folder is a web address.
-  page.tsx             /                Welcome
-  setup/[step]/        /setup/genres, artists, tracks, links, about
-  profile/             /profile         Preview
-  discover/            /discover        Communities and people
-  people/[id]/         /people/...      Someone's profile, block, report
-  connections/         /connections     Requests and connections
-  settings/            /settings        Privacy, safety, deletion
-  globals.css          Colors, corners and base styles
-components/          Reusable visual pieces
-  artwork/             The sleeves and the personal cover
-  layout/              Header and language switcher
-  ui/                  Buttons, fields, lists
-  welcome/ setup/ profile/
-  gate/                The 18+ check
-  discover/ people/ connections/ settings/
+  signup/ login/       Email and password
+  forgot/ code/        Password reset and emailed codes
+  account/data/        My data: what the database holds
+  chats/               Text chat with connected people
+  api/account/         Where every change is saved
+  api/chat/            Where messages are read and saved
+  auth-actions.ts      Sign up, codes, log in, reset, log out, delete
+  setup/[step]/        Genres, artists, songs, links, about
+  profile/ discover/ people/[id]/ connections/ settings/
+  globals.css          Colors and base styles
+components/          Reusable visual pieces, one folder for each area
 lib/                 Rules and data, with no visual design
+  server/              Database, passwords, sessions, email. Runs only on the server
+  account/             What can change, and how the screen saves it
+  chat/                Message limits, tidying, and live updates
   i18n/                All English and Mongolian wording
-  music/               Genres, artist suggestions, music-service links
-  profile/             Profile shape, validation, saving, who sees what
-  safety/              Contact-detail detection
-  social/              Eligibility, permissions (policy.ts), actions (actions.ts)
-  storage/             Saving in the browser
-  demo/                Fictional people. Delete when real accounts arrive
-tests/               Automatic checks of those rules
+  music/ profile/ safety/ social/   The rules
+  demo/                Fictional people. Delete when real matching arrives
+data/                The database. Private, never committed
+tests/               Automatic checks of the rules
 docs/                Safety plan, data plan and roadmap
-public/              Photos, and screenshots of the app
+public/              One photo
 DESIGN.md            The design rules. Read before any visual change
 CLAUDE.md            Standing instructions for Claude
 ```
@@ -62,34 +69,33 @@ CLAUDE.md            Standing instructions for Claude
 | English wording | `lib/i18n/en.ts` |
 | Mongolian wording | `lib/i18n/mn.ts` |
 | The product name | `appName` in both wording files |
-| The temporary logo | `components/layout/site-header.tsx` and `app/icon.svg` |
-| Colors or corner rounding | The `@theme` block in `app/globals.css` |
+| The browser-tab icon | `app/icon.svg` |
+| Colors | The `@theme` block in `app/globals.css` |
 | Suggested artists | `lib/music/artists.ts` |
-| A genre | `lib/music/genres.ts`, a drawing in `components/artwork/sleeve.tsx`, and both wording files |
+| A genre | `lib/music/genres.ts`, and both wording files |
 | Limits, such as five genres | `lib/profile/types.ts`, then the numbers mentioned in both wording files |
 | Who can see which field | `lib/profile/visibility.ts` |
 | Who can find or contact whom | `lib/social/policy.ts`, then run `npm test` |
 | Wording for milestone 2 screens | `lib/i18n/community.en.ts` and `community.mn.ts` |
 | The sample people | `lib/demo/people.ts` |
-| Emergency numbers | `components/settings/settings-screen.tsx`, and the 108 and 102 mentions in both community wording files |
+| Sign-up and log-in wording | `lib/i18n/account.en.ts` and `account.mn.ts` |
 
-If a translation or genre drawing is missing, `npm run typecheck` says so.
+If a translation is missing, `npm run typecheck` says so.
 
 ## Decisions, in plain language
 
-- **The profile is saved in the browser.** It survives a refresh, and nobody else online can see it.
-  Anyone using the same browser can, which is why there is a delete button.
-  Supabase will start in `lib/profile/store.ts`, but screens will also need sign-in,
-  saving and network-error states, and the server must repeat every check.
+- **Accounts are saved with Node's built-in SQLite**, so there was nothing to install and no company to sign up with.
+  If we move to Supabase or a Mongolian server, `lib/server/` is the part that changes first.
+- **The server repeats every rule.** The screen sends "what changed", never "here is my whole account".
 - **The language is saved in a cookie.** The server can read cookies, so pages open in the right language
   without flickering. Mongolian is the default.
-- **The typefaces are Fira Sans Extra Condensed and Golos Text.** Both contain Ө ө Ү ү. Many "Cyrillic" fonts do not.
-- **Genre artwork is drawn in code, and photos are licensed.** Credits are in `DESIGN.md`.
+- **The typeface is the system font on Apple devices, and Inter elsewhere.** Both must show Ө ө Ү ү. Many "Cyrillic" fonts do not.
+- **Categories are text only**, and there is one licensed photo. See `DESIGN.md`.
 - **Dating is mutual-visibility only.** Someone’s dating choice is shown only to people who also chose dating.
 - **Music services are links only.** A new service is registered in `lib/music/providers.ts`.
 - **TypeScript is pinned to 6.0.3.** Version 7 removed the programming interface Next.js relies on,
   so don't upgrade it until Next.js supports 7.
-- **No Supabase package yet.** It arrives with the milestone that uses it.
+- **No Supabase yet.** Where it can legally run is undecided. See `docs/DATA.md`.
 - **The preview is limited to this computer.** `dev` and `start` include `--hostname localhost`.
   Without it, Next.js accepts connections from the network. Some hosting services need it removed from `start`;
   never remove it from `dev`.

@@ -6,7 +6,7 @@ type FieldProps = { label: string; help?: string; error?: string | null };
 // text-base (16px) matters: anything smaller makes iPhones zoom in when you tap the field.
 const control = (error?: string | null) =>
   cn(
-    'w-full min-w-0 rounded-control border bg-night px-4 text-base placeholder:text-muted',
+    'w-full min-w-0 rounded-control border bg-surface px-4 text-base placeholder:text-muted',
     error ? 'border-danger' : 'border-edge hover:border-chalk',
   );
 
@@ -29,12 +29,12 @@ function describe(id: string, help?: string, error?: string | null) {
 }
 
 /** `action` sits beside the input, which keeps it aligned when help or an error appears below. */
-export function TextField({ label, help, error, action, ...props }: FieldProps & { action?: ReactNode } & ComponentProps<'input'>) {
+export function TextField({ label, help, error, action, className, ...props }: FieldProps & { action?: ReactNode } & ComponentProps<'input'>) {
   const id = useId();
   return (
     <Wrapper id={id} label={label} help={help} error={error}>
       <div className="flex gap-2">
-        <input id={id} autoComplete="off" className={cn(control(error), 'h-12')} {...describe(id, help, error)} {...props} />
+        <input id={id} autoComplete="off" className={cn(control(error), 'h-12', className)} {...describe(id, help, error)} {...props} />
         {action}
       </div>
     </Wrapper>

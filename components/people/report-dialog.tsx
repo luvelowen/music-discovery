@@ -6,8 +6,7 @@ import { Choice } from '@/components/ui/choice';
 import { Dialog } from '@/components/ui/dialog';
 import { TextArea } from '@/components/ui/field';
 import { useI18n } from '@/lib/i18n/provider';
-import { block, report } from '@/lib/social/actions';
-import { updateSocial } from '@/lib/social/store';
+import { useSocial } from '@/lib/social/store';
 import { REPORT_REASONS, SOCIAL_LIMITS, type Person, type ReportReason } from '@/lib/social/types';
 
 type Props = { ref: RefObject<HTMLDialogElement | null>; person: Person; onDone: () => void };
@@ -20,6 +19,8 @@ export function ReportDialog({ ref, person, onDone }: Props) {
   const [alsoBlock, setAlsoBlock] = useState(true);
   const [missing, setMissing] = useState(false);
 
+  const { change } = useSocial();
+
   function clear() {
     setReason(null);
     setDetails('');
@@ -31,17 +32,14 @@ export function ReportDialog({ ref, person, onDone }: Props) {
     event.preventDefault();
     if (!reason) return setMissing(true);
     ref.current?.close();
-    updateSocial((state) => {
-      const next = report(state, person, reason, details, Date.now());
-      return alsoBlock ? block(next, person.id) : next;
-    });
+    change({ kind: 'report', personId: person.id, reason, details, block: alsoBlock });
     onDone();
     clear();
   }
 
   return (
     <Dialog ref={ref} title={words.title(person.profile.username)} onClose={clear}>
-      <p className="mt-3 rounded-control bg-cherry p-3 text-sm leading-relaxed">{words.prototype}</p>
+      <p className="mt-3 rounded-control bg-raised p-3 text-sm leading-relaxed">{words.prototype}</p>
       <form onSubmit={submit} className="mt-5">
         <fieldset>
           <legend className="font-medium">{words.question}</legend>

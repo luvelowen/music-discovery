@@ -4,16 +4,14 @@ import { ButtonLink } from '@/components/ui/button';
 import { Choice } from '@/components/ui/choice';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/lib/i18n/provider';
-import { updateSocial, useSocial } from '@/lib/social/store';
+import { useSocial } from '@/lib/social/store';
 import { REQUEST_RULES, type Privacy } from '@/lib/social/types';
 
 export function PrivacySettings() {
   const { t } = useI18n();
   const words = t.community.settings;
-  const { privacy } = useSocial().social;
-
-  const save = (change: Partial<Privacy>) =>
-    updateSocial((state) => ({ ...state, privacy: { ...state.privacy, ...change } }));
+  const { social: { privacy }, change } = useSocial();
+  const save = (patch: Partial<Privacy>) => change({ kind: 'privacy', patch });
 
   return (
     <>

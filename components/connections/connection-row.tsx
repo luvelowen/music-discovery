@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { Cover } from '@/components/artwork/cover';
 import { RelationActions } from '@/components/people/relation-actions';
 import { useI18n } from '@/lib/i18n/provider';
 import { artistName } from '@/lib/music/artists';
@@ -22,18 +21,15 @@ export function ConnectionRow({ person, seen, extra }: { person: Person; seen: P
 
   return (
     <li className="flex flex-col gap-3 py-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-      <div className="flex min-w-0 items-center gap-4">
-        <Cover genres={seen.genres} className="size-20 shrink-0" />
-        <div className="min-w-0">
-          <Link href={`/people/${person.id}`} className="inline-flex min-h-7 items-center text-2xl font-display font-extrabold [overflow-wrap:anywhere] underline-offset-4 hover:underline">
-            {seen.username}
-          </Link>
-          <p className="text-xs text-muted">{t.community.demo.badge}</p>
-          <p className="mt-1.5 text-sm leading-snug">
-            <span className="text-muted">{both.length ? t.community.discover.both : t.community.discover.differentTaste}: </span>
-            <span className="font-semibold text-flame">{(both.length ? both : seen.genres.map((id) => t.genres[id])).join(', ')}</span>
-          </p>
-        </div>
+      <div className="min-w-0">
+        <Link href={`/people/${person.id}`} className="inline-flex min-h-7 items-center font-semibold [overflow-wrap:anywhere] underline-offset-4 hover:underline">
+          {seen.username}
+        </Link>
+        <p className="text-xs text-muted">{t.community.demo.badge}</p>
+        <p className="mt-1.5 text-sm leading-relaxed">
+          <span className="text-muted">{both.length ? t.community.discover.both : t.community.discover.differentTaste}: </span>
+          {(both.length ? both : seen.genres.map((id) => t.genres[id])).join(', ')}
+        </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 lg:max-w-[55%] lg:shrink-0 lg:justify-end">
         <RelationActions person={person} compact />

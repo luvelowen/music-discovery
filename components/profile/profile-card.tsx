@@ -1,89 +1,74 @@
 'use client';
 
-import { ArrowUpRight, Music2 } from 'lucide-react';
-import { CoverRecord } from '@/components/artwork/cover';
-import { Sleeve } from '@/components/artwork/sleeve';
+import { linkLabel } from '@/components/links/link-label';
 import { useI18n } from '@/lib/i18n/provider';
 import { artistName } from '@/lib/music/artists';
 import type { Profile } from '@/lib/profile/types';
-import { SeekingTags } from './seeking-tags';
 import { Avatar } from './avatar';
+import { SeekingTags } from './seeking-tags';
 
 /** Draws only what it is given. Filter with getVisibleProfile before passing a profile in. */
 export function ProfileCard({ profile, showIdentity = true }: { profile: Profile; showIdentity?: boolean }) {
   const { t, locale } = useI18n();
-  const { username, bio, genres, artists, tracks, links } = profile;
+  const { username, bio, seeking, genres, artists, tracks, links } = profile;
 
+  const row = 'grid gap-1 border-t border-line py-4 first:border-0 first:pt-0 last:pb-0 sm:grid-cols-[11rem_1fr] sm:gap-4';
   return (
-    <article className="grid gap-x-16 gap-y-9 bg-cherry px-5 py-8 sm:rounded-dialog sm:p-10 lg:grid-cols-[1fr_1.1fr] lg:p-14">
-      <div className="min-w-0">
-        <CoverRecord genres={genres} className="w-full max-w-md" />
-        {showIdentity && (
-          <div className="mt-7 flex items-center gap-4">
-            <Avatar profile={profile} className="size-16 sm:size-20" />
-            <h2 className="min-w-0 text-2xl font-display font-extrabold [overflow-wrap:anywhere] sm:text-3xl">{username}</h2>
+    <article className="max-w-3xl rounded-panel bg-surface p-5">
+      {showIdentity && (
+        <div className="flex items-center gap-4 pb-5">
+          <Avatar profile={profile} className="size-14" />
+          <h2 className="min-w-0 text-xl font-semibold [overflow-wrap:anywhere]">{username}</h2>
+        </div>
+      )}
+      {bio && <p className="max-w-xl pb-5 leading-relaxed [overflow-wrap:anywhere]">{bio}</p>}
+
+      <dl>
+        {seeking.length > 0 && (
+          <div className={row}>
+            <dt className="text-sm text-muted">{t.profile.seeking}</dt>
+            <dd><SeekingTags seeking={seeking} /></dd>
           </div>
         )}
-        <SeekingTags seeking={profile.seeking} className="mt-5 text-base" />
-        {bio && <p className="mt-4 max-w-md text-lg leading-relaxed [overflow-wrap:anywhere]">{bio}</p>}
-      </div>
-
-      <div className="min-w-0 space-y-8">
-        <section>
-          <h3 className="mb-3 text-sm text-muted">{t.profile.genres}</h3>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {genres.map((id) => (
-              <li key={id} className="flex items-center gap-3 font-medium">
-                <Sleeve genre={id} className="size-10 shrink-0 rounded-sleeve border border-chalk/10" />
-                {t.genres[id]}
-              </li>
-            ))}
-          </ul>
-        </section>
-
+        <div className={row}>
+          <dt className="text-sm text-muted">{t.profile.genres}</dt>
+          <dd>{genres.map((id) => t.genres[id]).join(', ')}</dd>
+        </div>
         {artists.length > 0 && (
-          <section>
-            <h3 className="mb-2 text-sm text-muted">{t.profile.artists}</h3>
-            <ul className="font-display text-4xl leading-none font-extrabold">
-              {artists.map((artist) => <li key={artist.id} className="[overflow-wrap:anywhere]">{artistName(artist, locale)}</li>)}
-            </ul>
-          </section>
+          <div className={row}>
+            <dt className="text-sm text-muted">{t.profile.artists}</dt>
+            <dd className="[overflow-wrap:anywhere]">{artists.map((artist) => artistName(artist, locale)).join(', ')}</dd>
+          </div>
         )}
-
         {tracks.length > 0 && (
-          <section>
-            <h3 className="mb-1 text-sm text-muted">{t.profile.tracks}</h3>
-            <ul className="divide-y divide-seam">
-              {tracks.map((track) => (
-                <li key={`${track.title}\n${track.artist}`} className="flex items-center gap-3 py-3">
-                  <Music2 className="size-5 shrink-0 text-flame" aria-hidden />
-                  <p className="min-w-0 [overflow-wrap:anywhere]">
-                    <span className="block font-medium">{track.title}</span>
-                    <span className="block text-sm text-muted">{track.artist}</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <div className={row}>
+            <dt className="text-sm text-muted">{t.profile.tracks}</dt>
+            <dd>
+              <ul className="space-y-1.5">
+                {tracks.map((track) => (
+                  <li key={`${track.title}\n${track.artist}`} className="[overflow-wrap:anywhere]">
+                    {track.title}
+                    {track.artist && <span className="text-muted">, {track.artist}</span>}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
         )}
-
         {links.length > 0 && (
-          <section>
-            <h3 className="mb-3 text-sm text-muted">{t.profile.links}</h3>
-            <ul className="flex flex-wrap gap-2">
+          <div className={row}>
+            <dt className="text-sm text-muted">{t.profile.links}</dt>
+            <dd className="flex flex-wrap gap-x-5">
               {links.map((link) => (
-                <li key={link.url}>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-control bg-chalk px-4 font-medium text-night transition-colors hover:bg-flame">
-                    {t.linksStep[link.kind]}
-                    <ArrowUpRight className="size-4" aria-hidden />
-                    <span className="sr-only">{t.profile.newTab}</span>
-                  </a>
-                </li>
+                <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-accent">
+                  {linkLabel(link, t)}
+                  <span className="sr-only">{t.profile.newTab}</span>
+                </a>
               ))}
-            </ul>
-          </section>
+            </dd>
+          </div>
         )}
-      </div>
+      </dl>
     </article>
   );
 }

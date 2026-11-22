@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AppGate } from '@/components/gate/app-gate';
 import { PersonScreen } from '@/components/people/person-screen';
 import { getI18n } from '@/lib/i18n/server';
+import { requireUser } from '@/lib/server/session';
 
 // The title is deliberately generic, so a username never lands in browser history or link previews.
 export async function generateMetadata(): Promise<Metadata> {
@@ -9,6 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page({ params }: PageProps<'/people/[id]'>) {
+  await requireUser();
   const { id } = await params;
   return (
     <AppGate>

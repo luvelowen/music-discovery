@@ -1,92 +1,80 @@
 'use client';
 
 import { useState } from 'react';
+import { SaveStatus } from '@/components/account/save-status';
 import { ButtonLink } from '@/components/ui/button';
 import { cn } from '@/components/ui/cn';
+import { PageTitle } from '@/components/ui/page-title';
+import { useAccount } from '@/lib/account/provider';
 import { useI18n } from '@/lib/i18n/provider';
-import { useProfile } from '@/lib/profile/store';
 import { checkBio, checkUsername, isComplete } from '@/lib/profile/validation';
 import { getVisibleProfile, type Viewer } from '@/lib/profile/visibility';
-import { useSocial } from '@/lib/social/store';
 import { STEPS } from '@/lib/steps';
-import { DeleteData } from './delete-data';
 import { ProfileCard } from './profile-card';
 
 const VIEWERS: Viewer[] = ['stranger', 'connection'];
 
 export function ProfileScreen() {
   const { t } = useI18n();
-  const { profile, ready, saveFailed } = useProfile();
-  const { social, ready: socialReady } = useSocial();
+  const { profile, social } = useAccount().account;
   const [viewer, setViewer] = useState<Viewer>('stranger');
-
-  if (!ready || !socialReady) return <p role="status" className="gutter py-16 text-muted">{t.loading}</p>;
 
   if (!isComplete(profile)) {
     const aboutNeedsWork = checkUsername(profile.username) || checkBio(profile.bio);
     const target = profile.genres.length && aboutNeedsWork ? 'about' : 'genres';
     return (
-      <div className="gutter py-16 lg:py-24">
-        <h1 className="poster text-5xl sm:text-7xl">{t.profile.incompleteTitle}</h1>
-        <p className="mt-3 mb-8 text-muted">{t.profile.incompleteBody}</p>
-        <ButtonLink href={`/setup/${target}`}>{t.profile.incompleteAction}</ButtonLink>
+      <div className="gutter py-14">
+        <PageTitle title={t.profile.incompleteTitle} body={t.profile.incompleteBody} />
+        <ButtonLink href={`/setup/${target}`} className="mt-6">{t.profile.incompleteAction}</ButtonLink>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="gutter flex flex-col gap-6 pt-6 pb-7 lg:flex-row lg:items-end lg:justify-between lg:pt-10">
-        <div>
-          <h1 className="poster text-[clamp(2.75rem,6vw,5rem)]">{t.profile.title}</h1>
-          <p className="mt-2 text-muted">{t.profile.body}</p>
-        </div>
-        <div role="group" aria-label={t.profile.viewAs} className="lg:w-96">
-          <p className="mb-2 text-sm text-muted">{t.profile.viewAs}</p>
-          <div className="grid grid-cols-2 gap-2">
-            {VIEWERS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={viewer === option}
-                onClick={() => setViewer(option)}
-                className={cn(
-                  'min-h-12 rounded-control border px-3 font-medium transition-colors',
-                  viewer === option ? 'border-chalk bg-chalk text-night' : 'border-edge hover:border-chalk',
-                )}
-              >
-                {t.profile[option]}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="gutter pt-8 pb-14">
+      <PageTitle title={t.profile.title} body={t.profile.body} />
+      <SaveStatus className="mt-2" />
 
-      <div className="sm:gutter">
-        <p aria-live="polite" className="mb-5 px-5 text-sm leading-relaxed text-flame sm:px-0">
-          {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}{' '}
-          {profile.seeking.includes('dating') && t.profile.datingNote}
-        </p>
-        <ProfileCard profile={getVisibleProfile(profile, viewer, social.privacy, true)} />
+      <div role="group" aria-label={t.profile.viewAs} className="mt-6 flex gap-6 border-b border-line">
+        {VIEWERS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={viewer === option}
+            onClick={() => setViewer(option)}
+            className={cn('-mb-px min-h-11 border-b text-sm', viewer === option ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-chalk')}
+          >
+            {t.profile[option]}
+          </button>
+        ))}
       </div>
+      <p aria-live="polite" className="mt-3 mb-6 max-w-2xl text-sm leading-relaxed text-muted">
+        {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}{' '}
+        {profile.seeking.includes('dating') && t.profile.datingNote}
+      </p>
 
-      <div className="gutter pt-8 pb-14">
-        <div className="mb-9 flex flex-col items-start gap-x-5 gap-y-3 sm:flex-row sm:items-center">
-          <ButtonLink href="/discover" className="w-full sm:w-auto">{t.profile.discover}</ButtonLink>
-          {!social.privacy.discoverable && <p className="text-sm text-muted">{t.profile.hiddenNote}</p>}
+      <ProfileCard profile={getVisibleProfile(profile, viewer, social.privacy, true)} />
+
+      <div className="max-w-3xl pt-6">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <ButtonLink href="/discover">{t.profile.discover}</ButtonLink>
+          {!profile.links.some((link) => link.provider === 'instagram') && (
+            <ButtonLink href="/setup/links?edit=1" variant="secondary">{t.linksStep.instagram.button}</ButtonLink>
+          )}
+          <ButtonLink href="/account/data" variant="secondary">{t.account.myData}</ButtonLink>
         </div>
-        <h2 className="font-semibold">{t.profile.edit}</h2>
-        <ul className="mt-3 flex flex-wrap gap-2">
+        {!social.privacy.discoverable && <p className="mt-3 text-sm text-muted">{t.profile.hiddenNote}</p>}
+
+        <h2 className="mt-8 text-sm text-muted">{t.profile.edit}</h2>
+        <ul className="mt-1 flex flex-wrap gap-x-5">
           {STEPS.map((step) => (
             <li key={step}>
-              <ButtonLink href={`/setup/${step}?edit=1`} variant="secondary">{t.steps[step]}</ButtonLink>
+              <ButtonLink href={`/setup/${step}?edit=1`} variant="quiet" className="px-0! underline underline-offset-4">{t.steps[step]}</ButtonLink>
             </li>
           ))}
         </ul>
-        <p className="mt-8 max-w-2xl text-sm leading-relaxed text-muted">{t.profile.comingNext}</p>
-        {saveFailed && <p role="alert" className="mt-2 text-sm text-danger">{t.setup.saveFailed}</p>}
-        <DeleteData />
+        <p className="mt-5 text-sm leading-relaxed text-muted">{t.profile.comingNext}</p>
       </div>
-    </>
+    </div>
   );
 }

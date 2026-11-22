@@ -1,23 +1,17 @@
 'use client';
 
-import { createLocalStore } from '../storage/local-store.ts';
-import { parseProfile } from './parse.ts';
-import { EMPTY_PROFILE, type Profile } from './types.ts';
-
-/*
- * The profile is kept in this browser only.
- * Supabase starts here. Screens will also need sign-in, saving and network-error states,
- * and the server must repeat every validation and visibility rule.
- */
-const store = createLocalStore('music-community.profile.v1', EMPTY_PROFILE, parseProfile);
-
-export function updateProfile(change: (profile: Profile) => Partial<Profile>) {
-  store.update((profile) => ({ ...profile, ...change(profile) }));
-}
-
-export const deleteProfile = store.reset;
+import { useAccount } from '../account/provider.tsx';
+import type { Profile } from './types.ts';
 
 export function useProfile() {
-  const { value, ready, saveFailed } = store.use();
-  return { profile: value, ready, saveFailed };
+  return { profile: useAccount().account.profile };
+}
+
+/** Shows the change at once and saves it to the account. */
+export function useUpdateProfile() {
+  const { account, change } = useAccount();
+  return (next: (profile: Profile) => Partial<Profile>) => {
+    const patch = next(account.profile);
+    if (Object.keys(patch).length) change({ kind: 'profile', patch });
+  };
 }

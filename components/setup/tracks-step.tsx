@@ -1,12 +1,12 @@
 'use client';
 
-import { Music2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/field';
 import { RemovableList } from '@/components/ui/removable-list';
 import { useI18n } from '@/lib/i18n/provider';
-import { updateProfile, useProfile } from '@/lib/profile/store';
+import { useProfile, useUpdateProfile } from '@/lib/profile/store';
 import { LIMITS, type Track } from '@/lib/profile/types';
 import { cleanText } from '@/lib/profile/validation';
 import { hasContactInfo } from '@/lib/safety/contact-info';
@@ -19,6 +19,7 @@ const trackKey = (track: Track) => `${track.title}\n${track.artist}`.toLocaleLow
 export function TracksStep({ editing }: StepProps) {
   const { t } = useI18n();
   const { tracks } = useProfile().profile;
+  const updateProfile = useUpdateProfile();
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [error, setError] = useState<TrackError | null>(null);
@@ -60,13 +61,12 @@ export function TracksStep({ editing }: StepProps) {
           <Button type="submit" variant="secondary"><Plus className="size-5" aria-hidden />{t.tracksStep.add}</Button>
         </form>
 
-        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-flame">{t.setup.count(tracks.length, LIMITS.tracks)}</p>
+        <p aria-live="polite" className="mt-8 mb-1 text-sm text-muted">{t.setup.count(tracks.length, LIMITS.tracks)}</p>
         <RemovableList
           items={tracks.map((track) => ({
             key: trackKey(track),
             title: track.title,
             detail: track.artist,
-            leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-sleeve bg-blush text-night"><Music2 className="size-5" /></span>,
             onRemove: () => updateProfile((profile) => ({ tracks: profile.tracks.filter((item) => trackKey(item) !== trackKey(track)) })),
           }))}
         />

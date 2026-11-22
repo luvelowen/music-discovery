@@ -10,9 +10,9 @@ export function Dialog({ ref, title, onClose, children }: Props) {
       ref={ref}
       aria-labelledby={id}
       onClose={onClose}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-dialog bg-night p-6 text-left text-chalk backdrop:bg-night/80 sm:p-8"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(28rem,calc(100%-2rem))] overflow-y-auto rounded-dialog bg-surface p-6 text-left text-chalk backdrop:bg-night/80 sm:p-8"
     >
-      <h2 id={id} className="text-3xl leading-tight font-display font-extrabold [overflow-wrap:anywhere]">{title}</h2>
+      <h2 id={id} className="text-xl leading-tight font-semibold [overflow-wrap:anywhere]">{title}</h2>
       {children}
     </dialog>
   );

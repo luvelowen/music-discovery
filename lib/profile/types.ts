@@ -30,7 +30,6 @@ export const LIMITS = {
   genres: 5,
   artists: 10,
   tracks: 5,
-  links: 3,
   name: 80,
   usernameMin: 3,
   usernameMax: 24,

@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
         headers: [
           // The browser itself refuses any attempt by this app to read location, camera or microphone.
           { key: 'Permissions-Policy', value: 'geolocation=(), camera=(), microphone=()' },
-          { key: 'Referrer-Policy', value: 'no-referrer' },
+          // Other websites get nothing. Our own forms still prove where they came from.
+          { key: 'Referrer-Policy', value: 'same-origin' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
         ],

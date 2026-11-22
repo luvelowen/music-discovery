@@ -3,9 +3,10 @@ import type { ComponentProps } from 'react';
 import { cn } from './cn';
 
 const VARIANTS = {
-  primary: 'bg-flame font-semibold text-night hover:bg-chalk',
-  secondary: 'border border-edge bg-night text-chalk hover:border-chalk',
-  quiet: 'text-chalk hover:bg-cherry',
+  primary: 'bg-accent font-semibold text-night hover:bg-chalk',
+  secondary: 'bg-raised text-accent hover:bg-line',
+  quiet: 'text-accent hover:text-chalk',
+  destructive: 'bg-raised text-danger hover:bg-line',
   danger: 'bg-danger font-semibold text-night hover:bg-chalk',
 };
 
@@ -13,7 +14,7 @@ type Variant = { variant?: keyof typeof VARIANTS };
 
 function styles(variant: keyof typeof VARIANTS, className?: string) {
   return cn(
-    'inline-flex min-h-12 items-center justify-center gap-2 rounded-control px-5 py-2 text-center font-medium transition-colors duration-200',
+    'inline-flex min-h-12 items-center justify-center gap-2 rounded-control px-5 py-2 text-center font-medium transition-colors',
     VARIANTS[variant],
     className,
   );

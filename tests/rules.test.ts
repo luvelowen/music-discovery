@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { en } from '../lib/i18n/en.ts';
 import { mn } from '../lib/i18n/mn.ts';
 import { suggestArtists, toArtist } from '../lib/music/artists.ts';
+import { parseInstagram } from '../lib/music/instagram.ts';
+import { GENRE_IDS } from '../lib/music/genres.ts';
 import { parseSpotifyUrl } from '../lib/music/spotify.ts';
 import { parseProfile } from '../lib/profile/parse.ts';
 import { EMPTY_PROFILE, type Profile } from '../lib/profile/types.ts';
@@ -41,6 +43,32 @@ test('Spotify: rejects look-alike, unsafe and malformed links', () => {
 
   assert.deepEqual(parseSpotifyUrl('https://spotify.link/abc'), { ok: false, error: 'shortLink' });
   assert.deepEqual(parseSpotifyUrl(`https://open.spotify.com/track/${PLAYLIST}`), { ok: false, error: 'wrongKind' });
+});
+
+test('Instagram: takes usernames and links, and rebuilds them', () => {
+  for (const input of ['@Bold.UB', 'bold.ub', 'instagram.com/bold.ub', 'https://www.instagram.com/bold.ub/?igsh=abc', ' https://m.instagram.com/Bold.UB ']) {
+    const result = parseInstagram(input);
+    assert.ok(result.ok, input);
+    assert.equal(result.link.url, 'https://www.instagram.com/bold.ub/');
+  }
+});
+
+test('Instagram: rejects look-alikes, posts and unsafe text', () => {
+  for (const input of ['', 'two words', '.bold', 'bold.', 'bo..ld', 'a'.repeat(31), 'javascript:alert(1)', 'http://instagram.com/bold',
+    'https://instagram.com.evil.com/bold', 'https://evil.com@instagram.com/bold', 'https://instagram.com@evil.com/bold',
+    'https://instagram.com/p/Cxyz/', 'https://instagram.com/reels', 'instagram.com', 'бат']) assert.equal(parseInstagram(input).ok, false, input);
+});
+
+test('twenty genres are offered, and retired picks are kept', () => {
+  assert.equal(GENRE_IDS.length, 20);
+  assert.deepEqual(parseProfile('{"genres":["mongolianPop","lofi","jPop"]}').genres, ['mongolianPop', 'lofi', 'jPop']);
+});
+
+test('links: one Instagram, three Spotify, and strangers see none', () => {
+  const links = ['https://www.instagram.com/one/', 'https://www.instagram.com/two/', 'bare_word', 'https://open.spotify.com/user/a'].map((url) => ({ url }));
+  const parsed = parseProfile(JSON.stringify({ links }));
+  assert.deepEqual(parsed.links.map((link) => link.url), ['https://www.instagram.com/one/', 'https://open.spotify.com/user/a']);
+  assert.deepEqual(getVisibleProfile(parsed, 'stranger').links, []);
 });
 
 test('contact details are caught', () => {

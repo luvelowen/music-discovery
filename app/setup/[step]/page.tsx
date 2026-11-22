@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { SetupScreen } from '@/components/setup/setup-screen';
 import { getI18n } from '@/lib/i18n/server';
+import { requireUser } from '@/lib/server/session';
 import { isStep } from '@/lib/steps';
 
 export async function generateMetadata({ params }: PageProps<'/setup/[step]'>): Promise<Metadata> {
@@ -12,6 +13,7 @@ export async function generateMetadata({ params }: PageProps<'/setup/[step]'>): 
 export default async function Page({ params, searchParams }: PageProps<'/setup/[step]'>) {
   const [{ step }, query] = await Promise.all([params, searchParams]);
   if (!isStep(step)) notFound();
+  await requireUser();
   // ?edit=1 means "came from the profile", so the main button saves and goes back there.
   return <SetupScreen key={step} step={step} editing={query.edit === '1'} />;
 }

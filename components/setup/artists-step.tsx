@@ -7,7 +7,7 @@ import { TextField } from '@/components/ui/field';
 import { RemovableList } from '@/components/ui/removable-list';
 import { useI18n } from '@/lib/i18n/provider';
 import { artistName, suggestArtists, toArtist } from '@/lib/music/artists';
-import { updateProfile, useProfile } from '@/lib/profile/store';
+import { useProfile, useUpdateProfile } from '@/lib/profile/store';
 import { LIMITS } from '@/lib/profile/types';
 import { cleanText } from '@/lib/profile/validation';
 import { hasContactInfo } from '@/lib/safety/contact-info';
@@ -18,6 +18,7 @@ type ArtistError = 'empty' | 'contactInfo' | 'duplicate' | 'full';
 export function ArtistsStep({ editing }: StepProps) {
   const { t, locale } = useI18n();
   const { artists, genres } = useProfile().profile;
+  const updateProfile = useUpdateProfile();
   const [text, setText] = useState('');
   const [error, setError] = useState<ArtistError | null>(null);
 
@@ -70,7 +71,7 @@ export function ArtistsStep({ editing }: StepProps) {
             <ul className="flex flex-wrap gap-2">
               {suggestions.map((artist) => (
                 <li key={artist.id}>
-                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-control bg-cherry px-3.5 text-sm transition-colors hover:bg-seam">
+                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-control bg-surface px-3.5 text-sm transition-colors hover:bg-line">
                     {artistName(artist, locale)}
                   </button>
                 </li>
@@ -80,14 +81,13 @@ export function ArtistsStep({ editing }: StepProps) {
         )}
         {!full && text.trim() && suggestions.length === 0 && <p className="mt-4 text-sm text-muted">{t.artistsStep.noMatch}</p>}
 
-        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-flame">{t.setup.count(artists.length, LIMITS.artists)}</p>
+        <p aria-live="polite" className="mt-8 mb-1 text-sm text-muted">{t.setup.count(artists.length, LIMITS.artists)}</p>
         <RemovableList
           items={artists.map((artist) => {
             const name = artistName(artist, locale);
             return {
               key: artist.id,
               title: name,
-              leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-blush text-night font-semibold">{[...name][0]}</span>,
               onRemove: () => updateProfile((profile) => ({ artists: profile.artists.filter((item) => item.id !== artist.id) })),
             };
           })}

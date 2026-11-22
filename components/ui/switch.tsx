@@ -20,7 +20,7 @@ export function Switch({ label, help, checked, onChange }: Props) {
         onClick={() => onChange(!checked)}
         className="grid h-11 w-12 shrink-0 place-items-center rounded-control"
       >
-        <span className={cn('relative h-7 w-12 rounded-full transition-colors', checked ? 'bg-flame' : 'bg-edge')}>
+        <span className={cn('relative h-7 w-12 rounded-full transition-colors', checked ? 'bg-accent' : 'bg-edge')}>
           <span className={cn('absolute top-1 left-1 size-5 rounded-full bg-night transition-transform', checked && 'translate-x-5')} />
         </span>
       </button>

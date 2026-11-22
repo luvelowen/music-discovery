@@ -24,25 +24,25 @@ const SAMPLES: Sample[] = [
   {
     id: 'sample-01', seeking: ['friends', 'dating'], username: 'sarny.notes',
     bio: { en: 'I make playlists for long bus rides.', mn: 'Автобусанд сонсох плейлист цуглуулдаг.' },
-    genres: ['indie', 'lofi', 'pop'], artists: ['magnolian', 'billie-eilish', 'nujabes'],
+    genres: ['indie', 'folk', 'country'], artists: ['magnolian', 'billie-eilish', 'nujabes'],
     tracks: [['Ocean Eyes', 'Billie Eilish']],
   },
   {
     id: 'sample-02', seeking: ['dating'], username: 'last.bus',
     bio: { en: 'I always miss the last bus after the encore.', mn: 'Тоглолтын дараа сүүлийн автобуснаас байнга хоцордог.' },
-    genres: ['rnb', 'lofi', 'jazz'], artists: ['bruno-mars', 'nujabes'],
+    genres: ['rnb', 'soul', 'jazz'], artists: ['bruno-mars', 'nujabes'],
     privacy: { requests: 'everyone' },
   },
   {
     id: 'sample-03', seeking: ['friends'], username: 'bass_salhi',
     bio: { en: 'Bass player looking for a drummer.', mn: 'Басс тоглодог, бөмбөрчин хайж байгаа.' },
-    genres: ['rock', 'metal', 'indie'], artists: ['the-hu', 'khurd', 'kharanga'],
+    genres: ['rock', 'metal', 'punk'], artists: ['the-hu', 'khurd', 'kharanga'],
     tracks: [['Wolf Totem', 'The HU'], ['Yuve Yuve Yu', 'The HU']],
   },
   {
     id: 'sample-04', seeking: ['friends', 'dating'], username: 'neon_nomad',
     bio: { en: 'Beats after work.', mn: 'Ажлын дараа бит хийдэг.' },
-    genres: ['electronic', 'hipHop', 'lofi'], artists: ['daft-punk', 'kendrick-lamar', 'nujabes'],
+    genres: ['electronic', 'hipHop', 'ambient'], artists: ['daft-punk', 'kendrick-lamar', 'nujabes'],
     tracks: [['One More Time', 'Daft Punk'], ['Feather', 'Nujabes']],
   },
   {
@@ -54,25 +54,25 @@ const SAMPLES: Sample[] = [
   {
     id: 'sample-06', seeking: ['friends', 'dating'], username: 'хөх_тэнгэр',
     bio: { en: 'I sing while doing the dishes.', mn: 'Аяга угаахдаа дуулдаг.' },
-    genres: ['mongolianPop', 'pop', 'rnb'], artists: ['camerton', 'bruno-mars'],
+    genres: ['latin', 'pop', 'rnb'], artists: ['camerton', 'bruno-mars'],
     tracks: [['Just the Way You Are', 'Bruno Mars']],
   },
   {
     id: 'sample-07', seeking: ['friends'], username: 'piano.nuudel',
     bio: { en: 'Practice room regular.', mn: 'Төгөлдөр хуурын өрөөнөөс гардаггүй.' },
-    genres: ['classical', 'jazz', 'lofi'], artists: ['ludovico-einaudi', 'nujabes'],
+    genres: ['classical', 'jazz', 'blues'], artists: ['ludovico-einaudi', 'nujabes'],
     tracks: [['Nuvole Bianche', 'Ludovico Einaudi']],
     privacy: { requests: 'nobody' },
   },
   {
     id: 'sample-08', seeking: ['friends', 'dating'], username: 'улаан_гэрэл',
     bio: { en: 'Front row or nothing.', mn: 'Тоглолт үзвэл урд эгнээнд.' },
-    genres: ['rock', 'indie', 'electronic'], artists: ['arctic-monkeys', 'daft-punk'],
+    genres: ['rock', 'alternative', 'electronic'], artists: ['arctic-monkeys', 'daft-punk'],
   },
   {
     id: 'sample-09', seeking: ['dating'], username: 'ub_beats',
     bio: { en: 'Writing verses on night shifts.', mn: 'Шөнийн ээлжиндээ шүлэг бичдэг.' },
-    genres: ['hipHop', 'mongolianPop', 'rnb'], artists: ['vandebo', 'kendrick-lamar'],
+    genres: ['hipHop', 'caribbean', 'rnb'], artists: ['vandebo', 'kendrick-lamar'],
   },
   {
     id: 'sample-10', seeking: ['friends', 'dating'], username: 'шөнийн_долгион',

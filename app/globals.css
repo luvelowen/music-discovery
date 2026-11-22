@@ -2,27 +2,25 @@
 
 /*
   The whole visual system. The reasons behind it are in DESIGN.md.
-  Flame, blush and lamp are fills for black text. On black they can also be text.
+  Laid out like a music player: sidebar, big titles, grouped lists. Black, with one flat soft purple.
 */
 @theme {
-  --font-sans: var(--font-golos), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-fira), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --color-night: #000000;
-  --color-chalk: #fff2ee;
-  --color-cherry: #23070a;
-  --color-seam: #4a1418;
-  --color-edge: #a8686b;
-  --color-muted: #d9a9a6;
-  --color-flame: #ff2a1f;
-  --color-blush: #ff8fb8;
-  --color-lamp: #ffd23f;
-  --color-vinyl: #c4120c;
-  --color-danger: var(--color-lamp);
+  --color-night: #0c0c0e;
+  --color-sidebar: #151518;
+  --color-surface: #19191c;
+  --color-raised: #242428;
+  --color-line: #2d2d32;
+  --color-edge: #77767e;
+  --color-chalk: #dddce1;
+  --color-muted: #a09fa7;
+  --color-accent: #aa96dc;
+  --color-danger: #de958c;
 
-  --radius-sleeve: 0.125rem;
-  --radius-control: 0.375rem;
-  --radius-dialog: 0.75rem;
+  --radius-control: 0.625rem;
+  --radius-panel: 0.875rem;
+  --radius-dialog: 1rem;
 }
 
 @layer base {
@@ -47,7 +45,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-chalk);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
 
@@ -56,23 +54,23 @@
   }
 
   ::selection {
-    background: var(--color-blush);
+    background: var(--color-accent);
     color: var(--color-night);
   }
 }
 
-@utility poster {
-  font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 0.95;
-  overflow-wrap: break-word;
+@utility title {
+  font-size: clamp(1.875rem, 3vw, 2.125rem);
+  font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
 }
 
 @utility gutter {
-  padding-inline: max(1.25rem, calc((100% - 80rem) / 2));
+  padding-inline: max(1.25rem, calc((100% - 60rem) / 2));
 
   @media (width >= 64rem) {
-    padding-inline: max(3rem, calc((100% - 80rem) / 2));
+    padding-inline: max(2.5rem, calc((100% - 60rem) / 2));
   }
 }
 

@@ -1,6 +1,6 @@
 import { toArtist } from '../music/artists.ts';
 import { isGenreId } from '../music/genres.ts';
-import { PROVIDERS } from '../music/providers.ts';
+import { parseSavedLink, PROVIDERS, type MusicLink } from '../music/providers.ts';
 import { hasContactInfo } from '../safety/contact-info.ts';
 import { EMPTY_PROFILE, LIMITS, SEEKING, type Profile, type Seeking } from './types.ts';
 import { cleanText } from './validation.ts';
@@ -32,10 +32,12 @@ export function parseProfile(raw: string | null): Profile {
     }))
     .filter(({ title, artist }) => title && artist && !hasContactInfo(title) && !hasContactInfo(artist));
 
-  const links = asList(data.links).flatMap((item) => {
-    const result = PROVIDERS.spotify.parse(asText(asRecord(item).url, 500));
-    return result.ok ? [result.link] : [];
-  });
+  const links: MusicLink[] = [];
+  for (const item of asList(data.links)) {
+    const result = parseSavedLink(asText(asRecord(item).url, 500));
+    if (!result.ok || links.some((link) => link.url === result.link.url)) continue;
+    if (links.filter((link) => link.provider === result.link.provider).length < PROVIDERS[result.link.provider].max) links.push(result.link);
+  }
 
   // Profiles saved before dating existed start as friends only. Dating is never switched on for someone.
   const chosen = SEEKING.filter((item) => asList(data.seeking).includes(item));
@@ -50,6 +52,6 @@ export function parseProfile(raw: string | null): Profile {
     genres: [...new Set(asList(data.genres).filter(isGenreId))].slice(0, LIMITS.genres),
     artists: [...new Map(artists.map((item) => [item.id, item])).values()].slice(0, LIMITS.artists),
     tracks: [...new Map(tracks.map((item) => [`${item.title}\n${item.artist}`, item])).values()].slice(0, LIMITS.tracks),
-    links: [...new Map(links.map((item) => [item.url, item])).values()].slice(0, LIMITS.links),
+    links,
   };
 }

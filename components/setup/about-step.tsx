@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { TextArea, TextField } from '@/components/ui/field';
 import { useI18n } from '@/lib/i18n/provider';
 import { resizePhoto } from '@/lib/profile/resize-photo';
-import { updateProfile, useProfile } from '@/lib/profile/store';
+import { useProfile, useUpdateProfile } from '@/lib/profile/store';
 import { LIMITS } from '@/lib/profile/types';
 import { checkBio, checkUsername } from '@/lib/profile/validation';
 import { StepFrame, type StepProps } from './step-frame';
@@ -15,6 +15,7 @@ import { StepFrame, type StepProps } from './step-frame';
 export function AboutStep({ editing }: StepProps) {
   const { t } = useI18n();
   const { profile } = useProfile();
+  const updateProfile = useUpdateProfile();
   const [attempted, setAttempted] = useState(false);
   const [photoError, setPhotoError] = useState<'photoType' | 'photoSize' | null>(null);
   const picker = useRef<HTMLInputElement>(null);

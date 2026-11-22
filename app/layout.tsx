@@ -1,18 +1,17 @@
 import type { Metadata, Viewport } from 'next';
-import { Fira_Sans_Extra_Condensed, Golos_Text } from 'next/font/google';
-import { AppNav } from '@/components/layout/app-nav';
-import { SiteHeader } from '@/components/layout/site-header';
+import { Inter } from 'next/font/google';
+import { AppShell } from '@/components/layout/app-shell';
+import { AccountProvider } from '@/lib/account/provider';
+import { ChatProvider } from '@/lib/chat/provider';
 import { I18nProvider } from '@/lib/i18n/provider';
 import { getI18n } from '@/lib/i18n/server';
+import { emailCheckedAt, toAccount } from '@/lib/server/accounts';
+import { getDb } from '@/lib/server/db';
+import { currentUser } from '@/lib/server/session';
 import './globals.css';
 
-// Both really contain Ө ө Ү ү. Check that before changing either font. See DESIGN.md.
-const golos = Golos_Text({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], variable: '--font-golos' });
-const fira = Fira_Sans_Extra_Condensed({
-  weight: '800',
-  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
-  variable: '--font-fira',
-});
+// Apple devices use their own system font. Everyone else gets Inter, which really contains Ө ө Ү ү.
+const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], variable: '--font-inter' });
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -22,19 +21,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { themeColor: '#000000', viewportFit: 'cover' };
+export const viewport: Viewport = { themeColor: '#0c0c0e', viewportFit: 'cover', interactiveWidget: 'resizes-content' };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
-  const { locale } = await getI18n();
+  const [{ locale }, user] = await Promise.all([getI18n(), currentUser()]);
   return (
-    <html lang={locale} className={`${golos.variable} ${fira.variable}`}>
+    <html lang={locale} className={inter.variable}>
       <body className="flex min-h-dvh flex-col font-sans">
         <I18nProvider initialLocale={locale}>
-          <SiteHeader />
-          <main id="content" tabIndex={-1} className="flex flex-1 flex-col outline-none">
-            {children}
-          </main>
-          <AppNav placement="bottom" />
+          {/* Only this person's own data is passed on, and never the password's scrambled value. */}
+          <AccountProvider user={user ? { id: user.id, email: user.email, emailChecked: emailCheckedAt(getDb(), user.id) !== null, account: toAccount(user) } : null}>
+            <ChatProvider>
+              <AppShell>{children}</AppShell>
+            </ChatProvider>
+          </AccountProvider>
         </I18nProvider>
       </body>
     </html>

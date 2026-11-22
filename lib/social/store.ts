@@ -1,15 +1,8 @@
 'use client';
 
-import { createLocalStore } from '../storage/local-store.ts';
-import { parseSocial } from './parse.ts';
-import { EMPTY_SOCIAL } from './types.ts';
-
-const store = createLocalStore('music-community.social.v1', EMPTY_SOCIAL, parseSocial);
-
-export const updateSocial = store.update;
-export const deleteSocial = store.reset;
+import { useAccount } from '../account/provider.tsx';
 
 export function useSocial() {
-  const { value, ready, saveFailed } = store.use();
-  return { social: value, ready, saveFailed };
+  const { account, change } = useAccount();
+  return { social: account.social, change };
 }

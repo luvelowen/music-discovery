@@ -10,16 +10,15 @@ import { PageTitle } from '@/components/ui/page-title';
 import { usePeople } from '@/lib/demo/use-people';
 import { useI18n } from '@/lib/i18n/provider';
 import { useProfile } from '@/lib/profile/store';
-import { block } from '@/lib/social/actions';
 import { seePerson } from '@/lib/social/policy';
-import { updateSocial, useSocial } from '@/lib/social/store';
+import { useSocial } from '@/lib/social/store';
 import { RelationActions } from './relation-actions';
 import { ReportDialog } from './report-dialog';
 
 export function PersonScreen({ id }: { id: string }) {
   const { t } = useI18n();
   const words = t.community.person;
-  const { social } = useSocial();
+  const { social, change } = useSocial();
   const { profile } = useProfile();
   const person = usePeople().find((item) => item.id === id);
   const [reported, setReported] = useState(false);
@@ -27,7 +26,7 @@ export function PersonScreen({ id }: { id: string }) {
   const reportDialog = useRef<HTMLDialogElement>(null);
 
   const seen = person ? seePerson(social, profile, person) : null;
-  const notice = reported && <p role="status" className="mt-5 max-w-xl rounded-control bg-cherry p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
+  const notice = reported && <p role="status" className="mt-5 max-w-xl rounded-control bg-surface p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
 
   if (!person || !seen) {
     const blocked = person && social.blocked.includes(id);
@@ -57,13 +56,13 @@ export function PersonScreen({ id }: { id: string }) {
         <div className="mt-3 mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-4">
-              <Avatar profile={seen} className="size-16 sm:size-20" />
+              <Avatar profile={seen} className="size-14" />
               <div className="min-w-0">
                 <PageTitle title={seen.username} />
                 <p className="mt-3 text-sm text-muted">{t.community.demo.badge}</p>
               </div>
             </div>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-flame">{note}</p>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{note}</p>
           </div>
           <div className="lg:max-w-sm">
             <RelationActions person={person} />
@@ -73,7 +72,7 @@ export function PersonScreen({ id }: { id: string }) {
         {notice}
       </div>
 
-      <div className="sm:gutter mt-5">
+      <div className="gutter mt-5">
         <ProfileCard profile={seen} showIdentity={false} />
       </div>
 
@@ -94,7 +93,7 @@ export function PersonScreen({ id }: { id: string }) {
         body={words.blockConfirmBody}
         confirm={words.block}
         cancel={words.keep}
-        onConfirm={() => updateSocial((state) => block(state, id))}
+        onConfirm={() => change({ kind: 'block', personId: id })}
       />
       <ReportDialog ref={reportDialog} person={person} onDone={() => setReported(true)} />
     </div>
