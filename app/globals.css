@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/*
+  The whole visual system. Change a value here and it changes everywhere.
+  Three radii, by role: sleeves are nearly square, controls are soft, dialogs are softest.
+*/
+@theme {
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-mist: #f2f3f0;
+  --color-stone: #d8dad5;
+  --color-edge: #838981;
+  --color-muted: #585e57;
+  --color-sage: #afbdaa;
+  --color-pine: #3d5847;
+  --color-danger: #9f2f2a;
+
+  --radius-sleeve: 0.25rem;
+  --radius-control: 0.75rem;
+  --radius-dialog: 1.5rem;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-block: 1rem 7rem;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled):not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-pine);
+    outline-offset: 3px;
+  }
+
+  h1[tabindex='-1'] {
+    outline: none;
+  }
+
+  ::selection {
+    background: var(--color-sage);
+  }
+}
+
+@utility gutter {
+  padding-inline: max(1.25rem, calc((100% - 80rem) / 2));
+
+  @media (width >= 64rem) {
+    padding-inline: max(3rem, calc((100% - 80rem) / 2));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
