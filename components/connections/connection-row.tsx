@@ -25,13 +25,13 @@ export function ConnectionRow({ person, seen, extra }: { person: Person; seen: P
       <div className="flex min-w-0 items-center gap-4">
         <Cover genres={seen.genres} className="size-20 shrink-0" />
         <div className="min-w-0">
-          <Link href={`/people/${person.id}`} className="inline-flex min-h-7 items-center text-lg font-semibold tracking-tight [overflow-wrap:anywhere] underline-offset-4 hover:underline">
+          <Link href={`/people/${person.id}`} className="inline-flex min-h-7 items-center text-2xl font-display font-extrabold [overflow-wrap:anywhere] underline-offset-4 hover:underline">
             {seen.username}
           </Link>
           <p className="text-xs text-muted">{t.community.demo.badge}</p>
           <p className="mt-1.5 text-sm leading-snug">
             <span className="text-muted">{both.length ? t.community.discover.both : t.community.discover.differentTaste}: </span>
-            <span className="font-semibold text-pine">{(both.length ? both : seen.genres.map((id) => t.genres[id])).join(', ')}</span>
+            <span className="font-semibold text-flame">{(both.length ? both : seen.genres.map((id) => t.genres[id])).join(', ')}</span>
           </p>
         </div>
       </div>

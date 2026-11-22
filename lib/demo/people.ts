@@ -1,6 +1,7 @@
 import { ARTISTS } from '../music/artists.ts';
 import type { GenreId } from '../music/genres.ts';
 import type { Locale } from '../i18n/config.ts';
+import type { Seeking } from '../profile/types.ts';
 import { DEFAULT_PRIVACY, type Person, type Privacy } from '../social/types.ts';
 
 /*
@@ -13,6 +14,7 @@ type Sample = {
   username: string;
   bio: Record<Locale, string>;
   genres: GenreId[];
+  seeking: Seeking[];
   artists: string[];
   tracks?: [title: string, artist: string][];
   privacy?: Partial<Privacy>;
@@ -20,67 +22,67 @@ type Sample = {
 
 const SAMPLES: Sample[] = [
   {
-    id: 'sample-01', username: 'sarny.notes',
+    id: 'sample-01', seeking: ['friends', 'dating'], username: 'sarny.notes',
     bio: { en: 'I make playlists for long bus rides.', mn: 'Автобусанд сонсох плейлист цуглуулдаг.' },
     genres: ['indie', 'lofi', 'pop'], artists: ['magnolian', 'billie-eilish', 'nujabes'],
     tracks: [['Ocean Eyes', 'Billie Eilish']],
   },
   {
-    id: 'sample-02', username: 'steppe_echo',
-    bio: { en: 'Learning throat singing, slowly.', mn: 'Хөөмий аажуухан сурч байгаа.' },
-    genres: ['throatSinging', 'morinKhuur', 'longSong'], artists: ['khusugtun', 'batzorig', 'altan-urag'],
+    id: 'sample-02', seeking: ['dating'], username: 'last.bus',
+    bio: { en: 'I always miss the last bus after the encore.', mn: 'Тоглолтын дараа сүүлийн автобуснаас байнга хоцордог.' },
+    genres: ['rnb', 'lofi', 'jazz'], artists: ['bruno-mars', 'nujabes'],
     privacy: { requests: 'everyone' },
   },
   {
-    id: 'sample-03', username: 'bass_salhi',
+    id: 'sample-03', seeking: ['friends'], username: 'bass_salhi',
     bio: { en: 'Bass player looking for a drummer.', mn: 'Басс тоглодог, бөмбөрчин хайж байгаа.' },
-    genres: ['rock', 'metal', 'ethnoFusion'], artists: ['the-hu', 'khurd', 'kharanga'],
+    genres: ['rock', 'metal', 'indie'], artists: ['the-hu', 'khurd', 'kharanga'],
     tracks: [['Wolf Totem', 'The HU'], ['Yuve Yuve Yu', 'The HU']],
   },
   {
-    id: 'sample-04', username: 'neon_nomad',
-    bio: { en: 'Beats after class.', mn: 'Хичээлийн дараа бит хийдэг.' },
+    id: 'sample-04', seeking: ['friends', 'dating'], username: 'neon_nomad',
+    bio: { en: 'Beats after work.', mn: 'Ажлын дараа бит хийдэг.' },
     genres: ['electronic', 'hipHop', 'lofi'], artists: ['daft-punk', 'kendrick-lamar', 'nujabes'],
     tracks: [['One More Time', 'Daft Punk'], ['Feather', 'Nujabes']],
   },
   {
-    id: 'sample-05', username: 'odod.mp3',
+    id: 'sample-05', seeking: ['friends'], username: 'odod.mp3',
     bio: { en: 'Here for comebacks and choreography.', mn: 'Камбэк, бүжгийн хөдөлгөөн хоёрт дуртай.' },
     genres: ['kPop', 'pop', 'jPop'], artists: ['bts', 'newjeans', 'yoasobi'],
     tracks: [['Dynamite', 'BTS'], ['Ditto', 'NewJeans']],
   },
   {
-    id: 'sample-06', username: 'хөх_тэнгэр',
+    id: 'sample-06', seeking: ['friends', 'dating'], username: 'хөх_тэнгэр',
     bio: { en: 'I sing while doing the dishes.', mn: 'Аяга угаахдаа дуулдаг.' },
-    genres: ['mongolianPop', 'composedSongs', 'rnb'], artists: ['camerton', 'bruno-mars'],
+    genres: ['mongolianPop', 'pop', 'rnb'], artists: ['camerton', 'bruno-mars'],
     tracks: [['Just the Way You Are', 'Bruno Mars']],
   },
   {
-    id: 'sample-07', username: 'piano.nuudel',
+    id: 'sample-07', seeking: ['friends'], username: 'piano.nuudel',
     bio: { en: 'Practice room regular.', mn: 'Төгөлдөр хуурын өрөөнөөс гардаггүй.' },
-    genres: ['classical', 'jazz', 'composedSongs'], artists: ['ludovico-einaudi', 'nujabes'],
+    genres: ['classical', 'jazz', 'lofi'], artists: ['ludovico-einaudi', 'nujabes'],
     tracks: [['Nuvole Bianche', 'Ludovico Einaudi']],
     privacy: { requests: 'nobody' },
   },
   {
-    id: 'sample-08', username: 'тал_нутаг',
-    bio: { en: 'Old melodies, new arrangements.', mn: 'Хуучин аялгуу, шинэ найруулга.' },
-    genres: ['ethnoFusion', 'longSong', 'morinKhuur'], artists: ['altan-urag', 'the-hu'],
+    id: 'sample-08', seeking: ['friends', 'dating'], username: 'улаан_гэрэл',
+    bio: { en: 'Front row or nothing.', mn: 'Тоглолт үзвэл урд эгнээнд.' },
+    genres: ['rock', 'indie', 'electronic'], artists: ['arctic-monkeys', 'daft-punk'],
   },
   {
-    id: 'sample-09', username: 'ub_beats',
-    bio: { en: 'Writing verses in lecture notes.', mn: 'Лекцийн дэвтэртээ шүлэг бичдэг.' },
+    id: 'sample-09', seeking: ['dating'], username: 'ub_beats',
+    bio: { en: 'Writing verses on night shifts.', mn: 'Шөнийн ээлжиндээ шүлэг бичдэг.' },
     genres: ['hipHop', 'mongolianPop', 'rnb'], artists: ['vandebo', 'kendrick-lamar'],
   },
   {
-    id: 'sample-10', username: 'шөнийн_долгион',
+    id: 'sample-10', seeking: ['friends', 'dating'], username: 'шөнийн_долгион',
     bio: { en: 'Headphones on after midnight.', mn: 'Шөнө дундаас хойш чихэвчтэй.' },
     genres: ['electronic', 'indie', 'jazz'], artists: ['magnolian', 'daft-punk'],
     tracks: [['Get Lucky', 'Daft Punk']],
     privacy: { showTracks: false },
   },
   {
-    id: 'sample-11', username: 'anime_ost',
+    id: 'sample-11', seeking: ['friends'], username: 'anime_ost',
     bio: { en: 'The soundtrack is the best part.', mn: 'Анимений хамгийн гоё нь хөгжим нь.' },
     genres: ['jPop', 'classical', 'kPop'], artists: ['yoasobi', 'ludovico-einaudi'],
     tracks: [['Idol', 'YOASOBI']],
@@ -88,9 +90,9 @@ const SAMPLES: Sample[] = [
   },
   {
     // Never appears in Discover. Proves that hiding works.
-    id: 'sample-12', username: 'quiet.riff',
+    id: 'sample-12', seeking: ['friends', 'dating'], username: 'quiet.riff',
     bio: { en: 'Mostly listening.', mn: 'Голдуу сонсдог.' },
-    genres: ['metal', 'rock', 'throatSinging'], artists: ['the-hu', 'nisvanis'],
+    genres: ['metal', 'rock', 'indie'], artists: ['the-hu', 'nisvanis'],
     privacy: { discoverable: false },
   },
 ];
@@ -103,6 +105,7 @@ function toPerson(sample: Sample, locale: Locale): Person {
     profile: {
       username: sample.username,
       bio: sample.bio[locale],
+      seeking: sample.seeking,
       photo: null,
       genres: sample.genres,
       artists: sample.artists.flatMap((id) => {

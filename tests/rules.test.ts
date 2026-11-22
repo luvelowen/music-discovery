@@ -88,6 +88,14 @@ test('damaged or edited saved data cannot get in', () => {
   assert.equal(parsed.photo, null);
 });
 
+test('removed genres disappear from saved profiles, and dating is never switched on for anyone', () => {
+  const old = parseProfile(JSON.stringify({ genres: ['morinKhuur', 'longSong', 'throatSinging', 'ethnoFusion', 'composedSongs', 'jazz'] }));
+  assert.deepEqual(old.genres, ['jazz']);
+  assert.deepEqual(old.seeking, ['friends']);
+  assert.deepEqual(parseProfile('{"seeking":["hookups"]}').seeking, ['friends']);
+  assert.deepEqual(parseProfile('{"seeking":["dating"]}').seeking, ['dating']);
+});
+
 test('a profile needs a genre and a valid username', () => {
   assert.equal(isComplete(EMPTY_PROFILE), false);
   assert.equal(isComplete({ ...EMPTY_PROFILE, genres: ['jazz'] }), false);
@@ -96,7 +104,7 @@ test('a profile needs a genre and a valid username', () => {
 
 test('artists match in both alphabets', () => {
   assert.equal(toArtist('хурд').id, toArtist('HURD').id);
-  assert.equal(suggestArtists('хөс', [], [])[0]?.id, 'khusugtun');
+  assert.equal(suggestArtists('харан', [], [])[0]?.id, 'kharanga');
 });
 
 test('every text exists in both languages', () => {

@@ -1,7 +1,7 @@
-# Music community (working title)
+# Music, dates & friends (working title)
 
-A music-based friendship community for Ulaanbaatar. The first pilot is for university students aged 18 and over.
-*Discover people through the music you love. Discover new music through people.*
+Dating, friends and music for adults (18+) in Ulaanbaatar.
+*Find the person you’d give your left earbud to.*
 
 Milestones 1 and 2 are built, in Mongolian and English: onboarding, profile, Discover, connections,
 settings and safety. It is a local prototype. Other people are fictional and nothing is sent anywhere.
@@ -9,6 +9,8 @@ settings and safety. It is a local prototype. Other people are fictional and not
 ## Running it
 
 You need [Node.js](https://nodejs.org) 22.18 or newer. Open a terminal in this folder.
+
+In Windows PowerShell, type `npm.cmd` wherever this page says `npm`.
 
 | Command | What it does | When to use it |
 | --- | --- | --- |
@@ -36,7 +38,7 @@ components/          Reusable visual pieces
   layout/              Header and language switcher
   ui/                  Buttons, fields, lists
   welcome/ setup/ profile/
-  gate/                The 18+ and student check
+  gate/                The 18+ check
   discover/ people/ connections/ settings/
 lib/                 Rules and data, with no visual design
   i18n/                All English and Mongolian wording
@@ -47,7 +49,10 @@ lib/                 Rules and data, with no visual design
   storage/             Saving in the browser
   demo/                Fictional people. Delete when real accounts arrive
 tests/               Automatic checks of those rules
-docs/                Safety plan and roadmap
+docs/                Safety plan, data plan and roadmap
+public/              Photos, and screenshots of the app
+DESIGN.md            The design rules. Read before any visual change
+CLAUDE.md            Standing instructions for Claude
 ```
 
 ## Common edits
@@ -78,8 +83,9 @@ If a translation or genre drawing is missing, `npm run typecheck` says so.
   saving and network-error states, and the server must repeat every check.
 - **The language is saved in a cookie.** The server can read cookies, so pages open in the right language
   without flickering. Mongolian is the default.
-- **The typeface is Onest.** It contains Ө ө Ү ү. Many fonts labelled "Cyrillic" do not.
-- **All artwork is drawn in code.** There are no album covers to license.
+- **The typefaces are Fira Sans Extra Condensed and Golos Text.** Both contain Ө ө Ү ү. Many "Cyrillic" fonts do not.
+- **Genre artwork is drawn in code, and photos are licensed.** Credits are in `DESIGN.md`.
+- **Dating is mutual-visibility only.** Someone’s dating choice is shown only to people who also chose dating.
 - **Music services are links only.** A new service is registered in `lib/music/providers.ts`.
 - **TypeScript is pinned to 6.0.3.** Version 7 removed the programming interface Next.js relies on,
   so don't upgrade it until Next.js supports 7.

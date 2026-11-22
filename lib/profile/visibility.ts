@@ -15,10 +15,16 @@ function visibleTracks(profile: Profile, connected: boolean, privacy: Privacy) {
  * to Profile later stays hidden from strangers until someone deliberately adds it here.
  * With Supabase, this rule must also be enforced by the database.
  */
-export function getVisibleProfile(profile: Profile, viewer: Viewer, privacy: Privacy = DEFAULT_PRIVACY): Profile {
+export function getVisibleProfile(
+  profile: Profile,
+  viewer: Viewer,
+  privacy: Privacy = DEFAULT_PRIVACY,
+  viewerDates = false,
+): Profile {
   const connected = viewer === 'connection';
   return {
     username: profile.username,
+    seeking: profile.seeking.filter((item) => item === 'friends' || viewerDates),
     genres: profile.genres,
     artists: connected || privacy.showArtists ? profile.artists : [],
     tracks: visibleTracks(profile, connected, privacy),

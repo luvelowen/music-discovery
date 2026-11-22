@@ -14,7 +14,7 @@ import { DAY, DEFAULT_PRIVACY, EMPTY_SOCIAL, type Person, type Social } from '..
 
 const NOW = Date.UTC(2026, 10, 22, 4);
 const me: Profile = { ...EMPTY_PROFILE, username: 'tester', genres: ['rock', 'jazz'], artists: [{ id: 'the-hu', name: 'The HU' }] };
-const adult: Social = { ...EMPTY_SOCIAL, eligibility: { age: 'adult', student: true } };
+const adult: Social = { ...EMPTY_SOCIAL, eligibility: { age: 'adult' } };
 const open: Social = { ...adult, privacy: { ...DEFAULT_PRIVACY, discoverable: true } };
 const person = (change: Partial<Person> = {}): Person => ({
   id: 'p1',
@@ -49,11 +49,14 @@ test('age: impossible dates are rejected', () => {
   }
 });
 
-test('eligibility needs both adult and student', () => {
-  assert.equal(isEligible({ age: 'adult', student: true }), true);
-  for (const bad of [{ age: 'minor', student: true }, { age: 'unknown', student: true }, { age: 'adult', student: false }, { age: 'adult', student: null }] as const) {
-    assert.equal(isEligible(bad), false);
-  }
+test('eligibility needs an adult, and nothing about studying', () => {
+  assert.equal(isEligible({ age: 'adult' }), true);
+  for (const age of ['minor', 'unknown'] as const) assert.equal(isEligible({ age }), false);
+});
+
+test('saved answers from the student pilot carry over safely', () => {
+  assert.equal(isEligible(parseSocial('{"eligibility":{"age":"adult","student":false}}').eligibility), true);
+  assert.equal(isEligible(parseSocial('{"eligibility":{"age":"minor","student":true}}').eligibility), false);
 });
 
 test('adults and minors can never reach each other, whatever the state says', () => {
@@ -62,27 +65,27 @@ test('adults and minors can never reach each other, whatever the state says', ()
   for (const other of [minor, unknown]) {
     for (const relation of ['incoming', 'outgoing', 'connected'] as const) {
       const state: Social = { ...open, relations: { p1: relation } };
-      assert.equal(policy.canViewPerson(state, other), false);
-      assert.equal(policy.seePerson(state, other), null);
+      assert.equal(policy.canViewPerson(state, me, other), false);
+      assert.equal(policy.seePerson(state, me, other), null);
       assert.equal(act.acceptRequest(state, other), state);
       assert.equal(act.demoAcceptMyRequest(state, other), state);
     }
-    assert.equal(policy.isInDiscover(open, other), false);
+    assert.equal(policy.isInDiscover(open, me, other), false);
     assert.equal(act.sendRequest(open, me, other, NOW), open);
     assert.equal(policy.canReceiveFrom(open, me, other), false);
   }
-  const iAmMinor: Social = { ...open, eligibility: { age: 'minor', student: true } };
-  assert.equal(policy.isInDiscover(iAmMinor, person()), false);
+  const iAmMinor: Social = { ...open, eligibility: { age: 'minor' } };
+  assert.equal(policy.isInDiscover(iAmMinor, me, person()), false);
   assert.equal(act.sendRequest(iAmMinor, me, person(), NOW), iAmMinor);
 });
 
 test('hidden people are not in Discover and cannot be requested', () => {
   const hidden = person({ privacy: DEFAULT_PRIVACY });
-  assert.equal(policy.isInDiscover(adult, hidden), false);
-  assert.equal(policy.seePerson(adult, hidden), null);
+  assert.equal(policy.isInDiscover(adult, me, hidden), false);
+  assert.equal(policy.seePerson(adult, me, hidden), null);
   assert.equal(policy.requestProblem(adult, me, hidden, NOW), 'unavailable');
-  assert.equal(policy.seePerson({ ...adult, relations: { p1: 'declined' } }, hidden), null);
-  assert.ok(policy.seePerson({ ...adult, relations: { p1: 'connected' } }, hidden));
+  assert.equal(policy.seePerson({ ...adult, relations: { p1: 'declined' } }, me, hidden), null);
+  assert.ok(policy.seePerson({ ...adult, relations: { p1: 'connected' } }, me, hidden));
 });
 
 test('request rules are enforced', () => {
@@ -103,8 +106,8 @@ test('ten requests a day, and cancelling does not refund one', () => {
 
 test('bio appears only after the request is accepted', () => {
   const sent = act.sendRequest(adult, me, person(), NOW);
-  assert.equal(policy.seePerson(sent, person())!.bio, '');
-  assert.equal(policy.seePerson(act.demoAcceptMyRequest(sent, person()), person())!.bio, 'private');
+  assert.equal(policy.seePerson(sent, me, person())!.bio, '');
+  assert.equal(policy.seePerson(act.demoAcceptMyRequest(sent, person()), me, person())!.bio, 'private');
 });
 
 test('incoming requests follow my own privacy settings', () => {
@@ -125,8 +128,8 @@ test('blocking ends everything, and unblocking does not restore it', () => {
   for (const relation of ['incoming', 'outgoing', 'connected'] as const) {
     const blocked = act.block({ ...open, relations: { p1: relation } }, 'p1');
     assert.equal(blocked.relations.p1, undefined);
-    assert.equal(policy.seePerson(blocked, person()), null);
-    assert.equal(policy.isInDiscover(blocked, person()), false);
+    assert.equal(policy.seePerson(blocked, me, person()), null);
+    assert.equal(policy.isInDiscover(blocked, me, person()), false);
     assert.equal(policy.canReceiveFrom(blocked, me, person()), false);
     assert.equal(act.sendRequest(blocked, me, person(), NOW), blocked);
     assert.equal(act.unblock(blocked, 'p1').relations.p1, undefined);
@@ -153,13 +156,31 @@ test('hidden artists do not leak through songs', () => {
 
 test('shared music cannot leak hidden artists', () => {
   const secret = person({ privacy: { ...DEFAULT_PRIVACY, discoverable: true, showArtists: false } });
-  assert.deepEqual(compareMusic(me, policy.seePerson(adult, secret)!).artists, []);
+  assert.deepEqual(compareMusic(me, policy.seePerson(adult, me, secret)!).artists, []);
+});
+
+test('dating is seen only by people who chose dating too', () => {
+  const both = person({ profile: { ...person().profile, seeking: ['friends', 'dating'] } });
+  assert.deepEqual(policy.seePerson(adult, me, both)!.seeking, ['friends']);
+  assert.deepEqual(policy.seePerson({ ...adult, relations: { p1: 'connected' } }, me, both)!.seeking, ['friends']);
+  assert.deepEqual(policy.seePerson(adult, { ...me, seeking: ['friends', 'dating'] }, both)!.seeking, ['friends', 'dating']);
+});
+
+test('dating-only and friends-only people cannot find or request each other', () => {
+  const dater = person({ profile: { ...person().profile, seeking: ['dating'] } });
+  assert.equal(policy.isInDiscover(open, me, dater), false);
+  assert.equal(policy.seePerson(open, me, dater), null);
+  assert.equal(policy.requestProblem(open, me, dater, NOW), 'unavailable');
+  assert.equal(policy.canReceiveFrom(open, me, dater), false);
+  const iDateOnly: Profile = { ...me, seeking: ['dating'] };
+  assert.equal(policy.isInDiscover(open, iDateOnly, person()), false);
+  assert.equal(policy.isInDiscover(open, iDateOnly, dater), true);
 });
 
 test('damaged social data falls back to the safe defaults', () => {
   for (const raw of [null, '', '{bad', '[]', 'null']) assert.deepEqual(parseSocial(raw), EMPTY_SOCIAL);
   const state = parseSocial(JSON.stringify({
-    eligibility: { age: 'grown-up', student: 'yes' }, privacy: { discoverable: 'yes', requests: 'all' },
+    eligibility: { age: 'grown-up' }, privacy: { discoverable: 'yes', requests: 'all' },
     relations: { a: 'connected', b: 'best friend', c: 'connected' }, blocked: ['c'], communities: ['jazz', 'fake'],
     reports: [{ id: 'x', personId: 'a', username: 'a', reason: 'spam', createdAt: 1e20 }],
   }));

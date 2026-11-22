@@ -16,7 +16,7 @@ const LAYOUTS: readonly (readonly Tile[])[] = [
 export function Cover({ genres, className }: { genres: readonly GenreId[]; className?: string }) {
   const layout = LAYOUTS[genres.length] ?? [];
   return (
-    <div aria-hidden className={cn('grid aspect-square grid-cols-6 grid-rows-6 overflow-hidden rounded-sleeve bg-stone outline outline-ink/10', className)}>
+    <div aria-hidden className={cn('grid aspect-square grid-cols-6 grid-rows-6 overflow-hidden rounded-sleeve bg-seam outline outline-chalk/10', className)}>
       {genres.map((genre, index) => {
         const [column, row, width, height] = layout[index] ?? [1, 1, 6, 6];
         return (
@@ -40,12 +40,12 @@ export function CoverRecord({ genres, className }: { genres: readonly GenreId[];
           genres.length ? 'left-[27.5%]' : 'left-[4%]',
         )}
       >
-        <circle cx="50" cy="50" r="50" />
+        <circle cx="50" cy="50" r="50" className="fill-vinyl" />
         {Array.from({ length: 9 }, (_, i) => (
-          <circle key={i} cx="50" cy="50" r={23 + i * 3} fill="none" stroke="#333333" strokeWidth="0.35" />
+          <circle key={i} cx="50" cy="50" r={23 + i * 3} fill="none" className="stroke-night/40" strokeWidth="0.35" />
         ))}
-        <circle cx="50" cy="50" r="17" className="fill-sage" />
-        <circle cx="50" cy="50" r="2" className="fill-paper" />
+        <circle cx="50" cy="50" r="17" className="fill-lamp" />
+        <circle cx="50" cy="50" r="2" className="fill-night" />
       </svg>
       <Cover genres={genres} className="absolute inset-y-0 left-0 h-full" />
     </div>

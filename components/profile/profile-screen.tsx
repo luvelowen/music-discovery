@@ -27,7 +27,7 @@ export function ProfileScreen() {
     const target = profile.genres.length && aboutNeedsWork ? 'about' : 'genres';
     return (
       <div className="gutter py-16 lg:py-24">
-        <h1 className="text-4xl leading-tight font-semibold tracking-tight">{t.profile.incompleteTitle}</h1>
+        <h1 className="poster text-5xl sm:text-7xl">{t.profile.incompleteTitle}</h1>
         <p className="mt-3 mb-8 text-muted">{t.profile.incompleteBody}</p>
         <ButtonLink href={`/setup/${target}`}>{t.profile.incompleteAction}</ButtonLink>
       </div>
@@ -38,7 +38,7 @@ export function ProfileScreen() {
     <>
       <div className="gutter flex flex-col gap-6 pt-6 pb-7 lg:flex-row lg:items-end lg:justify-between lg:pt-10">
         <div>
-          <h1 className="text-[clamp(1.875rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.02em]">{t.profile.title}</h1>
+          <h1 className="poster text-[clamp(2.75rem,6vw,5rem)]">{t.profile.title}</h1>
           <p className="mt-2 text-muted">{t.profile.body}</p>
         </div>
         <div role="group" aria-label={t.profile.viewAs} className="lg:w-96">
@@ -52,7 +52,7 @@ export function ProfileScreen() {
                 onClick={() => setViewer(option)}
                 className={cn(
                   'min-h-12 rounded-control border px-3 font-medium transition-colors',
-                  viewer === option ? 'border-ink bg-ink text-paper' : 'border-edge hover:border-ink',
+                  viewer === option ? 'border-chalk bg-chalk text-night' : 'border-edge hover:border-chalk',
                 )}
               >
                 {t.profile[option]}
@@ -63,10 +63,11 @@ export function ProfileScreen() {
       </div>
 
       <div className="sm:gutter">
-        <p aria-live="polite" className="mb-5 px-5 text-sm leading-relaxed text-pine sm:px-0">
-          {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}
+        <p aria-live="polite" className="mb-5 px-5 text-sm leading-relaxed text-flame sm:px-0">
+          {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}{' '}
+          {profile.seeking.includes('dating') && t.profile.datingNote}
         </p>
-        <ProfileCard profile={getVisibleProfile(profile, viewer, social.privacy)} />
+        <ProfileCard profile={getVisibleProfile(profile, viewer, social.privacy, true)} />
       </div>
 
       <div className="gutter pt-8 pb-14">

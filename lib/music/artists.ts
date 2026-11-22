@@ -8,17 +8,14 @@ import type { GenreId } from './genres.ts';
 type SuggestedArtist = { id: string; name: string; mn?: string; genres: readonly GenreId[] };
 
 export const ARTISTS: readonly SuggestedArtist[] = [
-  { id: 'the-hu', name: 'The HU', genres: ['ethnoFusion', 'metal', 'rock', 'throatSinging'] },
+  { id: 'the-hu', name: 'The HU', genres: ['metal', 'rock'] },
   { id: 'magnolian', name: 'Magnolian', genres: ['indie'] },
   { id: 'the-lemons', name: 'The Lemons', genres: ['rock', 'indie'] },
   { id: 'vandebo', name: 'Vandebo', genres: ['hipHop', 'mongolianPop'] },
-  { id: 'altan-urag', name: 'Altan Urag', mn: 'Алтан Ураг', genres: ['ethnoFusion', 'morinKhuur', 'longSong'] },
-  { id: 'khusugtun', name: 'Khusugtun', mn: 'Хөсөгтөн', genres: ['throatSinging', 'morinKhuur', 'longSong'] },
-  { id: 'camerton', name: 'Camerton', mn: 'Камертон', genres: ['mongolianPop', 'composedSongs', 'rnb'] },
+  { id: 'camerton', name: 'Camerton', mn: 'Камертон', genres: ['mongolianPop', 'rnb'] },
   { id: 'khurd', name: 'Hurd', mn: 'Хурд', genres: ['rock', 'metal'] },
   { id: 'kharanga', name: 'Kharanga', mn: 'Харанга', genres: ['rock'] },
   { id: 'nisvanis', name: 'Nisvanis', mn: 'Нисванис', genres: ['rock', 'indie'] },
-  { id: 'batzorig', name: 'Batzorig Vaanchig', mn: 'Ваанчигийн Батзориг', genres: ['throatSinging', 'morinKhuur'] },
   { id: 'bts', name: 'BTS', genres: ['kPop', 'pop'] },
   { id: 'newjeans', name: 'NewJeans', genres: ['kPop'] },
   { id: 'billie-eilish', name: 'Billie Eilish', genres: ['pop', 'indie'] },

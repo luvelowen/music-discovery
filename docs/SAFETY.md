@@ -1,10 +1,10 @@
 # Safety and privacy plan
 
-**Decided 2026-11-22: the first pilot is university students aged 18 and over.**
-Younger students may follow later, as a fully separate group. The product stays a friendship community
-and keeps its minor-safe defaults, because some minors will try to join anyway.
+**Decided 2026-11-22: dating + friends + music, for any adult 18+.** This replaces the student-only pilot.
+Because it includes dating, there is no version of this app for minors. Some will try to join anyway,
+so the protective defaults stay.
 
-The app now has an 18+ and student check, but it is a **demonstration, not enforcement**:
+The app now has an 18+ check, but it is a **demonstration, not enforcement**:
 it believes what people type, and deleting the browser's data resets it.
 
 This document separates what exists from what is only planned.
@@ -21,6 +21,8 @@ This document separates what exists from what is only planned.
 | Spotify tracking codes are removed | `lib/music/spotify.ts` | The linked Spotify profile may itself show a real name |
 | Adults only in Discover, requests and profiles | `lib/social/policy.ts` | Self-declared. The server must decide |
 | Date of birth is never saved, only the result | `components/gate/eligibility-screen.tsx` | Accounts may need to keep more. Ask the lawyer |
+| Dating is shown only to people who also chose it | `lib/profile/visibility.ts` | Someone can switch dating on just to look |
+| People meet only over a shared intention | `lib/social/policy.ts` | Enforced only in the browser |
 | Hidden from Discover until switched on | `lib/social/types.ts` | None known |
 | Hiding artists also hides them inside songs | `lib/profile/visibility.ts` | A song title can still hint at the artist |
 | Requests carry no text, 10 a day, no repeat after a decline | `lib/social/policy.ts` | The limit resets with browser data |
@@ -31,13 +33,11 @@ This document separates what exists from what is only planned.
 
 ## Required before any real user joins
 
-1. **Eligibility needs two separate checks: age and student status.** Some first-year university students
-   are 17, so a university email alone does not prove 18+. Ask for date of birth neutrally (don't reveal
-   the cutoff on that screen), confirm student status, keep the minimum data and never display it.
-2. **No minors in the pilot, and separation if they join later.** Suspected minors can be reported and are
-   suspended pending review. An adult must never be able to discover, view or send a request to a minor.
-   This is the most important rule in the product. Self-declared age is easy to fake, so consider
-   verification through schools or universities.
+1. **A real age check.** A typed date of birth proves nothing. Private companies generally may not collect
+   biometric data in Mongolia, so no face scans. Ask the lawyer which document or operator check is lawful.
+2. **No minors, anywhere.** Suspected minors can be reported and are suspended pending review.
+   An adult must never be able to discover, view or send a request to a minor.
+   This is the most important rule in the product.
 3. **No messages before a request is accepted.** Requests carry no free text. Rate-limit them.
 4. **Block and report on every profile.** A block works in both directions, immediately and silently.
 5. **Moderation.** A report queue, named people who review it, response-time targets, an audit log,
@@ -49,18 +49,21 @@ This document separates what exists from what is only planned.
    that way today only because there is nothing private in them.
 8. **Account deletion** that removes stored files as well as database rows.
 9. **Legal review** by a Mongolian lawyer: personal data protection law, child protection law,
-   parental consent, and where the data may be hosted.
+   and where the data may be hosted. See `DATA.md`.
 
 ## Decisions the founder needs to make
 
-- Which university hosts the pilot?
-- How are age and student status confirmed?
-- Before any under-18 launch: what is the minimum age, and how is parental consent collected?
+- How is age confirmed?
+- Where is the server? See `DATA.md`.
+- Are gender and dating preference collected, and with what consent?
 - Who moderates, in Mongolian, and during which hours?
 
 ## Never build
 
 - Precise or live location, or "people near you"
 - Open messaging between strangers
-- Appearance-based swiping or rating, or romantic matching
-- Public follower lists that expose who a minor knows
+- Appearance-based swiping or rating
+- Any way for someone under 18 to use dating
+- Gender or orientation shown publicly, or inferred from music
+- Face scans or other biometric checks
+- Public follower lists that expose who someone knows or dates

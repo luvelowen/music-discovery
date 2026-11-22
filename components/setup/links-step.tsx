@@ -64,7 +64,7 @@ export function LinksStep({ editing }: StepProps) {
             action={<Button type="submit" variant="secondary" className="shrink-0"><Plus className="size-5" aria-hidden />{t.setup.add}</Button>}
           />
         </form>
-        <p className="mt-6 rounded-control bg-mist px-4 py-3 text-sm leading-relaxed">{t.linksStep.privacy}</p>
+        <p className="mt-6 rounded-control bg-cherry px-4 py-3 text-sm leading-relaxed">{t.linksStep.privacy}</p>
 
         <div className="mt-6">
           <RemovableList
@@ -74,7 +74,7 @@ export function LinksStep({ editing }: StepProps) {
                 key: link.url,
                 title: t.linksStep[link.kind],
                 detail: link.url.replace('https://', ''),
-                leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-sleeve bg-sage"><Icon className="size-5" /></span>,
+                leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-sleeve bg-blush text-night"><Icon className="size-5" /></span>,
                 onRemove: () => updateProfile((profile) => ({ links: profile.links.filter((item) => item.url !== link.url) })),
               };
             })}

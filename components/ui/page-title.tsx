@@ -12,7 +12,7 @@ export function PageTitle({ title, body, focus }: { title: string; body?: string
 
   return (
     <div>
-      <h1 ref={heading} tabIndex={focus ? -1 : undefined} className="text-[clamp(1.875rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.02em] [overflow-wrap:anywhere]">
+      <h1 ref={heading} tabIndex={focus ? -1 : undefined} className="poster text-[clamp(2.75rem,6vw,5rem)] [overflow-wrap:anywhere]">
         {title}
       </h1>
       {body && <p className="mt-2 max-w-xl leading-relaxed text-muted">{body}</p>}

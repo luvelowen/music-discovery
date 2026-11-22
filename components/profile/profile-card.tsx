@@ -6,6 +6,7 @@ import { Sleeve } from '@/components/artwork/sleeve';
 import { useI18n } from '@/lib/i18n/provider';
 import { artistName } from '@/lib/music/artists';
 import type { Profile } from '@/lib/profile/types';
+import { SeekingTags } from './seeking-tags';
 import { Avatar } from './avatar';
 
 /** Draws only what it is given. Filter with getVisibleProfile before passing a profile in. */
@@ -14,15 +15,16 @@ export function ProfileCard({ profile, showIdentity = true }: { profile: Profile
   const { username, bio, genres, artists, tracks, links } = profile;
 
   return (
-    <article className="grid gap-x-16 gap-y-9 bg-mist px-5 py-8 sm:rounded-dialog sm:p-10 lg:grid-cols-[1fr_1.1fr] lg:p-14">
+    <article className="grid gap-x-16 gap-y-9 bg-cherry px-5 py-8 sm:rounded-dialog sm:p-10 lg:grid-cols-[1fr_1.1fr] lg:p-14">
       <div className="min-w-0">
         <CoverRecord genres={genres} className="w-full max-w-md" />
         {showIdentity && (
           <div className="mt-7 flex items-center gap-4">
             <Avatar profile={profile} className="size-16 sm:size-20" />
-            <h2 className="min-w-0 text-2xl font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-3xl">{username}</h2>
+            <h2 className="min-w-0 text-2xl font-display font-extrabold [overflow-wrap:anywhere] sm:text-3xl">{username}</h2>
           </div>
         )}
+        <SeekingTags seeking={profile.seeking} className="mt-5 text-base" />
         {bio && <p className="mt-4 max-w-md text-lg leading-relaxed [overflow-wrap:anywhere]">{bio}</p>}
       </div>
 
@@ -32,7 +34,7 @@ export function ProfileCard({ profile, showIdentity = true }: { profile: Profile
           <ul className="grid gap-3 sm:grid-cols-2">
             {genres.map((id) => (
               <li key={id} className="flex items-center gap-3 font-medium">
-                <Sleeve genre={id} className="size-10 shrink-0 rounded-sleeve border border-ink/10" />
+                <Sleeve genre={id} className="size-10 shrink-0 rounded-sleeve border border-chalk/10" />
                 {t.genres[id]}
               </li>
             ))}
@@ -42,7 +44,7 @@ export function ProfileCard({ profile, showIdentity = true }: { profile: Profile
         {artists.length > 0 && (
           <section>
             <h3 className="mb-2 text-sm text-muted">{t.profile.artists}</h3>
-            <ul className="text-2xl leading-snug font-semibold tracking-tight">
+            <ul className="font-display text-4xl leading-none font-extrabold">
               {artists.map((artist) => <li key={artist.id} className="[overflow-wrap:anywhere]">{artistName(artist, locale)}</li>)}
             </ul>
           </section>
@@ -51,10 +53,10 @@ export function ProfileCard({ profile, showIdentity = true }: { profile: Profile
         {tracks.length > 0 && (
           <section>
             <h3 className="mb-1 text-sm text-muted">{t.profile.tracks}</h3>
-            <ul className="divide-y divide-stone">
+            <ul className="divide-y divide-seam">
               {tracks.map((track) => (
                 <li key={`${track.title}\n${track.artist}`} className="flex items-center gap-3 py-3">
-                  <Music2 className="size-5 shrink-0 text-pine" aria-hidden />
+                  <Music2 className="size-5 shrink-0 text-flame" aria-hidden />
                   <p className="min-w-0 [overflow-wrap:anywhere]">
                     <span className="block font-medium">{track.title}</span>
                     <span className="block text-sm text-muted">{track.artist}</span>
@@ -71,7 +73,7 @@ export function ProfileCard({ profile, showIdentity = true }: { profile: Profile
             <ul className="flex flex-wrap gap-2">
               {links.map((link) => (
                 <li key={link.url}>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-control bg-ink px-4 font-medium text-paper transition-colors hover:bg-pine">
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center gap-2 rounded-control bg-chalk px-4 font-medium text-night transition-colors hover:bg-flame">
                     {t.linksStep[link.kind]}
                     <ArrowUpRight className="size-4" aria-hidden />
                     <span className="sr-only">{t.profile.newTab}</span>

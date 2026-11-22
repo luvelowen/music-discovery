@@ -4,7 +4,7 @@ import type { Profile } from '../profile/types.ts';
 export type AgeGroup = 'unknown' | 'adult' | 'minor';
 
 // No birthday here: only the result of the check is kept.
-export type Eligibility = { age: AgeGroup; student: boolean | null };
+export type Eligibility = { age: AgeGroup };
 
 export const REQUEST_RULES = ['sharedMusic', 'everyone', 'nobody'] as const;
 export type RequestRule = (typeof REQUEST_RULES)[number];
@@ -61,7 +61,7 @@ export type Social = {
 };
 
 export const EMPTY_SOCIAL: Social = {
-  eligibility: { age: 'unknown', student: null },
+  eligibility: { age: 'unknown' },
   privacy: DEFAULT_PRIVACY,
   communities: [],
   relations: {},

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { SeekingPicker } from '@/components/profile/seeking-picker';
 import { Avatar } from '@/components/profile/avatar';
 import { Button } from '@/components/ui/button';
 import { TextArea, TextField } from '@/components/ui/field';
@@ -45,6 +46,7 @@ export function AboutStep({ editing }: StepProps) {
   return (
     <StepFrame step="about" editing={editing} title={t.aboutStep.title} body={t.aboutStep.body} onNext={next}>
       <div className="max-w-xl space-y-7">
+        <SeekingPicker />
         <TextField
           ref={nameInput}
           label={t.aboutStep.username}

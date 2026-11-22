@@ -36,7 +36,7 @@ export function DemoTools({ onReceived }: { onReceived: () => void }) {
       <h2 className="font-semibold">{words.title}</h2>
       <p className="mt-1 mb-4 text-sm text-muted">{words.body}</p>
       <Button variant="secondary" onClick={receive}>{words.receive}</Button>
-      <p role="status" className="mt-3 min-h-5 text-sm text-pine">
+      <p role="status" className="mt-3 min-h-5 text-sm text-flame">
         {result && (result.kind === 'received' ? words.received(result.name) : words[result.kind])}
       </p>
     </aside>

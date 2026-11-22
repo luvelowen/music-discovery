@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageTitle } from '@/components/ui/page-title';
 import { usePeople } from '@/lib/demo/use-people';
 import { useI18n } from '@/lib/i18n/provider';
+import { useProfile } from '@/lib/profile/store';
 import { block } from '@/lib/social/actions';
 import { seePerson } from '@/lib/social/policy';
 import { updateSocial, useSocial } from '@/lib/social/store';
@@ -19,13 +20,14 @@ export function PersonScreen({ id }: { id: string }) {
   const { t } = useI18n();
   const words = t.community.person;
   const { social } = useSocial();
+  const { profile } = useProfile();
   const person = usePeople().find((item) => item.id === id);
   const [reported, setReported] = useState(false);
   const blockDialog = useRef<HTMLDialogElement>(null);
   const reportDialog = useRef<HTMLDialogElement>(null);
 
-  const seen = person ? seePerson(social, person) : null;
-  const notice = reported && <p role="status" className="mt-5 max-w-xl rounded-control bg-mist p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
+  const seen = person ? seePerson(social, profile, person) : null;
+  const notice = reported && <p role="status" className="mt-5 max-w-xl rounded-control bg-cherry p-4 text-sm leading-relaxed">{t.community.report.done}</p>;
 
   if (!person || !seen) {
     const blocked = person && social.blocked.includes(id);
@@ -58,10 +60,10 @@ export function PersonScreen({ id }: { id: string }) {
               <Avatar profile={seen} className="size-16 sm:size-20" />
               <div className="min-w-0">
                 <PageTitle title={seen.username} />
-                <p className="mt-1 text-sm text-muted">{t.community.demo.badge}</p>
+                <p className="mt-3 text-sm text-muted">{t.community.demo.badge}</p>
               </div>
             </div>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-pine">{note}</p>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-flame">{note}</p>
           </div>
           <div className="lg:max-w-sm">
             <RelationActions person={person} />

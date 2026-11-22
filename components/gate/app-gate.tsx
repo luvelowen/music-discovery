@@ -32,7 +32,7 @@ export function AppGate({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <p className="gutter bg-mist py-2 text-sm text-muted">{t.community.demo.notice}</p>
+      <p className="gutter bg-cherry py-2 text-sm text-muted">{t.community.demo.notice}</p>
       {(profile.saveFailed || social.saveFailed) && <p role="alert" className="gutter pt-3 text-sm text-danger">{t.setup.saveFailed}</p>}
       {children}
     </>

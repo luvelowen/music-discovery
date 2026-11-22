@@ -6,23 +6,22 @@ import type { GenreId } from '@/lib/music/genres';
  * No album covers are used, so there is nothing to license and nothing to download.
  * Every drawing lives on a 100 x 100 grid.
  */
-const K = '#000000'; // black
-const W = '#ffffff'; // white
-const G = '#d8dad5'; // stone
-const S = '#afbdaa'; // sage
-const P = '#3d5847'; // pine
+const K = '#000000'; // night
+const W = '#fff2ee'; // chalk
+const G = '#ffd23f'; // lamp
+const S = '#ff8fb8'; // blush
+const P = '#ff2a1f'; // flame
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
 
 const ART: Record<GenreId, { background: string; art: ReactNode }> = {
-  // The toono, the crown of a ger.
   mongolianPop: {
     background: S,
     art: (
-      <g fill="none" stroke={K} strokeWidth="3">
-        <circle cx="50" cy="50" r="36" strokeWidth="6" />
-        <circle cx="50" cy="50" r="14" fill={W} />
-        {range(8).map((i) => <path key={i} d="M50 14V36" transform={`rotate(${i * 45} 50 50)`} />)}
+      <g>
+        <circle cx="50" cy="32" r="22" fill={K} />
+        <path d="M31 32h38M36 21h28M36 43h28" stroke={P} strokeWidth="3" />
+        <path d="M39 55h22l-6 45H45Z" fill={P} />
       </g>
     ),
   },
@@ -72,63 +71,6 @@ const ART: Record<GenreId, { background: string; art: ReactNode }> = {
       <g>
         <path d="M66 0 22 58h24L32 100l48-60H54L86 0Z" fill={W} />
         <path d="M0 100V72l22 28Z" fill={S} />
-      </g>
-    ),
-  },
-  // Long notes that keep travelling, like a voice over open steppe.
-  longSong: {
-    background: P,
-    art: (
-      <g fill="none" stroke={S} strokeWidth="3">
-        {range(7).map((i) => (
-          <path key={i} stroke={i === 3 ? W : S} d={`M-5 ${20 + i * 11}C22 ${-6 + i * 11} 38 ${46 + i * 11} 62 ${20 + i * 11}S92 ${10 + i * 11} 108 ${16 + i * 11}`} />
-        ))}
-      </g>
-    ),
-  },
-  // One low drone, with overtones rising out of it.
-  throatSinging: {
-    background: K,
-    art: (
-      <g fill="none" stroke={S} strokeWidth="2.5">
-        {range(7).map((i) => <ellipse key={i} cx="50" cy={90 - i * 7} rx={10 + i * 7} ry={6 + i * 6} />)}
-        <circle cx="50" cy="90" r="6" fill={W} stroke="none" />
-      </g>
-    ),
-  },
-  morinKhuur: {
-    background: G,
-    art: (
-      <g>
-        <path d="M36 50h28l8 43H28Z" fill={P} />
-        <path d="M45 50V18q0-11 12-10l5 8-8 1v33Z" fill={K} />
-        <path d="M47 22V86M52 22V86" stroke={W} strokeWidth="1.2" />
-        <path d="M14 76 88 58" stroke={K} strokeWidth="3" />
-      </g>
-    ),
-  },
-  ethnoFusion: {
-    background: W,
-    art: (
-      <g>
-        <circle cx="72" cy="26" r="13" fill={S} />
-        {[S, P, K].map((fill, i) => (
-          <path key={i} fill={fill} d={`M0 ${68 + i * 14}L25 ${42 + i * 14}L50 ${66 + i * 14}L75 ${46 + i * 14}L100 ${68 + i * 14}V100H0Z`} />
-        ))}
-      </g>
-    ),
-  },
-  composedSongs: {
-    background: S,
-    art: (
-      <g>
-        {range(5).map((i) => <path key={i} d={`M0 ${28 + i * 11}H100`} stroke={P} strokeWidth="1.5" />)}
-        {[[22, 61], [44, 50], [64, 39], [82, 55]].map(([x, y]) => (
-          <g key={x} fill={K}>
-            <ellipse cx={x} cy={y} rx="7" ry="5.5" />
-            <path d={`M${x! + 4.5} ${y}v-25h2.5v25Z`} />
-          </g>
-        ))}
       </g>
     ),
   },

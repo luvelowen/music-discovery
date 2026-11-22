@@ -50,7 +50,7 @@ export function SettingsScreen() {
 
           <SettingsSection title={words.blocked} body={words.blockedBody}>
             {social.blocked.length ? (
-              <ul className="divide-y divide-stone">
+              <ul className="divide-y divide-seam">
                 {social.blocked.map((id) => {
                   const name = people.find((person) => person.id === id)?.profile.username ?? id;
                   return (
@@ -68,7 +68,7 @@ export function SettingsScreen() {
 
           <SettingsSection title={words.reports} body={words.reportsBody}>
             {social.reports.length ? (
-              <ul className="divide-y divide-stone">
+              <ul className="divide-y divide-seam">
                 {social.reports.map((report) => (
                   <li key={report.id} className="py-3">
                     <p className="font-medium [overflow-wrap:anywhere]">{report.username}</p>
@@ -84,11 +84,23 @@ export function SettingsScreen() {
         </>
       )}
 
+      <SettingsSection id="data" title={words.data} body={words.dataBody}>
+        <ul className="space-y-3 leading-relaxed">
+          {words.dataPoints.map((point) => <li key={point}>{point}</li>)}
+        </ul>
+      </SettingsSection>
+
+      <SettingsSection title={words.dates} body={words.datesBody}>
+        <ul className="space-y-3 leading-relaxed">
+          {words.dateTips.map((tip) => <li key={tip}>{tip}</li>)}
+        </ul>
+      </SettingsSection>
+
       <SettingsSection title={words.help} body={words.helpBody}>
-        <ul className="divide-y divide-stone">
+        <ul className="divide-y divide-seam">
           {HELPLINES.map(({ key, number }) => (
             <li key={key}>
-              <a href={`tel:${number}`} className="flex min-h-14 items-center justify-between gap-4 hover:text-pine">
+              <a href={`tel:${number}`} className="flex min-h-14 items-center justify-between gap-4 hover:text-flame">
                 <span>{words[key]}</span>
                 <span className="text-2xl font-semibold tabular-nums">{number}</span>
               </a>

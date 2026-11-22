@@ -41,7 +41,7 @@ export function ReportDialog({ ref, person, onDone }: Props) {
 
   return (
     <Dialog ref={ref} title={words.title(person.profile.username)} onClose={clear}>
-      <p className="mt-3 rounded-control bg-mist p-3 text-sm leading-relaxed">{words.prototype}</p>
+      <p className="mt-3 rounded-control bg-cherry p-3 text-sm leading-relaxed">{words.prototype}</p>
       <form onSubmit={submit} className="mt-5">
         <fieldset>
           <legend className="font-medium">{words.question}</legend>

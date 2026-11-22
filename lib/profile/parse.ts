@@ -2,7 +2,7 @@ import { toArtist } from '../music/artists.ts';
 import { isGenreId } from '../music/genres.ts';
 import { PROVIDERS } from '../music/providers.ts';
 import { hasContactInfo } from '../safety/contact-info.ts';
-import { EMPTY_PROFILE, LIMITS, type Profile } from './types.ts';
+import { EMPTY_PROFILE, LIMITS, SEEKING, type Profile, type Seeking } from './types.ts';
 import { cleanText } from './validation.ts';
 
 const asRecord = (value: unknown) =>
@@ -37,11 +37,15 @@ export function parseProfile(raw: string | null): Profile {
     return result.ok ? [result.link] : [];
   });
 
+  // Profiles saved before dating existed start as friends only. Dating is never switched on for someone.
+  const chosen = SEEKING.filter((item) => asList(data.seeking).includes(item));
+  const seeking: Seeking[] = chosen.length ? chosen : ['friends'];
   const photo = asText(data.photo, LIMITS.photoDataLength);
 
   return {
     username: asText(data.username, LIMITS.usernameMax),
     bio: asText(data.bio, LIMITS.bio),
+    seeking,
     photo: /^data:image\/jpeg;base64,[A-Za-z\d+/]+=*$/.test(photo) ? photo : null,
     genres: [...new Set(asList(data.genres).filter(isGenreId))].slice(0, LIMITS.genres),
     artists: [...new Map(artists.map((item) => [item.id, item])).values()].slice(0, LIMITS.artists),

@@ -24,12 +24,12 @@ export function GenreTile({ genre, label, position, blocked, onToggle }: Props) 
       <span
         className={cn(
           'relative block aspect-square rounded-sleeve outline-offset-2 transition-[outline-color,transform] duration-200 group-active:scale-[0.97]',
-          position > 0 ? 'outline-2 outline-ink' : 'outline-2 outline-transparent group-hover:outline-stone',
+          position > 0 ? 'outline-4 outline-flame' : 'outline-2 outline-transparent group-hover:outline-seam',
         )}
       >
-        <Sleeve genre={genre} className={cn('size-full rounded-sleeve border border-ink/10 transition-opacity', blocked && 'opacity-30')} />
+        <Sleeve genre={genre} className={cn('size-full rounded-sleeve border border-chalk/10 transition-opacity', blocked && 'opacity-30')} />
         {position > 0 && (
-          <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full border border-paper bg-ink text-sm font-semibold text-paper">
+          <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full border border-night bg-chalk text-sm font-semibold text-night">
             {position}
           </span>
         )}

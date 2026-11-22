@@ -29,6 +29,6 @@ export function getAgeGroup(year: number, month: number, day: number, now: Date)
   return age >= ADULT_AGE ? 'adult' : 'minor';
 }
 
-export function isEligible({ age, student }: Eligibility) {
-  return age === 'adult' && student === true;
+export function isEligible({ age }: Eligibility) {
+  return age === 'adult';
 }

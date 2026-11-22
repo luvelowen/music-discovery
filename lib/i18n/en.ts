@@ -1,29 +1,37 @@
+import type { Seeking } from '../profile/types.ts';
 import type { GenreId } from '../music/genres.ts';
 import { communityEn } from './community.en.ts';
 
 export const en = {
   // A description, not a brand. Change it here and in mn.ts once a name is chosen.
-  appName: 'Music community',
+  appName: 'Music, dates & friends',
   languageLabel: 'Language',
   skip: 'Skip to content',
   loading: 'Loading your profile',
 
   welcome: {
-    title: 'Discover people through the music you love.',
-    subtitle: 'Discover new music through people.',
-    body: 'A music and friendship community for university students in Ulaanbaatar, aged 18 and over.',
-    start: 'Create my music profile',
-    resume: 'Continue my music profile',
-    view: 'View my profile',
-    exampleCover: 'An example cover. Yours will be made from the music you pick.',
-    yourCover: 'Your cover, made from the music you picked.',
-    shelfTitle: 'Start with a sound you love',
-    shelfHint: 'Tap a sleeve to add it to your cover.',
-    promises: [
-      { title: 'Music comes first', body: 'People who haven’t connected with you see your music and username. They don’t see your photo, bio or links.' },
-      { title: 'Friends, not dating', body: 'This is a place to share music and make friends. There are no romantic matches.' },
-      { title: 'Your location stays yours', body: 'We don’t ask where you are, and the app can’t read your device’s location.' },
-    ],
+    title: 'Find the person you’d give your left earbud to.',
+    body: 'Dates and friends for adults in Ulaanbaatar, found through the songs you really play. 18+',
+    start: 'Start with your music',
+    resume: 'Keep building my profile',
+    view: 'Open my profile',
+    datesTitle: 'Dates that start with a song',
+    datesBody: 'Switch on dating and only people who switched it on too will see that. Everyone else just sees your music.',
+    friendsTitle: 'Friends who’ll come to the gig',
+    friendsBody: 'Nobody in your group likes that band? Someone in this city does. Choose friends, dating or both.',
+    screenTitle: 'You see their taste before their face',
+    screenBody: 'Strangers get a record sleeve made from your genres. Your photo, bio and Spotify open up only after you both say yes.',
+    screenCaption: 'Screens from the working prototype. The people in them are fictional.',
+    screenDiscover: 'The Discover screen, listing people by the music you share',
+    screenPerson: 'A person’s profile, with their music and no photo',
+    shelfTitle: 'What’s playing on your way home?',
+    shelfHint: 'Tap up to five. They become your cover.',
+    exampleCover: 'An example. Tap a genre to make your own.',
+    yourCover: 'Your cover so far.',
+    dataTitle: 'Right now, your data goes nowhere',
+    dataBody: 'This prototype has no server and no accounts. Everything you enter stays in this browser on this device, and Delete wipes it. Before real accounts open, we’ll say who stores your data and in which country, and ask for your consent.',
+    dataMore: 'See what’s saved, or delete it',
+    credits: 'Photos from Unsplash by',
   },
 
   steps: { genres: 'Genres', artists: 'Artists', tracks: 'Songs', links: 'Spotify', about: 'About you' },
@@ -42,6 +50,8 @@ export const en = {
     localOnly: 'Saved only in this browser. Nothing has been published.',
     saveFailed: 'Your browser blocked saving. Your changes will be lost when you close this tab.',
   },
+
+  seeking: { friends: 'Friends', dating: 'Dating' } satisfies Record<Seeking, string>,
 
   genresStep: {
     title: 'What do you listen to?',
@@ -80,9 +90,11 @@ export const en = {
 
   aboutStep: {
     title: 'Put a name to the music',
-    body: 'Use a nickname. You don’t need your real name, school or contact details here.',
+    body: 'Use a nickname. You don’t need your real name, workplace or contact details here.',
     username: 'Username',
     usernameHelp: 'Everyone can see this. 3–24 letters, numbers, dots or underscores.',
+    seeking: 'What are you here for?',
+    seekingHelp: 'Pick one or both. Dating is shown only to people who picked it too.',
     bio: 'Short bio (optional)',
     bioHelp: 'Only connections see this.',
     bioPlaceholder: 'Learning bass. Always looking for new indie bands.',
@@ -117,6 +129,8 @@ export const en = {
     connection: 'A connection',
     strangerNote: 'Your photo, bio and Spotify links are hidden from people you haven’t connected with.',
     connectionNote: 'People you accept as connections see your whole profile.',
+    seeking: 'Here for',
+    datingNote: 'Only people who also chose dating see that you did.',
     genres: 'Genres',
     artists: 'On repeat',
     tracks: 'Favorite songs',
@@ -145,8 +159,7 @@ export const en = {
 
   genres: {
     mongolianPop: 'Mongolian pop', hipHop: 'Hip-hop', kPop: 'K-pop', pop: 'Pop', indie: 'Indie', rock: 'Rock',
-    longSong: 'Long song', throatSinging: 'Throat singing', morinKhuur: 'Morin khuur', ethnoFusion: 'Ethno fusion',
-    composedSongs: 'Mongolian classics', rnb: 'R&B', electronic: 'Electronic', lofi: 'Lo-fi', jazz: 'Jazz',
+    rnb: 'R&B', electronic: 'Electronic', lofi: 'Lo-fi', jazz: 'Jazz',
     classical: 'Classical', metal: 'Metal', jPop: 'J-pop & anime',
   } satisfies Record<GenreId, string>,
 };

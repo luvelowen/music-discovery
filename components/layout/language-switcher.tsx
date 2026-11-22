@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
           onClick={() => setLocale(option)}
           className={cn(
             'min-h-11 rounded-control px-3 text-sm font-medium transition-colors',
-            option === locale ? 'bg-mist text-ink' : 'text-muted hover:text-ink',
+            option === locale ? 'bg-cherry text-chalk' : 'text-muted hover:text-chalk',
           )}
         >
           {LOCALE_NAMES[option]}

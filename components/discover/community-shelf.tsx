@@ -22,10 +22,10 @@ export function CommunityShelf({ communities, selected }: Props) {
           <li key={id} className="w-28 shrink-0">
             {/* Tapping the open community again goes back to everyone. */}
             <Link href={active ? '/discover' : `/discover?community=${id}`} scroll={false} aria-current={active ? 'true' : undefined} className="group block rounded-sleeve">
-              <span className={cn('relative block aspect-square rounded-sleeve outline-2 outline-offset-2', active ? 'outline-ink' : 'outline-transparent group-hover:outline-stone')}>
-                <Sleeve genre={id} className="size-full rounded-sleeve border border-ink/10" />
+              <span className={cn('relative block aspect-square rounded-sleeve outline-2 outline-offset-2', active ? 'outline-chalk' : 'outline-transparent group-hover:outline-seam')}>
+                <Sleeve genre={id} className="size-full rounded-sleeve border border-chalk/10" />
                 {joined && (
-                  <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full border border-paper bg-ink text-paper">
+                  <span className="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full border border-night bg-chalk text-night">
                     <Check className="size-4" aria-hidden />
                     <span className="sr-only">{words.joinedLabel}</span>
                   </span>

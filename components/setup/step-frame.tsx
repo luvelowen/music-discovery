@@ -58,14 +58,14 @@ export function StepFrame({ step, editing, title, body, skippable, onNext, child
                 {STEPS.map((item, position) => {
                   const content = (
                     <>
-                      <span className={cn('block h-1 rounded-sm transition-colors', position <= index ? 'bg-ink' : 'bg-stone')} />
+                      <span className={cn('block h-1 rounded-sm transition-colors', position <= index ? 'bg-flame' : 'bg-seam')} />
                       <span className="mt-2 hidden text-sm sm:block">{t.steps[item]}</span>
                     </>
                   );
                   return (
                     <li key={item} className={position === index ? 'font-semibold' : 'text-muted'}>
                       {position < index ? (
-                        <Link href={`/setup/${item}`} aria-label={t.steps[item]} className="flex min-h-11 flex-col justify-center hover:text-ink">{content}</Link>
+                        <Link href={`/setup/${item}`} aria-label={t.steps[item]} className="flex min-h-11 flex-col justify-center hover:text-chalk">{content}</Link>
                       ) : (
                         <span aria-current={position === index ? 'step' : undefined} className="flex min-h-11 flex-col justify-center">{content}</span>
                       )}
@@ -77,7 +77,7 @@ export function StepFrame({ step, editing, title, body, skippable, onNext, child
             </nav>
           )}
 
-          <h1 ref={heading} tabIndex={-1} className="text-[clamp(1.875rem,3.4vw,2.75rem)] leading-[1.12] font-semibold tracking-[-0.02em]">
+          <h1 ref={heading} tabIndex={-1} className="poster text-[clamp(2.75rem,6vw,5rem)]">
             {title}
           </h1>
           <p className="mt-3 max-w-xl leading-relaxed text-muted">{body}</p>
@@ -90,7 +90,7 @@ export function StepFrame({ step, editing, title, body, skippable, onNext, child
           {saveFailed && <p role="alert" className="mt-4 text-sm text-danger">{t.setup.saveFailed}</p>}
         </div>
 
-        <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-stone bg-paper px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pr-16 lg:pl-[max(3rem,calc((100vw-80rem)/2))]">
+        <div className="sticky bottom-0 z-10 flex items-center gap-3 border-t border-seam bg-night px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:pr-16 lg:pl-[max(3rem,calc((100vw-80rem)/2))]">
           <ButtonLink href={backHref} variant="quiet" aria-label={t.setup.back} className="w-12 shrink-0 px-0! sm:w-auto sm:px-4!">
             <ArrowLeft className="size-5 shrink-0" aria-hidden />
             <span className="hidden sm:inline">{t.setup.back}</span>
@@ -100,11 +100,11 @@ export function StepFrame({ step, editing, title, body, skippable, onNext, child
         </div>
       </div>
 
-      <aside className="hidden bg-mist lg:block">
+      <aside className="hidden bg-cherry lg:block">
         <div className="sticky top-0 flex min-h-[calc(100dvh-5rem)] flex-col px-10 py-10 xl:pr-[max(3rem,calc((100vw-80rem)/2))] xl:pl-14">
           <div className="my-auto w-full max-w-md self-center">
             <CoverRecord genres={profile.genres} className="w-full" />
-            {profile.username && <p className="mt-6 text-2xl font-semibold tracking-tight break-all">{profile.username}</p>}
+            {profile.username && <p className="mt-6 text-4xl font-display font-extrabold break-all">{profile.username}</p>}
             <p className={cn('text-muted', profile.username ? 'mt-2' : 'mt-6')}>
               {profile.genres.length ? profile.genres.map((id) => t.genres[id]).join(', ') : t.setup.coverEmpty}
             </p>

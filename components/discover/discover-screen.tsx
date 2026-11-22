@@ -1,13 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { Sleeve } from '@/components/artwork/sleeve';
 import { PersonCard } from '@/components/people/person-card';
+import { cn } from '@/components/ui/cn';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { PageTitle } from '@/components/ui/page-title';
 import { usePeople } from '@/lib/demo/use-people';
 import { useI18n } from '@/lib/i18n/provider';
 import { GENRE_IDS, type GenreId } from '@/lib/music/genres';
 import { useProfile } from '@/lib/profile/store';
+import { SEEKING, type Seeking } from '@/lib/profile/types';
 import { toggleCommunity } from '@/lib/social/actions';
 import { isInDiscover, seePerson } from '@/lib/social/policy';
 import { compareMusic } from '@/lib/social/shared';
@@ -19,10 +22,13 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
   const words = t.community.discover;
   const { profile } = useProfile();
   const { social } = useSocial();
+  const [choice, setChoice] = useState<Seeking | 'all'>('all');
+  // The filter exists only for someone who chose both.
+  const mode = profile.seeking.length > 1 ? choice : 'all';
 
   const visible = usePeople().flatMap((person) => {
-    const seen = isInDiscover(social, person) ? seePerson(social, person) : null;
-    return seen ? [{ person, seen, rank: compareMusic(profile, seen).rank }] : [];
+    const seen = isInDiscover(social, profile, person) ? seePerson(social, profile, person) : null;
+    return seen && (mode === 'all' || seen.seeking.includes(mode)) ? [{ person, seen, rank: compareMusic(profile, seen).rank }] : [];
   });
 
   // Joined first, then the genres I picked, then the rest.
@@ -42,8 +48,26 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
     <>
       <div className="gutter pt-7 pb-6 lg:pt-10">
         <PageTitle title={words.title} body={words.body} />
+        {profile.seeking.length > 1 && (
+          <div role="group" aria-label={words.mode} className="mt-6 flex gap-5 sm:gap-8">
+            {(['all', ...SEEKING] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={mode === option}
+                onClick={() => setChoice(option)}
+                className={cn(
+                  'poster min-h-12 border-b-4 px-0.5 text-3xl sm:text-4xl',
+                  mode === option ? 'border-flame text-flame' : 'border-transparent text-muted hover:text-chalk',
+                )}
+              >
+                {option === 'all' ? words.all : t.seeking[option]}
+              </button>
+            ))}
+          </div>
+        )}
         {!social.privacy.discoverable && (
-          <div className="mt-6 flex flex-col gap-3 border-l-2 border-sage pl-4 sm:flex-row sm:items-center sm:gap-5">
+          <div className="mt-6 flex flex-col gap-3 border-l-2 border-blush pl-4 sm:flex-row sm:items-center sm:gap-5">
             <p className="text-sm leading-relaxed">{words.hidden}</p>
             <Button
               variant="secondary"
@@ -56,8 +80,8 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
         )}
       </div>
 
-      <section aria-labelledby="communities-title" className="bg-mist pt-6 pb-5">
-        <h2 id="communities-title" className="gutter mb-2 text-xl font-semibold tracking-tight">{words.communities}</h2>
+      <section aria-labelledby="communities-title" className="bg-cherry pt-6 pb-5">
+        <h2 id="communities-title" className="gutter mb-2 text-3xl font-display font-extrabold">{words.communities}</h2>
         <CommunityShelf communities={communities} selected={community} />
       </section>
 
@@ -65,9 +89,9 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
         {community ? (
           <div className="mb-9 flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <Sleeve genre={community} className="size-16 shrink-0 rounded-sleeve border border-ink/10 sm:size-24" />
+              <Sleeve genre={community} className="size-16 shrink-0 rounded-sleeve border border-chalk/10 sm:size-24" />
               <div className="min-w-0">
-                <h2 id="people-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{t.genres[community]}</h2>
+                <h2 id="people-title" className="text-2xl font-display font-extrabold sm:text-3xl">{t.genres[community]}</h2>
                 <p className="mt-1 max-w-md text-sm leading-relaxed text-muted">{words.communityBody}</p>
               </div>
             </div>
@@ -79,11 +103,11 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
             </div>
           </div>
         ) : (
-          <h2 id="people-title" className="mb-6 text-xl font-semibold tracking-tight">{words.peopleTitle}</h2>
+          <h2 id="people-title" className="text-3xl font-display font-extrabold">{words.peopleTitle}</h2>
         )}
 
         {shown.length ? (
-          <ul className="grid gap-x-10 gap-y-9 sm:grid-cols-2 sm:gap-y-14 xl:grid-cols-3">
+          <ul className="divide-y divide-seam">
             {shown.map(({ person, seen }) => (
               <li key={person.id}><PersonCard person={person} seen={seen} /></li>
             ))}

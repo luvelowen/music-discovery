@@ -6,8 +6,8 @@ type FieldProps = { label: string; help?: string; error?: string | null };
 // text-base (16px) matters: anything smaller makes iPhones zoom in when you tap the field.
 const control = (error?: string | null) =>
   cn(
-    'w-full min-w-0 rounded-control border bg-paper px-4 text-base placeholder:text-muted',
-    error ? 'border-danger' : 'border-edge hover:border-ink',
+    'w-full min-w-0 rounded-control border bg-night px-4 text-base placeholder:text-muted',
+    error ? 'border-danger' : 'border-edge hover:border-chalk',
   );
 
 function Wrapper({ id, label, help, error, children }: FieldProps & { id: string; children: ReactNode }) {

@@ -60,13 +60,13 @@ export function TracksStep({ editing }: StepProps) {
           <Button type="submit" variant="secondary"><Plus className="size-5" aria-hidden />{t.tracksStep.add}</Button>
         </form>
 
-        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-pine">{t.setup.count(tracks.length, LIMITS.tracks)}</p>
+        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-flame">{t.setup.count(tracks.length, LIMITS.tracks)}</p>
         <RemovableList
           items={tracks.map((track) => ({
             key: trackKey(track),
             title: track.title,
             detail: track.artist,
-            leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-sleeve bg-sage"><Music2 className="size-5" /></span>,
+            leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-sleeve bg-blush text-night"><Music2 className="size-5" /></span>,
             onRemove: () => updateProfile((profile) => ({ tracks: profile.tracks.filter((item) => trackKey(item) !== trackKey(track)) })),
           }))}
         />

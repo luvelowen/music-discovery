@@ -1,31 +1,35 @@
 @import 'tailwindcss';
 
 /*
-  The whole visual system. Change a value here and it changes everywhere.
-  Three radii, by role: sleeves are nearly square, controls are soft, dialogs are softest.
+  The whole visual system. The reasons behind it are in DESIGN.md.
+  Flame, blush and lamp are fills for black text. On black they can also be text.
 */
 @theme {
-  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-golos), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fira), ui-sans-serif, system-ui, sans-serif;
 
-  --color-ink: #000000;
-  --color-paper: #ffffff;
-  --color-mist: #f2f3f0;
-  --color-stone: #d8dad5;
-  --color-edge: #838981;
-  --color-muted: #585e57;
-  --color-sage: #afbdaa;
-  --color-pine: #3d5847;
-  --color-danger: #9f2f2a;
+  --color-night: #000000;
+  --color-chalk: #fff2ee;
+  --color-cherry: #23070a;
+  --color-seam: #4a1418;
+  --color-edge: #a8686b;
+  --color-muted: #d9a9a6;
+  --color-flame: #ff2a1f;
+  --color-blush: #ff8fb8;
+  --color-lamp: #ffd23f;
+  --color-vinyl: #c4120c;
+  --color-danger: var(--color-lamp);
 
-  --radius-sleeve: 0.25rem;
-  --radius-control: 0.75rem;
-  --radius-dialog: 1.5rem;
+  --radius-sleeve: 0.125rem;
+  --radius-control: 0.375rem;
+  --radius-dialog: 0.75rem;
 }
 
 @layer base {
   html {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    color-scheme: dark;
+    background: var(--color-night);
+    color: var(--color-chalk);
     -webkit-font-smoothing: antialiased;
     scroll-padding-block: 1rem 7rem;
   }
@@ -43,7 +47,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-pine);
+    outline: 2px solid var(--color-chalk);
     outline-offset: 3px;
   }
 
@@ -52,8 +56,16 @@
   }
 
   ::selection {
-    background: var(--color-sage);
+    background: var(--color-blush);
+    color: var(--color-night);
   }
+}
+
+@utility poster {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 0.95;
+  overflow-wrap: break-word;
 }
 
 @utility gutter {

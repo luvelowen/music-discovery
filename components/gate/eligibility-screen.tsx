@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from 'react';
 import { CoverRecord } from '@/components/artwork/cover';
 import { Button, ButtonLink } from '@/components/ui/button';
-import { Choice } from '@/components/ui/choice';
 import { TextField } from '@/components/ui/field';
 import { PageTitle } from '@/components/ui/page-title';
 import { useI18n } from '@/lib/i18n/provider';
@@ -21,12 +20,11 @@ export function EligibilityScreen() {
   const { t } = useI18n();
   const words = t.community.gate;
   const { profile } = useProfile();
-  const { age, student } = useSocial().social.eligibility;
+  const { age } = useSocial().social.eligibility;
 
   // The date lives only in this form's memory. It is never saved.
   const [date, setDate] = useState({ year: '', month: '', day: '' });
-  const [answer, setAnswer] = useState<boolean | null>(null);
-  const [error, setError] = useState<'invalidDate' | 'studentRequired' | null>(null);
+  const [invalid, setInvalid] = useState(false);
 
   if (age === 'minor') {
     return (
@@ -38,37 +36,11 @@ export function EligibilityScreen() {
     );
   }
 
-  if (age === 'adult' && student === false) {
-    return (
-      <div className="gutter py-16 lg:py-24">
-        <PageTitle focus title={words.notStudentTitle} body={words.notStudentBody} />
-        <div className="mt-8 flex flex-wrap gap-2">
-          <ButtonLink href="/profile">{words.backToProfile}</ButtonLink>
-          <Button
-            variant="quiet"
-            onClick={() => {
-              setAnswer(null);
-              // Reopens the student question only. The age answer stays locked.
-              updateSocial((social) => ({ ...social, eligibility: { ...social.eligibility, student: null } }));
-            }}
-          >
-            {words.changeAnswer}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   function submit(event: FormEvent) {
     event.preventDefault();
-    const group = age === 'adult' ? age : getAgeGroup(Number(date.year || NaN), Number(date.month || NaN), Number(date.day || NaN), new Date());
-    if (!group) return setError('invalidDate');
-    if (answer === null) return setError('studentRequired');
-    updateSocial((social) => ({
-      ...social,
-      // Nothing beyond the result is kept about someone under 18.
-      eligibility: { age: group, student: group === 'minor' ? null : answer },
-    }));
+    const group = getAgeGroup(Number(date.year || NaN), Number(date.month || NaN), Number(date.day || NaN), new Date());
+    if (!group) return setInvalid(true);
+    updateSocial((social) => ({ ...social, eligibility: { age: group } }));
   }
 
   return (
@@ -76,37 +48,27 @@ export function EligibilityScreen() {
       <div className="max-w-lg">
         <PageTitle title={words.title} body={words.body} />
         <form noValidate onSubmit={submit} className="mt-8 space-y-7">
-          {age === 'unknown' && (
-            <fieldset>
-              <legend className="mb-3 font-medium">{words.birth}</legend>
-              <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-2">
-                {DATE_PARTS.map(({ key, length, autoComplete }) => (
-                  <TextField
-                    key={key}
-                    label={words[key]}
-                    inputMode="numeric"
-                    autoComplete={autoComplete}
-                    maxLength={length}
-                    value={date[key]}
-                    onChange={(event) => {
-                      setDate({ ...date, [key]: event.target.value.replace(/\D/g, '') });
-                      setError(null);
-                    }}
-                  />
-                ))}
-              </div>
-            </fieldset>
-          )}
-
           <fieldset>
-            <legend className="mb-1 font-medium">{words.student}</legend>
-            <div className="flex gap-8">
-              <Choice type="radio" name="student" label={words.yes} checked={answer === true} onChange={() => { setAnswer(true); setError(null); }} />
-              <Choice type="radio" name="student" label={words.no} checked={answer === false} onChange={() => { setAnswer(false); setError(null); }} />
+            <legend className="mb-3 font-medium">{words.birth}</legend>
+            <div className="grid grid-cols-[1.4fr_1fr_1fr] gap-2">
+              {DATE_PARTS.map(({ key, length, autoComplete }) => (
+                <TextField
+                  key={key}
+                  label={words[key]}
+                  inputMode="numeric"
+                  autoComplete={autoComplete}
+                  maxLength={length}
+                  value={date[key]}
+                  onChange={(event) => {
+                    setDate({ ...date, [key]: event.target.value.replace(/\D/g, '') });
+                    setInvalid(false);
+                  }}
+                />
+              ))}
             </div>
           </fieldset>
 
-          {error && <p role="alert" className="text-sm text-danger">{words[error]}</p>}
+          {invalid && <p role="alert" className="text-sm text-danger">{words.invalidDate}</p>}
           <Button type="submit" className="w-full sm:w-auto sm:min-w-44">{words.submit}</Button>
           <p className="text-sm leading-relaxed text-muted">{words.unverified}</p>
         </form>

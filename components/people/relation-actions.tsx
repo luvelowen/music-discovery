@@ -24,7 +24,7 @@ export function RelationActions({ person, compact }: { person: Person; compact?:
   if (relation === 'connected') {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <p role="status" className="flex min-h-12 items-center gap-2 font-medium text-pine">
+        <p role="status" className="flex min-h-12 items-center gap-2 font-medium text-flame">
           <Check className="size-5" aria-hidden />
           {words.connected}
         </p>
@@ -57,7 +57,7 @@ export function RelationActions({ person, compact }: { person: Person; compact?:
   if (relation === 'outgoing') {
     return (
       <div className="flex flex-wrap items-center gap-x-2">
-        <p role="status" className="flex min-h-12 items-center gap-2 font-medium text-pine">
+        <p role="status" className="flex min-h-12 items-center gap-2 font-medium text-flame">
           <Check className="size-5" aria-hidden />
           {words.requested}
         </p>

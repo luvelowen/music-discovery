@@ -1,6 +1,6 @@
 export const GENRE_IDS = [
   'mongolianPop', 'hipHop', 'kPop', 'pop', 'indie', 'rock',
-  'longSong', 'throatSinging', 'morinKhuur', 'ethnoFusion', 'composedSongs', 'rnb',
+  'rnb',
   'electronic', 'lofi', 'jazz', 'classical', 'metal', 'jPop',
 ] as const;
 

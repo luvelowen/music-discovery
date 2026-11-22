@@ -29,13 +29,13 @@ export function AppNav({ placement }: { placement: 'top' | 'bottom' }) {
   const inApp = /^\/(discover|connections|profile|settings|people)(\/|$)/.test(path);
   if (!inApp || !isComplete(profile)) return null;
 
-  const waiting = people.filter((person) => social.relations[person.id] === 'incoming' && canViewPerson(social, person)).length;
+  const waiting = people.filter((person) => social.relations[person.id] === 'incoming' && canViewPerson(social, profile, person)).length;
   const top = placement === 'top';
 
   return (
     <nav
       aria-label={t.community.nav.label}
-      className={top ? 'hidden lg:block' : 'sticky bottom-0 z-20 border-t border-stone bg-paper pb-[env(safe-area-inset-bottom)] lg:hidden'}
+      className={top ? 'hidden lg:block' : 'sticky bottom-0 z-20 border-t border-seam bg-night pb-[env(safe-area-inset-bottom)] lg:hidden'}
     >
       <ul className={top ? 'flex gap-1' : 'grid grid-cols-4'}>
         {ITEMS.map((item) => {
@@ -49,16 +49,15 @@ export function AppNav({ placement }: { placement: 'top' | 'bottom' }) {
                 className={cn(
                   'flex items-center justify-center transition-colors',
                   top ? 'min-h-11 gap-2 rounded-control px-3 text-sm' : 'relative min-h-16 flex-col gap-1 text-xs',
-                  active ? 'font-semibold text-ink' : 'text-muted hover:text-ink',
-                  top && active && 'bg-mist',
-                )}
+                  active ? 'font-semibold text-flame' : 'text-muted hover:text-chalk',
+                                  )}
               >
                 <span className="relative">
                   <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} aria-hidden />
                 </span>
                 {t.community.nav[item.key]}
                 {item.key === 'connections' && waiting > 0 && (
-                  <span className={cn('grid size-5 place-items-center rounded-full bg-pine text-[0.6875rem] font-semibold text-paper', !top && 'absolute top-1.5 left-1/2 ml-2')}>
+                  <span className={cn('grid size-5 place-items-center rounded-full bg-flame text-[0.6875rem] font-semibold text-night', !top && 'absolute top-1.5 left-1/2 ml-2')}>
                     {waiting}
                   </span>
                 )}

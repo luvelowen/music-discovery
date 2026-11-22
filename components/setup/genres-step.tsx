@@ -27,12 +27,12 @@ export function GenresStep({ editing }: StepProps) {
         {missing ? (
           <p role="alert" className="text-danger">{t.genresStep.required}</p>
         ) : (
-          <p aria-live="polite" className="font-medium text-pine">
+          <p aria-live="polite" className="font-medium text-flame">
             {full ? t.genresStep.limit : t.genresStep.selected(genres.length, LIMITS.genres)}
           </p>
         )}
       </div>
-      <ul className="grid grid-cols-3 gap-x-3.5 gap-y-6 sm:grid-cols-6 sm:gap-x-4">
+      <ul className="grid grid-cols-3 gap-x-3.5 gap-y-6 sm:grid-cols-4 xl:grid-cols-5 sm:gap-x-4">
         {GENRE_IDS.map((id) => (
           <li key={id}>
             <GenreTile

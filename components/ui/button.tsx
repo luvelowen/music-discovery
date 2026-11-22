@@ -3,10 +3,10 @@ import type { ComponentProps } from 'react';
 import { cn } from './cn';
 
 const VARIANTS = {
-  primary: 'bg-ink text-paper hover:bg-pine',
-  secondary: 'border border-edge bg-paper text-ink hover:border-ink',
-  quiet: 'text-ink hover:bg-mist',
-  danger: 'bg-danger text-paper hover:bg-danger/90',
+  primary: 'bg-flame font-semibold text-night hover:bg-chalk',
+  secondary: 'border border-edge bg-night text-chalk hover:border-chalk',
+  quiet: 'text-chalk hover:bg-cherry',
+  danger: 'bg-danger font-semibold text-night hover:bg-chalk',
 };
 
 type Variant = { variant?: keyof typeof VARIANTS };

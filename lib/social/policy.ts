@@ -13,21 +13,26 @@ export function canInteract(social: Social, person: Person) {
   return isEligible(social.eligibility) && person.age === 'adult' && !social.blocked.includes(person.id);
 }
 
-export function isInDiscover(social: Social, person: Person) {
-  return canInteract(social, person) && person.privacy.discoverable;
+/** People meet only over something they both want. This keeps dating-only people away from friends-only people. */
+export function sharesSeeking(me: Profile, them: Profile) {
+  return me.seeking.some((item) => them.seeking.includes(item));
 }
 
-export function canViewPerson(social: Social, person: Person) {
+export function isInDiscover(social: Social, me: Profile, person: Person) {
+  return canInteract(social, person) && person.privacy.discoverable && sharesSeeking(me, person.profile);
+}
+
+export function canViewPerson(social: Social, me: Profile, person: Person) {
   if (!canInteract(social, person)) return false;
   const relation = social.relations[person.id];
-  return person.privacy.discoverable || relation === 'incoming' || relation === 'outgoing' || relation === 'connected';
+  return relation === 'incoming' || relation === 'outgoing' || relation === 'connected' || isInDiscover(social, me, person);
 }
 
 /** What I may see of someone. Always use this instead of person.profile. */
-export function seePerson(social: Social, person: Person): Profile | null {
-  if (!canViewPerson(social, person)) return null;
+export function seePerson(social: Social, me: Profile, person: Person): Profile | null {
+  if (!canViewPerson(social, me, person)) return null;
   const viewer = social.relations[person.id] === 'connected' ? 'connection' : 'stranger';
-  return getVisibleProfile(person.profile, viewer, person.privacy);
+  return getVisibleProfile(person.profile, viewer, person.privacy, me.seeking.includes('dating'));
 }
 
 // Genres only. They are always visible, so this rule can't reveal someone's hidden artists or songs.
@@ -39,7 +44,7 @@ export type RequestProblem = 'unavailable' | 'notAccepting' | 'needsSharedGenre'
 
 export function requestProblem(social: Social, me: Profile, person: Person, now: number): RequestProblem | null {
   const relation = social.relations[person.id];
-  if (!isInDiscover(social, person) || (relation && relation !== 'declined')) return 'unavailable';
+  if (!isInDiscover(social, me, person) || (relation && relation !== 'declined')) return 'unavailable';
   if (person.privacy.requests === 'nobody') return 'notAccepting';
   if (person.privacy.requests === 'sharedMusic' && !sharesGenre(me, person.profile)) return 'needsSharedGenre';
   if (social.requestLog.filter((time) => now - time < DAY).length >= SOCIAL_LIMITS.requestsPerDay) return 'dailyLimit';
@@ -49,6 +54,7 @@ export function requestProblem(social: Social, me: Profile, person: Person, now:
 /** The same rule in the other direction: can this person send me a request? */
 export function canReceiveFrom(social: Social, me: Profile, person: Person) {
   if (!canInteract(social, person) || social.relations[person.id] || !social.privacy.discoverable) return false;
+  if (!sharesSeeking(me, person.profile)) return false;
   if (social.privacy.requests === 'nobody') return false;
   return social.privacy.requests === 'everyone' || sharesGenre(me, person.profile);
 }

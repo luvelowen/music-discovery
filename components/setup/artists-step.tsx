@@ -70,7 +70,7 @@ export function ArtistsStep({ editing }: StepProps) {
             <ul className="flex flex-wrap gap-2">
               {suggestions.map((artist) => (
                 <li key={artist.id}>
-                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-control bg-mist px-3.5 text-sm transition-colors hover:bg-sage">
+                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-control bg-cherry px-3.5 text-sm transition-colors hover:bg-seam">
                     {artistName(artist, locale)}
                   </button>
                 </li>
@@ -80,14 +80,14 @@ export function ArtistsStep({ editing }: StepProps) {
         )}
         {!full && text.trim() && suggestions.length === 0 && <p className="mt-4 text-sm text-muted">{t.artistsStep.noMatch}</p>}
 
-        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-pine">{t.setup.count(artists.length, LIMITS.artists)}</p>
+        <p aria-live="polite" className="mt-8 mb-1 text-sm font-medium text-flame">{t.setup.count(artists.length, LIMITS.artists)}</p>
         <RemovableList
           items={artists.map((artist) => {
             const name = artistName(artist, locale);
             return {
               key: artist.id,
               title: name,
-              leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-sage font-semibold">{[...name][0]}</span>,
+              leading: <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-full bg-blush text-night font-semibold">{[...name][0]}</span>,
               onRemove: () => updateProfile((profile) => ({ artists: profile.artists.filter((item) => item.id !== artist.id) })),
             };
           })}

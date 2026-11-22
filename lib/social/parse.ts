@@ -41,7 +41,6 @@ export function parseSocial(raw: string | null): Social {
   return {
     eligibility: {
       age: eligibility.age === 'adult' || eligibility.age === 'minor' ? eligibility.age : 'unknown',
-      student: typeof eligibility.student === 'boolean' ? eligibility.student : null,
     },
     privacy: {
       discoverable: asBoolean(privacy.discoverable, DEFAULT_PRIVACY.discoverable),
