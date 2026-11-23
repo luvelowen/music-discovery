@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { startTransition, useActionState } from 'react';
 import { forgotAction, logInAction, signUpAction, type AuthState } from '@/app/auth-actions';
 import { LegalLinks } from '@/components/legal/legal-links';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonLink } from '@/components/ui/button';
 import { Choice } from '@/components/ui/choice';
 import { TextField } from '@/components/ui/field';
-import { PageTitle } from '@/components/ui/page-title';
+import { shownMark } from '@/lib/consent/text';
 import { useI18n } from '@/lib/i18n/provider';
+import { AuthFrame } from './auth-frame';
 import { PasswordFields } from './password-fields';
 
 const DATE_PARTS = [
@@ -20,7 +21,7 @@ const DATE_PARTS = [
 const ACTIONS = { signup: signUpAction, login: logInAction, forgot: forgotAction };
 
 export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const words = t.account;
   const [{ error }, send, pending] = useActionState<AuthState, FormData>(ACTIONS[mode], {});
 
@@ -30,8 +31,7 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
   const submit = { signup: words.signUp, login: words.logIn, forgot: words.sendCode }[mode];
 
   return (
-    <div className="mx-auto w-full max-w-sm px-5 pt-10 pb-16 sm:px-0 sm:pt-16">
-      <PageTitle title={title} body={body} />
+    <AuthFrame title={title} body={body}>
       <form
         action={send}
         noValidate
@@ -58,7 +58,9 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
         {mode !== 'forgot' && <PasswordFields choosing={joining} error={error} />}
 
         {mode === 'login' && (
-          <Link href="/forgot" className="inline-flex min-h-11 items-center text-sm text-accent hover:underline">{words.forgot}</Link>
+          <div className="-mt-3 flex justify-end">
+            <Link href="/forgot" className="inline-flex min-h-11 items-center text-sm text-accent hover:underline">{words.forgot}</Link>
+          </div>
         )}
 
         {joining && (
@@ -74,6 +76,9 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
               {error === 'birth' && <p role="alert" className="mt-2 text-sm text-danger">{words.errors.birth}</p>}
             </fieldset>
             <div>
+              {/* Which words were on the screen, so that is what gets saved as agreed. */}
+              <input type="hidden" name="shownLocale" value={locale} />
+              <input type="hidden" name="shownMark" value={shownMark('signup', locale)} />
               <Choice type="checkbox" name="consent" label={words.consent} className="items-start! text-sm leading-relaxed" />
               <p className="mt-1 text-xs leading-relaxed text-muted">{words.consentNote}</p>
               <LegalLinks newTab />
@@ -82,22 +87,22 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
           </>
         )}
 
-        {(error === 'minor' || error === 'wrong' || error === 'tooMany' || error === 'sendFailed' || error === 'suspended' || error === 'closed') && (
+        {(error === 'minor' || error === 'wrong' || error === 'tooMany' || error === 'sendFailed' || error === 'suspended' || error === 'closed' || error === 'changed') && (
           <p role="alert" className="text-sm leading-relaxed text-danger">{words.errors[error]}</p>
         )}
-        <Button type="submit" disabled={pending} className="w-full disabled:opacity-70">{pending ? words.working : submit}</Button>
+        <Button type="submit" disabled={pending} className="h-12 w-full disabled:opacity-70">{pending ? words.working : submit}</Button>
       </form>
 
       {mode === 'forgot' ? (
         <Link href={email ? '/settings' : '/login'} className="mt-6 inline-flex min-h-11 items-center text-sm text-accent hover:underline">{t.setup.back}</Link>
       ) : (
-        <p className="mt-6 text-sm text-muted">
-          {joining ? words.haveAccount : words.noAccount}{' '}
-          <Link href={joining ? '/login' : '/signup'} className="inline-flex min-h-11 items-center text-accent hover:underline">
+        <div className="mt-8 border-t border-line pt-6">
+          <p className="mb-3 text-center text-sm text-muted">{joining ? words.haveAccount : words.noAccount}</p>
+          <ButtonLink href={joining ? '/login' : '/signup'} variant="secondary" className="h-12 w-full">
             {joining ? words.logIn : words.signUp}
-          </Link>
-        </p>
+          </ButtonLink>
+        </div>
       )}
-    </div>
+    </AuthFrame>
   );
 }

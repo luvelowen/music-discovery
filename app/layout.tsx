@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { themeColor: '#0c0c0e', viewportFit: 'cover', interactiveWidget: 'resizes-content' };
+export const viewport: Viewport = { themeColor: '#000000', viewportFit: 'cover', interactiveWidget: 'resizes-content' };
 
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const [{ locale }, user] = await Promise.all([getI18n(), currentUser()]);

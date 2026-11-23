@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import { applyChange, type Account, type Change } from '../account/changes.ts';
+import type { Shown } from '../consent/text.ts';
 import { parseProfile } from '../profile/parse.ts';
 import { EMPTY_PROFILE } from '../profile/types.ts';
 import { getAgeGroup } from '../social/eligibility.ts';
@@ -10,12 +11,13 @@ import { checkPassword } from './password.ts';
 
 export const PASSWORD = { min: 10, max: 128 } as const;
 export const SESSION_DAYS = 30;
-const ATTEMPTS = { max: 5, within: 15 * 60 * 1000 } as const;
+export const ATTEMPT_WINDOW = 15 * 60 * 1000;
+const ATTEMPTS = { max: 5, within: ATTEMPT_WINDOW } as const;
 const DAY = 24 * 60 * 60 * 1000;
 
 export type AuthError =
   | 'email' | 'password' | 'match' | 'birth' | 'consent' | 'minor' | 'wrong' | 'tooMany'
-  | 'code' | 'expired' | 'tries' | 'sendFailed' | 'suspended' | 'closed';
+  | 'code' | 'expired' | 'tries' | 'sendFailed' | 'suspended' | 'closed' | 'changed';
 type Result = { ok: true; userId: string } | { ok: false; error: AuthError };
 
 export type UserRow = {
@@ -39,7 +41,7 @@ export function toAccount(row: Pick<UserRow, 'profile' | 'social'>): Account {
   return { profile: parseProfile(row.profile), social: parseSocial(row.social) };
 }
 
-export type SignUp = { email: string; password: string; again: string; year: number; month: number; day: number; consent: boolean };
+export type SignUp = { email: string; password: string; again: string; year: number; month: number; day: number; consent: boolean; shown: Shown | null };
 
 // Plain ASCII only, which is all this app's mailer can deliver to. It also rules out line breaks.
 export function isEmail(email: string) {
@@ -129,6 +131,13 @@ export function endSession(db: DatabaseSync, token: string) {
 export function userForSession(db: DatabaseSync, token: string, now = Date.now()) {
   return db
     .prepare('SELECT users.* FROM users JOIN sessions ON sessions.user_id = users.id WHERE sessions.token_hash = ? AND sessions.expires_at > ? AND NOT EXISTS (SELECT 1 FROM suspensions WHERE suspensions.user_id = users.id)')
+    .get(digest(token), now) as UserRow | undefined;
+}
+
+/** Kept apart on purpose: everything that uses userForSession still refuses a suspended person. */
+export function suspendedForSession(db: DatabaseSync, token: string, now = Date.now()) {
+  return db
+    .prepare('SELECT users.* FROM users JOIN sessions ON sessions.user_id = users.id JOIN suspensions ON suspensions.user_id = users.id WHERE sessions.token_hash = ? AND sessions.expires_at > ?')
     .get(digest(token), now) as UserRow | undefined;
 }
 

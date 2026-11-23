@@ -4,6 +4,7 @@ import { Compass, MessageCircle, Settings, UserRound, UsersRound } from 'lucide-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Avatar } from '@/components/profile/avatar';
+import { AppMark } from '@/components/ui/app-mark';
 import { cn } from '@/components/ui/cn';
 import { useAccount } from '@/lib/account/provider';
 import { useChat } from '@/lib/chat/provider';
@@ -50,12 +51,12 @@ export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center',
-                side ? 'min-h-11 gap-3 rounded-control px-2.5' : 'relative min-h-16 flex-col justify-center gap-1 text-[0.6875rem] tracking-tight',
-                side && (active ? 'bg-raised font-semibold' : 'hover:bg-surface'),
+                side ? 'min-h-11 gap-3 rounded-control px-2.5' : 'relative min-h-15 flex-col justify-center gap-0.5 text-[0.6875rem] font-medium tracking-tight',
+                side && (active ? 'bg-raised font-semibold text-chalk' : 'text-chalk/85 hover:bg-surface'),
                 !side && (active ? 'text-accent' : 'text-muted'),
               )}
             >
-              <Icon className={cn('size-5 shrink-0', side && 'text-accent')} strokeWidth={active ? 2.2 : 1.7} aria-hidden />
+              <Icon className={cn('size-5 shrink-0', side && 'text-accent', !side && 'size-6')} strokeWidth={active ? 2.2 : 1.7} aria-hidden />
               {t.community.nav[item.key]}
               {count > 0 && (
                 <span className={cn('font-semibold text-accent', side ? 'ml-auto' : 'absolute top-1.5 left-1/2 ml-3')}>{count}</span>
@@ -69,15 +70,21 @@ export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
 
   if (!side) {
     return (
-      <nav aria-label={t.community.nav.label} className="sticky bottom-0 z-20 border-t border-line bg-sidebar pb-[env(safe-area-inset-bottom)] lg:hidden">
-        {list}
+      // A floating frosted bar, as in Apple's music app on phones.
+      <nav aria-label={t.community.nav.label} className="sticky bottom-0 z-20 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
+        <div className="rounded-[1.75rem] border border-line bg-sidebar/80 px-1 shadow-[0_8px_32px_var(--color-night)] backdrop-blur-xl backdrop-saturate-150">
+          {list}
+        </div>
       </nav>
     );
   }
 
   return (
-    <div className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r border-line bg-sidebar p-3 lg:flex">
-      <Link href="/" className="mb-5 flex min-h-12 items-center px-2.5 leading-tight font-bold">{t.appName}</Link>
+    <div className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col overflow-y-auto border-r border-line bg-sidebar/90 p-3 backdrop-blur-xl lg:flex">
+      <Link href="/" className="mb-5 flex min-h-12 items-center gap-2.5 px-2.5 leading-tight font-bold">
+        <AppMark className="size-7" />
+        {t.appName}
+      </Link>
       <nav aria-label={t.community.nav.label}>{list}</nav>
       <div className="mt-auto pt-6">
         <LanguageSwitcher />

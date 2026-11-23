@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { keepTidy } from './cleanup.ts';
 
 /*
  * The database is one file on this computer: data/app.db
@@ -137,6 +138,31 @@ const SCHEMA = `
     status        TEXT NOT NULL CHECK (status IN ('received', 'closed'))
   ) STRICT;
 
+  -- Proof of consent. The words are saved once, and each yes or withdrawal points at them.
+  CREATE TABLE IF NOT EXISTS consent_texts (
+    hash TEXT PRIMARY KEY,
+    body TEXT NOT NULL
+  ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS consent_events (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind      TEXT NOT NULL CHECK (kind IN ('signup', 'chat')),
+    action    TEXT NOT NULL CHECK (action IN ('agreed', 'withdrawn')),
+    text_hash TEXT REFERENCES consent_texts(hash),
+    locale    TEXT,
+    at        INTEGER NOT NULL
+  ) STRICT;
+
+  CREATE INDEX IF NOT EXISTS consent_events_by_user ON consent_events(user_id, kind);
+
+  -- What was agreed on the sign-up form, held until the emailed code makes the account.
+  CREATE TABLE IF NOT EXISTS code_consents (
+    id_hash   TEXT PRIMARY KEY REFERENCES email_codes(id_hash) ON DELETE CASCADE,
+    text_hash TEXT NOT NULL REFERENCES consent_texts(hash),
+    locale    TEXT NOT NULL
+  ) STRICT;
+
   CREATE TABLE IF NOT EXISTS suspensions (
     user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     reason  TEXT NOT NULL,
@@ -157,11 +183,14 @@ export function databaseFile() {
 
 // Kept on globalThis so saving a file during development doesn't open a second connection.
 // Change the version in the name when the schema changes, so a running preview picks it up.
-const shared = globalThis as typeof globalThis & { appDatabaseV4?: DatabaseSync };
+const shared = globalThis as typeof globalThis & { appDatabaseV5?: DatabaseSync };
 
 export function getDb() {
-  shared.appDatabaseV4 ??= openDatabase(databaseFile());
-  return shared.appDatabaseV4;
+  if (!shared.appDatabaseV5) {
+    shared.appDatabaseV5 = openDatabase(databaseFile());
+    keepTidy(shared.appDatabaseV5);
+  }
+  return shared.appDatabaseV5;
 }
 
 export function inTransaction<T>(db: DatabaseSync, work: () => T): T {

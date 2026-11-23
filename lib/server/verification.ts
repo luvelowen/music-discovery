@@ -1,6 +1,7 @@
 import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import type { DatabaseSync } from 'node:sqlite';
 import * as accounts from './accounts.ts';
+import { keepText, recordAgreed, type Agreed } from './consent.ts';
 import { hashPassword } from './password.ts';
 
 /*
@@ -71,6 +72,8 @@ export async function beginSignUp(db: DatabaseSync, input: accounts.SignUp, now 
   const checked = accounts.checkSignUp(input, now);
   if (!checked.ok) return checked;
   const { email } = checked;
+  const agreed = keepText(db, 'signup', input.shown);
+  if (!agreed) return { ok: false, error: 'changed' };
   if (!allowSend(db, email, now)) return { ok: false, error: 'tooMany' };
 
   const password_hash = await hashPassword(input.password);
@@ -82,6 +85,7 @@ export async function beginSignUp(db: DatabaseSync, input: accounts.SignUp, now 
     !exists,
     now,
   );
+  if (!exists) db.prepare('INSERT INTO code_consents VALUES (?, ?, ?)').run(digest(token), agreed.hash, agreed.locale);
   return { ok: true, token, mail: { to: email, kind: exists ? 'exists' : 'signup', code: exists ? '' : code } };
 }
 
@@ -145,10 +149,13 @@ export function finishSignUp(db: DatabaseSync, token: string, typed: string, now
   if ('error' in used) return { ok: false, error: used.error };
   const { row } = used;
   return inTransaction<Finished>(db, () => {
+    // Read before the code is deleted, which takes this with it.
+    const agreed = db.prepare('SELECT text_hash AS hash, locale FROM code_consents WHERE id_hash = ?').get(row.id_hash) as Agreed | undefined;
     const userId = accounts.createUser(db, row.email, row.password_hash!, row.consent_at!, now);
     db.prepare("DELETE FROM email_codes WHERE purpose = 'signup' AND email = ?").run(row.email);
     if (!userId) return { ok: false, error: 'code' };
     accounts.markEmailChecked(db, userId, now);
+    recordAgreed(db, userId, 'signup', agreed ?? null, row.consent_at!);
     return { ok: true, userId };
   });
 }

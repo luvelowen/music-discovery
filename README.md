@@ -40,12 +40,18 @@ An account made before email codes existed must press **Confirm email** before i
 | --- | --- |
 | `npm run moderate` | Open reports, most urgent first. Each starts with a short id |
 | `npm run moderate -- show <report>` | One report, with any messages the reporter chose to attach |
-| `npm run moderate -- suspend <report>` | Suspends the reported person, logs them out and closes the report |
-| `npm run moderate -- close <report>` | Closes it without suspending, and erases attached messages |
+| `npm run moderate -- suspend <report>` | Suspends the reported person and logs them out. The report and its messages stay |
+| `npm run moderate -- close <report>` | Closes a report. Refuses if messages are attached |
+| `npm run moderate -- close <report> erase` | Closes it and erases the attached messages. Only when nobody needs them |
 | `npm run moderate -- suspended` | Who is suspended |
 | `npm run moderate -- restore <user id>` | Lifts a suspension |
 
 Type the id without the `<` and `>`. Closing can't be undone. Attached messages are private: don't screenshot or forward them.
+
+**If a child may be at risk, suspending is not enough.** The law requires telling the authorities immediately:
+the police (102) or the child helpline (108). Don't close that report, because it holds the evidence.
+
+A suspended person can still log in, but only to download their own data. To appeal, withdraw or delete they write to `APP_CONTACT`.
 
 ## Sending real emails
 
@@ -69,6 +75,7 @@ app/                 Pages. Each folder is a web address.
   chats/               Text chat with connected people
   privacy/ rules/      The privacy notice and community rules
   api/                 Where the screens read and save: account, people, chat, photo, export
+  suspended/           All a suspended person can open
   auth-actions.ts      Sign up, codes, log in, reset, log out, delete
   setup/[step]/        Genres, artists, songs, links, about
   profile/ discover/ people/[id]/ connections/ settings/
@@ -78,6 +85,7 @@ lib/                 Rules and data, with no visual design
   server/              Database, passwords, people, chat, moderation, email. Runs only on the server
   account/             What can change, and how the screen saves it
   people/              What screens know about other people
+  consent/             The wording people agree to
   chat/                Message limits, tidying, and live updates
   i18n/                All English and Mongolian wording
   music/ profile/ safety/ social/   The rules
@@ -120,7 +128,8 @@ If a translation is missing, `npm run typecheck` says so.
   without flickering. Mongolian is the default.
 - **The typeface is the system font on Apple devices, and Inter elsewhere.** Both must show Ө ө Ү ү. Many "Cyrillic" fonts do not.
 - **Categories are text only**, and there is one licensed photo. See `DESIGN.md`.
-- **Dating is mutual-visibility only.** Someone’s dating choice is shown only to people who also chose dating.
+- **Dating is mutual-visibility only.** People without dating see nobody’s choice at all, not even "friends",
+  because a missing tag would give dating away.
 - **Music services are links only.** A new service is registered in `lib/music/providers.ts`.
 - **TypeScript is pinned to 6.0.3.** Version 7 removed the programming interface Next.js relies on,
   so don't upgrade it until Next.js supports 7.

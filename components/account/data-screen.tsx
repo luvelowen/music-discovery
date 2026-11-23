@@ -21,13 +21,14 @@ type Props = {
   attempts: number;
   checkedAt: number | null;
   chat: { consentAt: number | null; messages: number };
+  consents: { kind: 'signup' | 'chat'; action: 'agreed' | 'withdrawn'; at: number }[];
 };
 
 function Rows({ rows }: { rows: [label: string, value: ReactNode][] }) {
   return (
     <dl className="divide-y divide-line text-sm">
-      {rows.map(([label, value]) => (
-        <div key={label} className="grid gap-1 py-2.5 sm:grid-cols-[11rem_1fr] sm:gap-4">
+      {rows.map(([label, value], index) => (
+        <div key={`${index}${label}`} className="grid gap-1 py-2.5 sm:grid-cols-[11rem_1fr] sm:gap-4">
           <dt className="text-muted">{label}</dt>
           <dd className="min-w-0 [overflow-wrap:anywhere]">{value}</dd>
         </div>
@@ -36,7 +37,7 @@ function Rows({ rows }: { rows: [label: string, value: ReactNode][] }) {
   );
 }
 
-export function DataScreen({ file, record, photoSize, sessions, attempts, checkedAt, chat, social, counts }: Props) {
+export function DataScreen({ file, record, photoSize, sessions, attempts, checkedAt, chat, social, counts, consents }: Props) {
   const { t, locale } = useI18n();
   const words = t.account.data;
   const router = useRouter();
@@ -48,7 +49,7 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
       <div className="flex flex-col items-start justify-between gap-4 pb-8 sm:flex-row sm:items-end">
         <PageTitle title={words.title} body={words.body} />
         <div className="flex shrink-0 flex-wrap gap-2">
-          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-control bg-accent px-5 py-2 font-semibold text-night hover:bg-chalk">{words.download}</a>
+          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-control bg-deep px-5 py-2 font-semibold text-chalk hover:bg-deep-lit">{words.download}</a>
           <Button variant="secondary" onClick={() => router.refresh()}>{words.refresh}</Button>
         </div>
       </div>
@@ -91,6 +92,12 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
         />
       </SettingsSection>
 
+      {consents.length > 0 && (
+        <SettingsSection title={words.history}>
+          <Rows rows={consents.map((item) => [formatDateTime(item.at), words.event[`${item.kind}_${item.action}`]])} />
+        </SettingsSection>
+      )}
+
       <SettingsSection title={words.activity}>
         <Rows
           rows={[
@@ -107,6 +114,12 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
             [words.attempts, attempts],
           ]}
         />
+      </SettingsSection>
+
+      <SettingsSection title={words.omittedTitle}>
+        <ul className="space-y-2 py-1 text-sm leading-relaxed">
+          {words.omitted.map((line) => <li key={line}>{line}</li>)}
+        </ul>
       </SettingsSection>
 
       <SettingsSection title={words.notStored}>

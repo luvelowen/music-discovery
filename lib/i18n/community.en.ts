@@ -62,7 +62,8 @@ export const communityEn = {
     connectedNote: 'You’re connected, so you can chat and see each other’s full profiles.',
     unavailableTitle: 'This profile isn’t available',
     blockedTitle: (name: string) => `You blocked ${name}`,
-    blockedBody: 'You won’t see each other. You can undo this in Settings.',
+    blockedBody: 'You won’t see each other. You can still report them, or undo this in Settings.',
+    blockedUnnamed: 'You blocked this person',
     block: 'Block',
     report: 'Report',
     blockTitle: (name: string) => `Block ${name}?`,
@@ -74,6 +75,8 @@ export const communityEn = {
 
   report: {
     title: (name: string) => `Report ${name}`,
+    titleUnnamed: 'Report this person',
+    attachNote: 'Attached messages are kept until the moderator closes the report. Others are erased if that person deletes their account.',
     note: 'This goes to the moderator. The person you report isn’t told.',
     attach: 'Attach our last 30 messages for the moderator',
     question: 'What’s wrong?',
@@ -109,7 +112,10 @@ export const communityEn = {
   },
 
   settings: {
-    dataBody: 'See or download everything saved about you.',
+    dataBody: 'See or download what’s saved about you.',
+    unnamed: 'Someone from a closed chat',
+    pastChats: 'Closed chats',
+    pastChatsBody: 'People who wrote to you before a chat closed. You can still report them.',
     dates: 'Meeting someone',
     datesBody: 'For a first date or a first gig together.',
     dateTips: [
@@ -140,16 +146,16 @@ export const communityEn = {
     blockedEmpty: 'You haven’t blocked anyone.',
     unblock: 'Unblock',
     reports: 'Your reports',
-    reportsBody: 'To report someone, open their profile and choose Report.',
+    reportsBody: 'Choose Report on their profile, or next to their name under Blocked people.',
     reportsEmpty: 'You haven’t reported anyone.',
     reportStatus: { received: 'Waiting for the moderator', closed: 'Reviewed' },
     language: 'Language',
     account: 'Delete account',
-    accountBody: 'This erases your account from the database. Reports stay for safety.',
+    accountBody: 'This erases your account. Reports stay, with any messages attached to them.',
     deleteAction: 'Delete my account',
     deleteTitle: 'Delete your account?',
-    deleteBody: 'This erases your email, password, profile, picture, connections, messages, settings, blocks and log-ins. Reports stay for safety, and backups until they are deleted. You can’t undo it.',
+    deleteBody: 'This erases your email, password, profile, picture, connections, messages, settings, blocks and log-ins. Reports stay for safety with the reported username and any attached messages, and backups stay until they are deleted. You can’t undo it.',
     understand: 'I understand this is permanent',
-    deleteConfirm: 'Delete everything',
+    deleteConfirm: 'Delete for good',
   },
 };

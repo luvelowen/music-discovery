@@ -47,7 +47,7 @@ export const accountEn = {
   month: 'Month',
   day: 'Day',
   consent: 'I agree that my email, scrambled password, profile and choices, including dating if I pick it, are saved in this app’s database until I delete my account, and that my email address is used to send me codes. I agree to the Privacy notice and Community rules.',
-  consentNote: 'The database is a file on the computer running the app. Codes are sent by an email service, which may be outside Mongolia and sees only your email address and the code. You can see or delete your data at any time.',
+  consentNote: 'The database is a file on the computer running the app. Codes are sent by an email service, which may be outside Mongolia and sees only your email address and the code. You can see or download your data at any time, and delete your account unless it is suspended.',
   working: 'One moment',
   errors: {
     email: 'Enter a full email address, like name@example.com.',
@@ -63,6 +63,7 @@ export const accountEn = {
     tries: 'Too many wrong codes. Send a new one.',
     suspended: 'This account is suspended. Contact the person running the app, listed on the Privacy page.',
     closed: 'Sign-ups aren’t open yet.',
+    changed: 'The wording you agree to has changed. Reload the page and read it again.',
     sendFailed: 'The email couldn’t be sent. Try again in a few minutes.',
   } satisfies Record<AuthError, string>,
   status: {
@@ -76,9 +77,30 @@ export const accountEn = {
   account: 'Account',
   myData: 'See my saved data',
   deletePassword: 'Your password',
+  suspension: {
+    title: 'Your account is suspended',
+    body: 'Nobody can find or message you, and you can’t use the app. You can still download your data.',
+    restTitle: 'To appeal, withdraw consent or delete your account',
+    rest: 'Write to the contact above. These can’t be done in the app during a suspension.',
+  },
   data: {
     title: 'My data',
-    body: 'Everything saved about you, read fresh from the database.',
+    body: 'What’s saved about you, read fresh from the database.',
+    history: 'Consent history',
+    event: {
+      signup_agreed: 'Agreed at sign-up',
+      signup_withdrawn: 'Withdrew sign-up consent',
+      chat_agreed: 'Agreed to chat',
+      chat_withdrawn: 'Withdrew chat consent',
+    },
+    omittedTitle: 'Not in the download',
+    omitted: [
+      'The secret values behind your password, log-ins and email codes.',
+      'Reports other people made about you, to protect them.',
+      'Other people’s decisions, such as declining or blocking you.',
+      'Messages from others that you cleared. The file says how many there are.',
+      'Copies inside backups and reports.',
+    ],
     where: 'Where it’s saved',
     whereBody: 'In this app’s own database. Only your email address and codes go to the email service.',
     refresh: 'Refresh',

@@ -5,11 +5,11 @@ import type { DiscoverPage, MyReport, Overview, PeopleError, PeopleInput, Seen }
 import { SEEKING, type Seeking } from '../profile/types.ts';
 import { parseProfile } from '../profile/parse.ts';
 import { compareMusic } from '../social/shared.ts';
-import { canView, isInDiscover, requestProblem, seeMember } from '../social/policy.ts';
+import { canView, isListed, requestProblem, seeMember } from '../social/policy.ts';
 import { DAY, REPORT_REASONS, SOCIAL_LIMITS, type Relation } from '../social/types.ts';
 import { inTransaction } from './db.ts';
 import { getDiscoverable, getMember, isBlocked, relationBetween, type LoadedMember } from './members.ts';
-import { evidenceFor } from './chat.ts';
+import { evidenceFor, pastChatsOf } from './chat.ts';
 
 /*
  * Everything between two people. Every function starts from who is signed in, and checks again.
@@ -43,12 +43,12 @@ export function getPerson(db: DatabaseSync, meId: string, themId: string, now = 
 }
 
 export function getOverview(db: DatabaseSync, meId: string, now = Date.now()): Overview {
-  const overview: Overview = { connected: [], incoming: [], outgoing: [], blocked: [], reports: [] };
+  const overview: Overview = { connected: [], incoming: [], outgoing: [], blocked: [], pastChats: [], reports: [] };
 
   const blocked = db
     .prepare('SELECT blocks.blocked_id, blocks.username FROM blocks WHERE blocker_id = ? ORDER BY created_at DESC')
     .all(meId) as { blocked_id: string; username: string }[];
-  overview.blocked = blocked.map((row) => ({ id: row.blocked_id, username: row.username }));
+  overview.blocked = blocked.map((row) => ({ id: row.blocked_id, username: row.username, chatted: evidenceFor(db, meId, row.blocked_id).length > 0 }));
   overview.reports = (
     db.prepare('SELECT id, reported_name AS username, reason, created_at AS at, status FROM reports WHERE reporter_id = ? ORDER BY created_at DESC').all(meId) as MyReport[]
   ).map((row) => ({ ...row }));
@@ -71,6 +71,9 @@ export function getOverview(db: DatabaseSync, meId: string, now = Date.now()): O
     const seen = them && toSeen(me, them, relation, sent);
     if (seen) overview[relation].push(seen);
   }
+  // Removed, blocked by them and suspended all look the same here: a closed chat, with no name.
+  const listed = new Set([...overview.connected.map((seen) => seen.id), ...overview.blocked.map((item) => item.id)]);
+  overview.pastChats = pastChatsOf(db, meId).filter((chat) => !listed.has(chat.id));
   return overview;
 }
 
@@ -82,16 +85,19 @@ export function discover(db: DatabaseSync, meId: string, query: DiscoverQuery = 
 
   const sent = sentToday(db, meId, now);
   const wanted: Seeking | undefined = SEEKING.find((item) => item === query.seeking);
+  const dates = me.profile.seeking.includes('dating');
   const search = query.search?.normalize('NFC').trim().slice(0, 80).toLocaleLowerCase();
   const counts: Partial<Record<GenreId, number>> = {};
   const found: { seen: Seen; rank: number }[] = [];
 
   for (const them of getDiscoverable(db, meId)) {
-    if (!isInDiscover(me, them)) continue;
-    const seen = toSeen(me, them, relationBetween(db, meId, them.id), sent);
+    const relation = relationBetween(db, meId, them.id);
+    if (!isListed(me, them, relation)) continue;
+    const seen = toSeen(me, them, relation, sent);
     if (!seen) continue;
     const { profile } = seen;
-    if (wanted && !profile.seeking.includes(wanted)) continue;
+    // Without dating, "friends" means everyone listed and "dating" means nobody, so the filter tells them nothing.
+    if (wanted && (dates ? !profile.seeking.includes(wanted) : wanted === 'dating')) continue;
     // Search only what this viewer can see, so it can't be used to probe hidden artists.
     if (search) {
       const words = [profile.username, ...profile.artists.flatMap((artist) => [artist.name, artistName(artist, 'mn')])];
@@ -173,7 +179,8 @@ export function applyPeople(db: DatabaseSync, meId: string, input: PeopleInput, 
         setState(themId, meId, 'accepted');
         return done;
       case 'decline':
-        if (relation === 'incoming') setState(themId, meId, 'declined');
+        // The time stays as it was. A new one would move it in the sender's list and tell them.
+        if (relation === 'incoming') db.prepare("UPDATE requests SET state = 'declined' WHERE from_id = ? AND to_id = ?").run(themId, meId);
         return done;
       case 'remove':
         if (relation === 'connected') db.prepare('DELETE FROM requests WHERE (from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?)').run(meId, themId, themId, meId);
@@ -184,15 +191,17 @@ export function applyPeople(db: DatabaseSync, meId: string, input: PeopleInput, 
         blockPerson(db, meId, themId, them.profile.username, now);
         return done;
       case 'report': {
-        // Still possible after they hid, blocked me or removed me, if we had any contact.
+        // Still possible after I blocked them, or after they hid, blocked me or removed me, if they wrote to me.
         const row = db.prepare('SELECT profile FROM users WHERE id = ?').get(themId) as { profile: string } | undefined;
-        const visible = them && !blocked && canView(me, them, relation);
+        const visible = Boolean(them && !blocked && canView(me, them, relation));
+        const iBlocked = db.prepare('SELECT username FROM blocks WHERE blocker_id = ? AND blocked_id = ?').get(meId, themId) as { username: string } | undefined;
         const contact = () => db.prepare('SELECT 1 FROM messages WHERE sender_id = ? AND recipient_id = ? LIMIT 1').get(themId, meId);
-        if (!row || (!visible && !contact())) return fail('unavailable');
+        if (!row || (!visible && !iBlocked && !contact())) return fail('unavailable');
 
         const { count } = db.prepare('SELECT COUNT(*) AS count FROM reports WHERE reporter_id = ? AND created_at > ?').get(meId, now - DAY) as { count: number };
         if (count >= SOCIAL_LIMITS.reportsPerDay) return fail('reportLimit');
-        const username = parseProfile(row.profile).username;
+        // The reporter reads this name back, so it may only be one they could already see. The moderator looks up the rest.
+        const username = visible ? parseProfile(row.profile).username : (iBlocked?.username ?? '');
         // Messages go to the moderator only when the reporter chose to attach them.
         const attached = input.evidence ? JSON.stringify(evidenceFor(db, meId, themId)) : null;
         db.prepare("INSERT INTO reports VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'received')")

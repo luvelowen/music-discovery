@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { PageTitle } from '@/components/ui/page-title';
 import { useChat } from '@/lib/chat/provider';
+import { shownMark } from '@/lib/consent/text';
 import type { ChatProblem } from '@/lib/chat/types';
 import { useI18n } from '@/lib/i18n/provider';
 
 export function ChatConsent() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const words = t.chat.consent;
   const { act } = useChat();
   const [busy, setBusy] = useState(false);
@@ -16,7 +17,7 @@ export function ChatConsent() {
 
   async function agree() {
     setBusy(true);
-    const result = await act({ kind: 'consent' });
+    const result = await act({ kind: 'consent', shown: { locale, mark: shownMark('chat', locale) } });
     setBusy(false);
     setError(result.ok ? null : result.error);
   }

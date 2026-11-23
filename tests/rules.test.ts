@@ -99,7 +99,7 @@ test('strangers never receive photo, bio or links', () => {
   assert.equal(seen.photo, null);
   assert.deepEqual(seen.links, []);
   assert.ok(!('futureField' in seen));
-  assert.deepEqual(getVisibleProfile(profile, 'connection'), profile);
+  assert.deepEqual(getVisibleProfile(profile, 'connection', undefined, true), profile);
 });
 
 test('damaged or edited saved data cannot get in', () => {

@@ -1,6 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { cleanMessage } from '../chat/clean.ts';
 import { CHAT_LIMITS, type ChatError, type ChatInput, type ChatList, type Message, type Thread } from '../chat/types.ts';
+import { parseShown } from '../consent/text.ts';
+import { keepText, recordAgreed, recordWithdrawn, type Agreed } from './consent.ts';
 import { inTransaction } from './db.ts';
 import { getMember, isBlocked, relationBetween } from './members.ts';
 
@@ -82,6 +84,19 @@ export function evidenceFor(db: DatabaseSync, me: string, them: string) {
   return rows.reverse().map((row) => ({ from: row.sender_id === me ? 'reporter' : 'reported', text: row.body, at: row.created_at }));
 }
 
+/** Who has written to me, so they can still be reported once the chat has closed. Words only where I could read them. */
+export function pastChatsOf(db: DatabaseSync, me: string) {
+  const senders = db
+    .prepare('SELECT sender_id AS id, MAX(created_at) AS at FROM messages WHERE recipient_id = ? AND sender_id IN (SELECT id FROM users) GROUP BY sender_id ORDER BY at DESC')
+    .all(me) as { id: string; at: number }[];
+  const reading = consentAt(db, me) !== null;
+  const newest = db.prepare('SELECT body FROM messages WHERE sender_id = ? AND recipient_id = ? AND seq > ? ORDER BY seq DESC LIMIT 1');
+  return senders.map(({ id, at }) => {
+    const row = newest.get(id, me, clearedTo(db, me, id)) as { body: string } | undefined;
+    return { id, at, last: reading && row ? [...row.body].slice(0, 80).join('') : null, chatted: Boolean(row) };
+  });
+}
+
 function save(db: DatabaseSync, from: string, to: string, id: string, body: string, now: number): { ok: true } | Failed {
   const repeated = db.prepare('SELECT recipient_id FROM messages WHERE sender_id = ? AND client_id = ?').get(from, id) as { recipient_id: string } | undefined;
   // A retry after a lost reply is saved once.
@@ -107,13 +122,18 @@ function clear(db: DatabaseSync, me: string, them: string) {
   db.prepare('DELETE FROM chat_reads WHERE user_id = ? AND other_id = ?').run(me, them);
 }
 
-export function turnOn(db: DatabaseSync, me: string, now = Date.now()) {
-  db.prepare('INSERT INTO chat_consents VALUES (?, ?) ON CONFLICT(user_id) DO NOTHING').run(me, now);
+export function turnOn(db: DatabaseSync, me: string, now = Date.now(), agreed: Agreed | null = null) {
+  inTransaction(db, () => {
+    const added = db.prepare('INSERT INTO chat_consents VALUES (?, ?) ON CONFLICT(user_id) DO NOTHING').run(me, now);
+    if (added.changes) recordAgreed(db, me, 'chat', agreed, now);
+  });
 }
 
 /** Withdrawing consent erases what I wrote for both people, and clears my copy of what I received. */
-export function turnOff(db: DatabaseSync, me: string) {
+export function turnOff(db: DatabaseSync, me: string, now = Date.now()) {
   inTransaction(db, () => {
+    const agreedAt = consentAt(db, me);
+    if (agreedAt !== null) recordWithdrawn(db, me, 'chat', agreedAt, now);
     db.prepare('DELETE FROM messages WHERE sender_id = ?').run(me);
     db.prepare('DELETE FROM messages WHERE recipient_id = ? AND NOT EXISTS (SELECT 1 FROM users WHERE users.id = messages.sender_id)').run(me);
     for (const { id } of db.prepare('SELECT DISTINCT sender_id AS id FROM messages WHERE recipient_id = ?').all(me) as { id: string }[]) clear(db, me, id);
@@ -125,7 +145,12 @@ export function turnOff(db: DatabaseSync, me: string) {
 export function parseChatInput(value: unknown): ChatInput | null {
   if (typeof value !== 'object' || value === null) return null;
   const { kind, personId, id, text, seq } = value as Record<string, unknown>;
-  if (kind === 'consent' || kind === 'off') return { kind };
+  if (kind === 'off') return { kind };
+  if (kind === 'consent') {
+    const { locale, mark } = ((value as { shown?: unknown }).shown ?? {}) as Record<string, unknown>;
+    const shown = parseShown(locale, mark);
+    return shown && { kind, shown };
+  }
   if (!isId(personId)) return null;
   if (kind === 'delete') return { kind, personId };
   if (kind === 'read' && typeof seq === 'number' && Number.isSafeInteger(seq) && seq > 0) return { kind, personId, seq };
@@ -135,11 +160,13 @@ export function parseChatInput(value: unknown): ChatInput | null {
 
 export function applyChat(db: DatabaseSync, me: string, input: ChatInput, now = Date.now()): { ok: true } | Failed {
   if (input.kind === 'consent') {
-    turnOn(db, me, now);
+    const agreed = keepText(db, 'chat', input.shown);
+    if (!agreed) return fail('changed');
+    turnOn(db, me, now, agreed);
     return { ok: true };
   }
   if (input.kind === 'off') {
-    turnOff(db, me);
+    turnOff(db, me, now);
     return { ok: true };
   }
 

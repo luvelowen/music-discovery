@@ -2,10 +2,10 @@
 
 **Read this before changing anything people can see.** Update it when the design changes.
 
-## Direction (changed by the owner on 2026-11-22)
+## Direction (changed by the owner on 2026-11-22, colors narrowed on 2026-11-23)
 
 Dating, friends and music for adults in Ulaanbaatar, after dark.
-**It should feel like Apple Music, on black, with purple as the second color.** Easy on the eyes, clean, never AI-looking.
+**It should feel like Apple Music, on black, in exactly four colors: black, white, a light purple and a deep purple.** Easy on the eyes, clean, never AI-looking.
 Borrow Apple Music's structure: sidebar, tab bar, big bold titles, grouped lists.
 Never its logo, name, red, artwork or icons.
 The owner rejected bright red and pink, category pictures, and pages full of photos. Don't bring them back.
@@ -14,12 +14,12 @@ The owner rejected bright red and pink, category pictures, and pages full of pho
 
 | # | Rule | What it means here |
 | --- | --- | --- |
-| 1 | Kill the purple gradient | The owner chose purple, so it is **flat** and soft. Still no gradients |
+| 1 | Kill the purple gradient | The owner chose two purples, both **flat**. Still no gradients |
 | 2 | Choose real fonts | Apple’s system font on Apple devices, Inter elsewhere |
 | 3 | Delete the template chrome | No eyebrows, pills, icon circles, decorative blocks or filler |
 | 4 | Break the three-card row | No rows of cards. Lists, and grouped rounded lists in settings |
 | 5 | Swap emojis for icons | A few plain Lucide icons, only where they help |
-| 6 | Use real photos and screens | One real photo of Ulaanbaatar. People’s own photos after they connect. No more |
+| 6 | Use real photos and screens | One real photo of Ulaanbaatar, on welcome and beside the sign-in forms. People’s own photos after they connect. No more |
 | 7 | Write a specific headline | The earbud line |
 | 8 | Cut the scroll fade-ins | Nothing animates on scroll |
 | 9 | Remove fake testimonials | No quotes, ratings, counts or logos until real |
@@ -31,29 +31,33 @@ The owner rejected bright red and pink, category pictures, and pages full of pho
 ## Color
 
 Tokens live in `app/globals.css`. Never type a hex value into a screen.
+**Four colors only.** Every other token is a mix of these four (`color-mix`), never a new color.
 
-| Token | Hex | Job |
+| Token | Value | Job |
 | --- | --- | --- |
-| night | `#0c0c0e` | Page |
-| sidebar | `#151518` | Sidebar and tab bar |
-| surface | `#19191c` | Grouped lists and inputs |
-| raised | `#242428` | Secondary buttons, selected sidebar item |
-| line | `#2d2d32` | Dividers |
-| edge | `#77767e` | Input borders |
-| chalk | `#dddce1` | Text. Never pure white |
-| muted | `#a09fa7` | Secondary text |
-| accent | `#aa96dc` | Soft purple: main button, links, icons, selected things |
-| danger | `#de958c` | Errors and deleting |
+| night | `#000000` black | Page |
+| chalk | `#ffffff` white | Text, errors |
+| accent | `#b9a6f5` light purple | Links, icons, selected tabs and filters, the alert icon on errors |
+| deep | `#5b3bc4` deep purple | Main button, my chat messages, picked choices. White text on it |
+| sidebar | deep 9% into black | Sidebar and tab bar (frosted) |
+| surface | deep 17% into black | Grouped lists and inputs |
+| raised | deep 34% into black | Secondary buttons, selected sidebar item |
+| line | white 17% into black | Dividers |
+| edge | white 50% into black | Input borders |
+| muted | white 66% into black | Secondary text |
+| deep-lit | white 18% into deep | Main button on hover |
+| danger | = white | There is no red. Every error message gets a light purple alert icon from `globals.css` |
 
 ## Type and layout
 
 - System font on Apple devices, Inter elsewhere. Page titles use the `title` class: 30–34px, weight 700, sentence case.
 - Only the welcome headline is bigger. Inputs are never under 16px.
 - A new font must contain Ө ө Ү ү. "Supports Cyrillic" is not proof.
-- Desktop: a 16rem sidebar inside the app. Phones: a tab bar. Welcome, sign-in and setup have neither.
-- Chat fills the window: list beside the thread on wide screens, one pane on phones. My messages are flat purple with black text.
+- Desktop: a 16rem frosted sidebar inside the app, with the ring mark beside the name. Phones: a floating, frosted, rounded tab bar. Welcome, sign-in and setup have neither.
+- Sign-in, sign-up, forgotten password and code screens share `components/auth/auth-frame.tsx`: the night photo with the earbud line on the left (wide screens only, stays put while the form scrolls), the ring mark, title and form on the right. The other way in is a full-width secondary button under a divider.
+- Chat fills the window: list beside the thread on wide screens, one pane on phones. My messages are flat deep purple with white text.
 - A profile reads like an artist's page: photo and name, the anthem, numbered lists, then words and facts.
-- Selected filters and tabs are raised with purple text. Filled purple is for the main button and picked choices in forms.
+- Selected filters and tabs are raised with light purple text. Filled deep purple is for the main button and picked choices in forms.
 - Block and Report are quiet, at the end of a profile. A category with nobody in it shows no number.
 - Saving shows itself while editing, and on Profile and Settings only when it fails.
 - A 60rem content column. Forms are one column. Corners: controls 10px, groups 14px, dialogs 16px.
@@ -62,7 +66,7 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
 ## Photo
 
 `public/photos/ub-night.jpg`, by @naranbayar_1, Unsplash photo-1613739519297-e7947a931ba4,
-[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page only.
+[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page and beside the sign-in forms on wide screens.
 
 ## Before calling a change done
 

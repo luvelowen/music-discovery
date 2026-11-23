@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { DataScreen } from '@/components/account/data-screen';
 import { getI18n } from '@/lib/i18n/server';
 import { storedData, toAccount } from '@/lib/server/accounts';
+import { consentHistory } from '@/lib/server/consent';
 import { DB_LABEL, getDb } from '@/lib/server/db';
 import { operator } from '@/lib/server/operator';
 import { requireUser } from '@/lib/server/session';
@@ -12,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
   const user = await requireUser();
+  const consents = consentHistory(getDb(), user.id).map(({ kind, action, at }) => ({ kind, action, at }));
   const { sessions, attempts, checkedAt, chat, social } = storedData(getDb(), user);
   const account = toAccount(user);
   // The browser gets a shortened copy: never the scrambled password, never a session.
@@ -33,6 +35,7 @@ export default async function Page() {
       chat={chat}
       social={account.social}
       counts={social}
+      consents={consents}
     />
   );
 }

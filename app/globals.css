@@ -2,21 +2,30 @@
 
 /*
   The whole visual system. The reasons behind it are in DESIGN.md.
-  Laid out like a music player: sidebar, big titles, grouped lists. Black, with one flat soft purple.
+  Laid out like a music player: sidebar, big titles, grouped lists.
+
+  Exactly four colors: black, white, a light purple and a deep purple.
+  Every other token below is one of those four mixed with another, never a new color.
 */
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --color-night: #0c0c0e;
-  --color-sidebar: #151518;
-  --color-surface: #19191c;
-  --color-raised: #242428;
-  --color-line: #2d2d32;
-  --color-edge: #77767e;
-  --color-chalk: #dddce1;
-  --color-muted: #a09fa7;
-  --color-accent: #aa96dc;
-  --color-danger: #de958c;
+  /* The four colors */
+  --color-night: #000000;
+  --color-chalk: #ffffff;
+  --color-accent: #b9a6f5;
+  --color-deep: #5b3bc4;
+
+  /* Mixes of the four */
+  --color-sidebar: color-mix(in oklab, var(--color-deep) 9%, var(--color-night));
+  --color-surface: color-mix(in oklab, var(--color-deep) 17%, var(--color-night));
+  --color-raised: color-mix(in oklab, var(--color-deep) 34%, var(--color-night));
+  --color-line: color-mix(in oklab, var(--color-chalk) 17%, var(--color-night));
+  --color-edge: color-mix(in oklab, var(--color-chalk) 50%, var(--color-night));
+  --color-muted: color-mix(in oklab, var(--color-chalk) 66%, var(--color-night));
+  --color-deep-lit: color-mix(in oklab, var(--color-deep) 82%, var(--color-chalk));
+  /* No red: errors are white, marked with an icon and words. */
+  --color-danger: var(--color-chalk);
 
   --radius-control: 0.625rem;
   --radius-panel: 0.875rem;
@@ -56,6 +65,18 @@
   ::selection {
     background: var(--color-accent);
     color: var(--color-night);
+  }
+
+  /* There is no red, so every error message starts with a purple alert icon (Lucide's circle-alert). */
+  .text-danger:is([role='alert'], [role='status'])::before {
+    content: '';
+    display: inline-block;
+    width: 1.05em;
+    height: 1.05em;
+    margin-inline-end: 0.45em;
+    vertical-align: -0.17em;
+    background: var(--color-accent);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' x2='12' y1='8' y2='12'/%3E%3Cline x1='12' x2='12.01' y1='16' y2='16'/%3E%3C/svg%3E") center / contain no-repeat;
   }
 }
 

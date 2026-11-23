@@ -77,7 +77,7 @@ export const en = {
     username: 'Username',
     usernameHelp: 'Everyone can see this. 3–24 letters, numbers, dots or underscores.',
     seeking: 'What are you here for?',
-    seekingHelp: 'Pick one or both. Dating is shown only to people who picked it too.',
+    seekingHelp: 'Pick one or both. Dating is shown only to people who picked it too. People without dating don’t see what anyone picked.',
     bio: 'Short bio (optional)',
     bioHelp: 'Only connections see this.',
     bioPlaceholder: 'Learning bass. Always looking for new indie bands.',

@@ -6,14 +6,19 @@ Don't share a public address until every box below is ticked.
 ## 1. People and law
 
 - [ ] A Mongolian lawyer has answered the questions in [DATA.md](DATA.md) and read `/privacy` and `/rules`.
+- [ ] The lawyer has said whether an email code identifies people well enough for consent (data law 8.4, 18.2.2).
+- [ ] Any assessment the Human Rights Commission must see first has been done (data law 23).
+- [ ] There are written internal procedures, a security officer, a breach register and terms of use.
 - [ ] A real age check is chosen. Today the app believes the date of birth people type. Never face scans.
-- [ ] A named adult reads reports every day, in Mongolian, and knows when to go to the police or child protection.
+- [ ] A named adult reads reports every day, in Mongolian, and has practised the child-at-risk steps in [SAFETY.md](SAFETY.md).
 - [ ] Someone owns the breach plan: who is told, and how fast.
 - [ ] A native speaker has read every Mongolian screen.
 
 ## 2. Server
 
 - [ ] A server in Mongolia, unless the lawyer says otherwise, with a permanent disk and Node.js 22.18 or newer.
+- [ ] Reachable only from Mongolia (order A/90 3.2.2), unless the lawyer says otherwise.
+- [ ] A security audit is booked (order A/90 3.1.5).
 - [ ] Only **one** copy of the app running. The database is one file.
 - [ ] The disk is encrypted, and few people can open it. Messages are readable in that file.
 - [ ] An HTTPS proxy on the same server sends visitors to `localhost:3000`. It must:

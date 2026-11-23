@@ -1,7 +1,7 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { createSession, endSession, SESSION_DAYS, userForSession } from './accounts.ts';
+import { createSession, endSession, SESSION_DAYS, suspendedForSession, userForSession } from './accounts.ts';
 import { getDb } from './db.ts';
 
 const COOKIE = 'session';
@@ -19,9 +19,16 @@ export const currentUser = cache(async () => {
   return userForSession(getDb(), token) ?? null;
 });
 
+/** A suspended person. Use it only for their own page and their own download. */
+export const suspendedUser = cache(async () => {
+  const token = (await cookies()).get(COOKIE)?.value;
+  if (!token || !(await isOurHost())) return null;
+  return suspendedForSession(getDb(), token) ?? null;
+});
+
 /** Put this at the top of every page that belongs to an account. */
 export async function requireUser() {
-  return (await currentUser()) ?? redirect('/login');
+  return (await currentUser()) ?? redirect((await suspendedUser()) ? '/suspended' : '/login');
 }
 
 export async function startSession(userId: string) {

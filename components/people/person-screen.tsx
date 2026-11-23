@@ -13,6 +13,7 @@ import type { PeopleProblem, Seen } from '@/lib/people/types';
 import { useProfile } from '@/lib/profile/store';
 import { compareMusic } from '@/lib/social/shared';
 import { RelationActions } from './relation-actions';
+import { ReportButton } from './report-button';
 import { ReportDialog } from './report-dialog';
 
 const CHECK_EVERY = 7000;
@@ -59,11 +60,21 @@ export function PersonScreen({ id }: { id: string }) {
 
   if (!person) {
     const blocked = overview?.blocked.find((item) => item.id === id);
+    const past = overview?.pastChats.find((item) => item.id === id);
     return (
       <div className="gutter py-14">
-        <PageTitle focus title={blocked ? words.blockedTitle(blocked.username) : words.unavailableTitle} body={blocked ? words.blockedBody : undefined} />
+        <PageTitle
+          focus
+          title={blocked ? (blocked.username ? words.blockedTitle(blocked.username) : words.blockedUnnamed) : words.unavailableTitle}
+          body={blocked ? words.blockedBody : undefined}
+        />
         {notice}
-        <ButtonLink href="/discover" className="mt-6">{words.back}</ButtonLink>
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          <ButtonLink href="/discover">{words.back}</ButtonLink>
+          {(blocked || past) && (
+            <ReportButton id={id} name={blocked?.username ?? ''} canAttach={Boolean((blocked ?? past)?.chatted)} onDone={() => setReported(true)} />
+          )}
+        </div>
       </div>
     );
   }
@@ -122,7 +133,7 @@ export function PersonScreen({ id }: { id: string }) {
         cancel={words.keep}
         onConfirm={blockThem}
       />
-      <ReportDialog ref={reportDialog} person={person} onDone={() => setReported(true)} />
+      <ReportDialog ref={reportDialog} id={id} name={profile.username} canAttach={relation === 'connected'} onDone={() => setReported(true)} />
     </div>
   );
 }

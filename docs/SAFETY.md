@@ -19,7 +19,7 @@ This document separates what exists from what is missing.
 | The browser blocks location, camera and microphone for this app | `next.config.ts` | None known |
 | Photos are redrawn, and stripped again on the server | `lib/profile/resize-photo.ts`, `lib/server/photo.ts` | Nobody reviews what a photo shows |
 | Only adults with a confirmed email, a finished profile and no suspension meet | `lib/server/members.ts` | Age is self-declared |
-| Dating is shown only to people who also chose it | `lib/profile/visibility.ts` | Someone can switch dating on just to look |
+| Dating is shown only to people who also chose it. Others see no choice at all | `lib/profile/visibility.ts` | Someone can switch dating on just to look |
 | People meet only over a shared intention | `lib/social/policy.ts` | No gender or preference filter |
 | Hidden from Discover until switched on | `lib/social/types.ts` | None known |
 | Search looks only at what the searcher may see | `lib/server/people.ts` | None known |
@@ -27,8 +27,12 @@ This document separates what exists from what is missing.
 | Requests carry no text, 10 a day, declines are silent | `lib/server/people.ts` | A new account resets the limit |
 | Usernames are unique, including look-alike spellings | `lib/server/accounts.ts` | Close misspellings still work |
 | Blocking works both ways, immediately | `lib/server/people.ts` | The person can make another account |
+| People can report someone they blocked, or who wrote to them in a closed chat | `lib/server/people.ts` | Not someone who hid or blocked them without ever writing |
 | Reports reach a moderator command, urgent first | `scripts/moderate.ts` | **Only useful if a person runs it** |
-| Suspension logs the person out and hides them | `lib/server/moderation.ts` | They can sign up with another email |
+| Suspension hides the person and keeps the evidence | `lib/server/moderation.ts` | They can sign up with another email |
+| A suspended person can open only their own download | `lib/server/session.ts` | Appeals and deletion need a real contact |
+| Closing a report with evidence needs the word `erase` | `scripts/moderate.ts` | No retention period yet |
+| The agreed wording, time and any withdrawal are saved | `lib/server/consent.ts` | Older accounts have only a time |
 | Chat needs a connection, no block and consent from both | `lib/server/chat.ts` | Not end-to-end encrypted |
 | A reporter may attach the last 30 messages | `lib/server/chat.ts` | Nothing is attached unless they choose it |
 | Clearing a chat clears only your side | `lib/server/chat.ts` | Erased when both have cleared it |
@@ -52,8 +56,17 @@ Emergency numbers were removed from the app on 2026-11-22 at the owner's request
 6. **Legal review** of hosting, consent, retention and child protection. See [DATA.md](DATA.md).
 7. **An independent security review**, and tests on real phones.
 
-An adult must never be able to discover, view or message a minor. Suspend a suspected minor first, then investigate.
-This is the most important rule in the product.
+An adult must never be able to discover, view or message a minor. This is the most important rule in the product.
+
+**Suspected child at risk:**
+
+1. Tell the police (102) or child helpline (108) immediately. Child Protection Law article 16.2 makes this a duty.
+2. Suspend the account. That keeps the report and its evidence.
+3. Run `npm run backup`. Don't close the report, and don't investigate by contacting anyone yourself.
+4. Never copy, forward or screenshot sexual images of a child. Tell the police.
+
+**Waiting for the lawyer:** messages not attached to a report are erased when either account is deleted.
+Whether they may be held as evidence, and for how long, is undecided.
 
 ## Decisions the founder needs to make
 

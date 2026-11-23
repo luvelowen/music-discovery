@@ -14,7 +14,7 @@ Signed-in people see and download their own record at **Settings → See my save
 | Profile: photo, music, links, answers, choices | `users.profile` | JSON text, until changed or deleted |
 | Privacy and followed categories | `users.social` | JSON text. Older accounts may also hold unused sample connections |
 | Requests and connections | `requests` | Who, whom, the state and when |
-| Request limit | `request_log` | Who sent a request and when |
+| Request limit | `request_log` | Who sent a request and when, for a day |
 | Blocks | `blocks` | Who blocked whom, with the name at the time |
 | Reports | `reports` | **Kept after an account is deleted.** Attached messages are erased when closed |
 | Suspensions | `suspensions` | Who, why and when |
@@ -23,17 +23,22 @@ Signed-in people see and download their own record at **Settings → See my save
 | Email confirmed | `email_checks` | When it was confirmed |
 | Waiting codes | `email_codes` | A fingerprint of the code and, at sign-up, the email and scrambled password. About a day |
 | Emails sent | `email_sends` | A fingerprint of the email, to limit sending |
-| Chat consent | `chat_consents` | Separate from sign-up consent |
+| Chat consent | `chat_consents` | Whether it is on now. Separate from sign-up consent |
+| Proof of consent | `consent_events`, `consent_texts` | Time, language, the exact words and withdrawals, until account deletion. The words themselves hold no personal data and stay |
+| Consent during sign-up | `code_consents` | Until the code is used or cleared |
 | Messages | `messages` | **Readable text**, until both people clear them, the sender turns chat off or either account is deleted |
 | Read and clear markers | `chat_reads`, `chat_clears` | The newest message read or cleared |
 | Language | none | A cookie |
 | Date of birth | none | Used once and never saved |
 | Location, gender, sexual orientation | none | Never asked |
 
+**Expired records** (log-ins, codes, counts for limits) are removed at the app's first use after starting and then
+every hour it runs, by `lib/server/cleanup.ts`.
+
 **Chat and the law**
 
 - Messages are private correspondence, which article 4.1.12 calls sensitive. Chat stays off until separate consent.
-- Turning chat off withdraws consent and erases that person's messages.
+- Turning chat off withdraws consent and erases that person's messages, except copies already attached to a report.
 - Removing or blocking someone closes the chat but keeps the saved messages until one of the deletions above.
 
 **Email**
@@ -66,10 +71,15 @@ Law on Personal Data Protection (2021), from the unofficial English translation:
 | 20, 22 | Security procedures, a breach plan, notice to affected people, yearly record to the Human Rights Commission | Someone must own this before launch |
 | 23 | An assessment when sensitive data is processed regularly | Do it before collecting preferences |
 
-A ministry procedure (order A/90, 2023-09-11) is reported by
-[DLA Piper](https://www.dlapiperdataprotection.com/index.html?c=MN&t=security) to require the processing server to be
-**located in Mongolia and accessible only from Mongolia**. Its exact scope for private companies is unclear:
-the procedure itself could not be read.
+**Order A/90 (2023-09-11), read in Mongolian on 2026-11-22:** a server processing sensitive data must be
+**in Mongolia (3.2.1) and accessible only from Mongolia (3.2.2)**. It also asks for a security officer, a risk
+assessment every two years, a yearly audit and a log of changes. How far it binds a small private app is for the lawyer.
+
+Also found in the official texts:
+
+- Data law 8.4 and 18.2.2 may require identifying a person before their consent counts. An email code may not be enough.
+- Data law 23 may require an assessment sent to the Human Rights Commission before processing starts.
+- Child Protection Law 16.2 requires reporting a child at risk immediately.
 
 ## The choices
 
@@ -88,6 +98,9 @@ the procedure itself could not be read.
 3. Is consent enough for hosting in Seoul?
 4. Which age check is lawful without biometrics?
 5. How long may reports and deleted-account records be kept?
+6. Is an email code enough identification for consent?
+7. May evidence be held when its sender withdraws or deletes their account?
+8. Must existing users agree again when consent wording changes?
 
 ## Sources
 

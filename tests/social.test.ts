@@ -75,7 +75,7 @@ test('dating is shown only to people who chose it, and intentions must overlap',
   const both = person('both', { profile: { seeking: ['friends', 'dating'] } });
   const dater = person('dater', { profile: { seeking: ['dating'] } });
   assert.deepEqual(names(db, friends), ['both']);
-  assert.deepEqual(getPerson(db, friends, both)!.profile.seeking, ['friends']);
+  assert.deepEqual(getPerson(db, friends, both)!.profile.seeking, [], 'all or nothing, so an empty list gives nothing away');
   assert.equal(getPerson(db, friends, dater), null);
   assert.deepEqual(go(db, friends, 'send', dater), { ok: false, error: 'unavailable' });
   assert.deepEqual(getPerson(db, dater, both)!.profile.seeking, ['friends', 'dating']);
@@ -218,7 +218,7 @@ test('blocking works both ways at once, and unblocking restores nothing', () => 
     assert.equal(getOverview(db, me).connected.length, 0);
     assert.equal(go(db, me, 'send', them).ok, false);
   }
-  assert.deepEqual(getOverview(db, a).blocked, [{ id: b, username: 'b_person' }]);
+  assert.deepEqual(getOverview(db, a).blocked, [{ id: b, username: 'b_person', chatted: false }]);
   assert.deepEqual(getOverview(db, b).blocked, [], 'they are not told');
   go(db, b, 'unblock', a);
   assert.equal(getPerson(db, b, a), null, 'only the blocker can unblock');
@@ -329,7 +329,7 @@ test('artist and song switches also cover the anthem, for strangers only', () =>
   const profile: Profile = { ...EMPTY_PROFILE, tracks: [{ title: 'Song', artist: 'Band' }], anthem: { title: 'Song', artist: 'Band' } };
   assert.equal(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showTracks: false }).anthem, null);
   assert.deepEqual(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showArtists: false }).anthem, { title: 'Song', artist: '' });
-  assert.deepEqual(getVisibleProfile(profile, 'connection', { ...DEFAULT_PRIVACY, showTracks: false }), profile);
+  assert.deepEqual(getVisibleProfile(profile, 'connection', { ...DEFAULT_PRIVACY, showTracks: false }, true), profile);
 });
 
 test('damaged social data falls back to the safe defaults', () => {

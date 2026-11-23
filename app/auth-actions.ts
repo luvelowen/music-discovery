@@ -7,6 +7,7 @@ import { getI18n } from '@/lib/i18n/server';
 import { isComplete } from '@/lib/profile/validation';
 import * as accounts from '@/lib/server/accounts';
 import { getDb } from '@/lib/server/db';
+import { parseShown } from '@/lib/consent/text';
 import { canTakeSignUps } from '@/lib/server/operator';
 import { clearOutbox, sendMail, type Mail } from '@/lib/server/mail';
 import { clearCodeToken, clearSession, currentUser, isOurHost, readCodeToken, saveCodeToken, startSession } from '@/lib/server/session';
@@ -60,6 +61,7 @@ export async function signUpAction(_: AuthState, form: FormData): Promise<AuthSt
     month: number(form, 'month'),
     day: number(form, 'day'),
     consent: form.get('consent') === 'on',
+    shown: parseShown(form.get('shownLocale'), form.get('shownMark')),
   });
   if (!started.ok) {
     if (started.error === 'minor') store.set(AGE_LOCK, '1', { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 24 * 60 * 60 });
@@ -140,8 +142,15 @@ export async function codeAction(_: AuthState, form: FormData): Promise<AuthStat
 export async function logInAction(_: AuthState, form: FormData): Promise<AuthState> {
   if (!(await isOurHost())) return { error: 'wrong' };
   const db = getDb();
-  const result = await accounts.logIn(db, text(form, 'email'), text(form, 'password'));
-  if (!result.ok) return { error: result.error };
+  const email = text(form, 'email');
+  const result = await accounts.logIn(db, email, text(form, 'password'));
+  if (!result.ok) {
+    // 'suspended' is only answered to the right password. That session opens their own data and nothing else.
+    const held = result.error === 'suspended' ? accounts.findByEmail(db, accounts.tidyEmail(email)) : undefined;
+    if (!held) return { error: result.error };
+    await startSession(held.id);
+    redirect('/suspended');
+  }
   await startSession(result.userId);
   redirect(isComplete(accounts.accountOf(db, result.userId).profile) ? '/profile' : '/setup/genres');
 }

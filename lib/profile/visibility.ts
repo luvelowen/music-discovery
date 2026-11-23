@@ -23,7 +23,8 @@ export function getVisibleProfile(
   const songs = connected || privacy.showTracks;
   return {
     username: profile.username,
-    seeking: profile.seeking.filter((item) => item === 'friends' || viewerDates),
+    // All or nothing. Leaving out only "dating" made a dating-only person the one with an empty list.
+    seeking: viewerDates ? profile.seeking : [],
     genres: profile.genres,
     artists: connected || privacy.showArtists ? profile.artists : [],
     tracks: songs ? profile.tracks.map((track) => visibleTrack(track, connected, privacy)) : [],

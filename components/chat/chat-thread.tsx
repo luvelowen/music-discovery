@@ -3,8 +3,10 @@
 import { ArrowLeft, Flag, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ReportButton } from '@/components/people/report-button';
 import { ReportDialog } from '@/components/people/report-dialog';
 import { Avatar } from '@/components/profile/avatar';
+import { SeekingTags } from '@/components/profile/seeking-tags';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { cn } from '@/components/ui/cn';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -28,12 +30,17 @@ export function ChatThread({ id }: { id: string }) {
   if (!overview) return <p role="status" className="gutter py-12 text-muted">{t.chat.loading}</p>;
   const person = overview.connected.find((item) => item.id === id);
   if (person) return <OpenThread person={person} reported={reported} onReported={() => setReported(true)} />;
+  const blocked = overview.blocked.find((item) => item.id === id);
+  const closed = blocked ?? overview.pastChats.find((item) => item.id === id);
 
   return (
     <div className="gutter py-12">
       <PageTitle focus title={t.chat.unavailableTitle} body={t.chat.unavailableBody} />
       {reported && <p role="status" className="mt-4 max-w-xl rounded-panel bg-surface p-4 text-sm leading-relaxed">{t.community.report.done}</p>}
-      <ButtonLink href="/chats" className="mt-6">{t.chat.back}</ButtonLink>
+      <div className="mt-6 flex flex-wrap gap-2.5">
+        <ButtonLink href="/chats">{t.chat.back}</ButtonLink>
+        {closed && <ReportButton id={id} name={blocked?.username ?? ''} canAttach={closed.chatted} onDone={() => setReported(true)} />}
+      </div>
     </div>
   );
 }
@@ -182,7 +189,7 @@ function OpenThread({ person, reported, onReported }: Props) {
           <Avatar profile={seen} className="size-10 text-lg" />
           <div className="min-w-0">
             <h1 className="truncate font-bold">{seen.username}</h1>
-            <p className="truncate text-xs text-muted">{seen.seeking.map((item) => t.seeking[item]).join(', ')}</p>
+            <SeekingTags seeking={seen.seeking} className="truncate text-xs text-muted" />
           </div>
         </Link>
         <Button variant="quiet" className="w-11 shrink-0 px-0!" aria-label={t.community.person.report} onClick={() => reportDialog.current?.showModal()}>
@@ -220,7 +227,7 @@ function OpenThread({ person, reported, onReported }: Props) {
       {problem && <p role="alert" className="border-t border-line px-4 py-2 text-sm text-danger">{words.errors[problem]}</p>}
       {theyOn ? <Composer onSend={send} /> : <p role="status" className="border-t border-line px-4 py-4 text-sm text-muted">{words.errors.theyOff}</p>}
 
-      <ReportDialog ref={reportDialog} person={person} onDone={onReported} />
+      <ReportDialog ref={reportDialog} id={id} name={seen.username} canAttach onDone={onReported} />
       <ConfirmDialog
         ref={deleteDialog}
         title={words.deleteTitle(seen.username)}
@@ -252,7 +259,7 @@ function Bubbles({ messages, name }: { messages: Message[]; name: string }) {
                 dir="auto"
                 className={cn(
                   'max-w-[82%] rounded-dialog px-3.5 py-2 leading-snug whitespace-pre-wrap [overflow-wrap:anywhere] sm:max-w-md',
-                  message.mine ? 'bg-accent text-night' : 'bg-raised',
+                  message.mine ? 'bg-deep text-chalk' : 'bg-raised',
                 )}
               >
                 <span className="sr-only">{message.mine ? t.chat.you : name}: </span>

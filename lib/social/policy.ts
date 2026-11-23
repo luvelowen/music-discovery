@@ -22,6 +22,11 @@ export function isInDiscover(me: Member, them: Member) {
   return me.id !== them.id && them.privacy.discoverable && sharesSeeking(me.profile, them.profile);
 }
 
+/** Someone I already know stays listed whatever they change to, or dropping out would show they chose dating only. */
+export function isListed(me: Member, them: Member, relation: Relation) {
+  return isInDiscover(me, them) || (relation !== 'none' && me.id !== them.id && them.privacy.discoverable);
+}
+
 export function canView(me: Member, them: Member, relation: Relation) {
   return me.id !== them.id && (relation !== 'none' || isInDiscover(me, them));
 }

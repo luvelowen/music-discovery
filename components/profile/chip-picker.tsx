@@ -28,7 +28,7 @@ export function ChipPicker<T extends string>({ label, options, names, chosen, ma
             }}
             className={cn(
               'min-h-11 rounded-control px-3.5 text-sm',
-              active ? 'bg-accent font-semibold text-night' : blocked ? 'bg-raised text-muted' : 'bg-raised hover:text-accent',
+              active ? 'bg-deep font-semibold text-chalk' : blocked ? 'bg-raised text-muted' : 'bg-raised hover:text-accent',
             )}
           >
             {names[option]}

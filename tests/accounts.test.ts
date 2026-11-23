@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseChange, type Change } from '../lib/account/changes.ts';
 import * as accounts from '../lib/server/accounts.ts';
+import { shownMark } from '../lib/consent/text.ts';
 import { hashPassword } from '../lib/server/password.ts';
 import * as verification from '../lib/server/verification.ts';
 import { openDatabase } from '../lib/server/db.ts';
 
 const NOW = Date.UTC(2026, 10, 22, 4);
-const GOOD = { email: ' Test@Example.com ', password: 'correct horse battery', again: 'correct horse battery', year: 2000, month: 5, day: 17, consent: true };
+const GOOD = { email: ' Test@Example.com ', password: 'correct horse battery', again: 'correct horse battery', year: 2000, month: 5, day: 17, consent: true, shown: { locale: 'en', mark: shownMark('signup', 'en') } as const };
 const change = (value: object) => ({ id: crypto.randomUUID(), ...value }) as Change;
 
 async function makeUser(db: ReturnType<typeof openDatabase>, input: accounts.SignUp) {

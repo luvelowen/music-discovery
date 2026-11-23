@@ -13,9 +13,9 @@ export const chatEn = {
       'Saved: your messages and their times, only so chat can work.',
       'Held by the person running this app, in the database on their computer.',
       'Not end-to-end encrypted: whoever runs the app could read them.',
-      'Never made public. A moderator sees messages only if someone in the chat attaches them to a report.',
+      'Never made public. A moderator sees messages only if someone in the chat attaches them to a report. That copy stays until the report is closed, even if you withdraw.',
       'Kept until you both delete the chat, you turn chat off or an account is deleted.',
-      'To withdraw your OK, choose Settings, then Turn off chat. That deletes what you sent.',
+      'To withdraw your OK, choose Settings, then Turn off chat. That deletes what you sent, except copies in reports. A note of when you agreed and withdrew stays until you delete your account.',
     ],
     agree: 'Agree and turn on chat',
     later: 'Not now',
@@ -42,6 +42,7 @@ export const chatEn = {
   unavailableBody: 'You can only chat while you’re connected and neither of you has blocked the other.',
   errors: {
     consent: 'Chat is off.',
+    changed: 'These words have changed. Reload the page and read them again.',
     theyOff: 'They haven’t turned on chat yet, so messages can’t be delivered.',
     notConnected: 'You can only message people you’re connected with.',
     empty: 'Type a message first.',
@@ -58,7 +59,7 @@ export const chatEn = {
     open: 'Open Chats',
     turnOff: 'Turn off chat',
     confirmTitle: 'Turn off chat?',
-    confirmBody: 'This withdraws your OK and erases what you sent, for both of you, and clears what you received. You can’t undo it.',
+    confirmBody: 'This withdraws your OK and erases what you sent, for both of you, and clears what you received. Copies already attached to reports stay until those close. You can’t undo it.',
   },
   data: { consent: 'Chat consent', none: 'Not given', messages: 'Chat messages saved' },
 };

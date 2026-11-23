@@ -7,12 +7,13 @@ import { Dialog } from '@/components/ui/dialog';
 import { TextArea } from '@/components/ui/field';
 import { useI18n } from '@/lib/i18n/provider';
 import { usePeople } from '@/lib/people/provider';
-import type { PeopleProblem, Seen } from '@/lib/people/types';
+import type { PeopleProblem } from '@/lib/people/types';
 import { REPORT_REASONS, SOCIAL_LIMITS, type ReportReason } from '@/lib/social/types';
 
-type Props = { ref: RefObject<HTMLDialogElement | null>; person: Seen; onDone: () => void };
+/** `name` is empty for a closed chat. `canAttach` means there may be messages the reporter can still attach. */
+type Props = { ref: RefObject<HTMLDialogElement | null>; id: string; name: string; canAttach: boolean; onDone: () => void };
 
-export function ReportDialog({ ref, person, onDone }: Props) {
+export function ReportDialog({ ref, id, name, canAttach, onDone }: Props) {
   const { t } = useI18n();
   const words = t.community.report;
   const { act } = usePeople();
@@ -41,7 +42,7 @@ export function ReportDialog({ ref, person, onDone }: Props) {
     if (!reason) return setMissing(true);
     attempt.current ??= crypto.randomUUID(); // The same id on a retry, so it's saved once.
     setBusy(true);
-    const result = await act({ kind: 'report', personId: person.id, id: attempt.current, reason, details, block: alsoBlock, evidence: attach });
+    const result = await act({ kind: 'report', personId: id, id: attempt.current, reason, details, block: alsoBlock, evidence: attach });
     setBusy(false);
     if (!result.ok) return setError(result.error);
     onDone();
@@ -51,7 +52,7 @@ export function ReportDialog({ ref, person, onDone }: Props) {
   }
 
   return (
-    <Dialog ref={ref} title={words.title(person.profile.username)} onClose={clear}>
+    <Dialog ref={ref} title={name ? words.title(name) : words.titleUnnamed} onClose={clear}>
       <p className="mt-3 text-sm leading-relaxed text-muted">{words.note}</p>
       <form onSubmit={submit} className="mt-5">
         <fieldset>
@@ -63,8 +64,11 @@ export function ReportDialog({ ref, person, onDone }: Props) {
         <div className="mt-4">
           <TextArea label={words.details} value={details} maxLength={SOCIAL_LIMITS.reportDetails} onChange={(event) => setDetails(event.target.value)} />
         </div>
-        {person.relation === 'connected' && (
-          <Choice type="checkbox" label={words.attach} checked={attach} onChange={(event) => setAttach(event.target.checked)} className="mt-2" />
+        {canAttach && (
+          <>
+            <Choice type="checkbox" label={words.attach} checked={attach} onChange={(event) => setAttach(event.target.checked)} className="mt-2" />
+            <p className="mb-1 pl-8 text-xs leading-relaxed text-muted">{words.attachNote}</p>
+          </>
         )}
         <Choice type="checkbox" label={words.alsoBlock} checked={alsoBlock} onChange={(event) => setAlsoBlock(event.target.checked)} />
         {missing && <p role="alert" className="mt-2 text-sm text-danger">{words.required}</p>}

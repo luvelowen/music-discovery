@@ -16,6 +16,16 @@ export type ReportRow = {
 
 const URGENT = "CASE reason WHEN 'danger' THEN 0 WHEN 'underage' THEN 1 ELSE 2 END";
 
+export function isSuspended(db: DatabaseSync, userId: string) {
+  return Boolean(db.prepare('SELECT 1 FROM suspensions WHERE user_id = ?').get(userId));
+}
+
+/** The name now. A report may hold none, when the reporter was no longer allowed to see it. */
+export function nameNow(db: DatabaseSync, userId: string) {
+  const row = db.prepare("SELECT json_extract(profile, '$.username') AS name FROM users WHERE id = ?").get(userId) as { name: string | null } | undefined;
+  return row?.name ?? null;
+}
+
 export function openReports(db: DatabaseSync) {
   return db.prepare(`SELECT * FROM reports WHERE status = 'received' ORDER BY ${URGENT}, created_at`).all() as ReportRow[];
 }
@@ -31,6 +41,7 @@ export function closeReport(db: DatabaseSync, id: string) {
   db.prepare("UPDATE reports SET status = 'closed', evidence = NULL WHERE id = ?").run(id);
 }
 
+/** Stops the person and leaves every report, and every attached message, where it was. */
 export function suspend(db: DatabaseSync, userId: string, reason: string, now = Date.now()) {
   return inTransaction(db, () => {
     if (!db.prepare('SELECT 1 FROM users WHERE id = ?').get(userId)) return false;
