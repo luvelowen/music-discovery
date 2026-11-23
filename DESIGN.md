@@ -2,12 +2,13 @@
 
 **Read this before changing anything people can see.** Update it when the design changes.
 
-## Direction (changed by the owner on 2026-11-22, colors narrowed on 2026-11-23)
+## Direction (changed by the owner on 2026-11-22, colors narrowed on 2026-11-23, "Encore" v0.2 on 2026-11-24)
 
 Dating, friends and music for adults in Ulaanbaatar, after dark.
-**It should feel like Apple Music, on black, in exactly four colors: black, white, a light purple and a deep purple.** Easy on the eyes, clean, never AI-looking.
-Borrow Apple Music's structure: sidebar, tab bar, big bold titles, grouped lists.
-Never its logo, name, red, artwork or icons.
+**v0.2 "Encore": the owner asked for new colors, a new font and a design inspired by Deezer, Apple Music, Spotify, Tinder and Equals.**
+Still black, white and two purples, now brighter: Spotify's neutral grey surfaces and pill buttons, Deezer's electric violet,
+Apple Music's structure (sidebar, tab bar, big bold titles, grouped lists), Tinder's one-question-per-screen sign-up and Equals' calm, plain wording.
+Never any of their logos, names, colors beyond ours, artwork or icons.
 The owner rejected bright red and pink, category pictures, and pages full of photos. Don't bring them back.
 
 ## The 13 standing rules
@@ -15,7 +16,7 @@ The owner rejected bright red and pink, category pictures, and pages full of pho
 | # | Rule | What it means here |
 | --- | --- | --- |
 | 1 | Kill the purple gradient | The owner chose two purples, both **flat**. Still no gradients |
-| 2 | Choose real fonts | Apple’s system font on Apple devices, Inter elsewhere |
+| 2 | Choose real fonts | Manrope for text, Montserrat Bold for titles, on every device. Both checked for Ө ө Ү ү |
 | 3 | Delete the template chrome | No eyebrows, pills, icon circles, decorative blocks or filler |
 | 4 | Break the three-card row | No rows of cards. Lists, and grouped rounded lists in settings |
 | 5 | Swap emojis for icons | A few plain Lucide icons, only where they help |
@@ -37,27 +38,35 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
 | --- | --- | --- |
 | night | `#000000` black | Page |
 | chalk | `#ffffff` white | Text, errors |
-| accent | `#b9a6f5` light purple | Links, icons, selected tabs and filters, the alert icon on errors |
-| deep | `#5b3bc4` deep purple | Main button, my chat messages, picked choices. White text on it |
-| sidebar | deep 9% into black | Sidebar and tab bar (frosted) |
-| surface | deep 17% into black | Grouped lists and inputs |
-| raised | deep 34% into black | Secondary buttons, selected sidebar item |
-| line | white 17% into black | Dividers |
-| edge | white 50% into black | Input borders |
-| muted | white 66% into black | Secondary text |
-| deep-lit | white 18% into deep | Main button on hover |
+| accent | `#cbb8ff` light lilac | Links, icons, selected filter chips (black text on it), the alert icon on errors |
+| deep | `#7c3aed` electric violet | Main button, my chat messages, picked choices, unread badges. White text on it (5.7:1) |
+| sidebar | white 5% into black | Sidebar and tab bar (frosted) |
+| surface | white 9% into black | Grouped lists, inputs, unselected chips |
+| raised | white 16% into black | Hover on surfaces |
+| glow | deep 26% into black | Selected sidebar item and the lit pill behind the selected phone tab |
+| line | white 15% into black | Dividers |
+| edge | white 45% into black | Input and secondary-button borders |
+| muted | white 68% into black | Secondary text |
+| deep-lit | white 16% into deep | Main button on hover |
 | danger | = white | There is no red. Every error message gets a light purple alert icon from `globals.css` |
 
 ## Type and layout
 
-- System font on Apple devices, Inter elsewhere. Page titles use the `title` class: 30–34px, weight 700, sentence case.
+- Manrope for text, Montserrat Bold for titles (`title` class: 28–34px, sentence case) and the `display` class for big headlines.
 - Only the welcome headline is bigger. Inputs are never under 16px.
-- A new font must contain Ө ө Ү ү. "Supports Cyrillic" is not proof.
+- A new font must contain Ө ө Ү ү. "Supports Cyrillic" is not proof: Unbounded was tried on 2026-11-24 and lacks Ө and Ү.
+  Check in the browser by measuring the letter against two different fallbacks.
+- Buttons and filter chips are pills. Inputs are 52px tall with 12px corners. A light press-down on tap is the only motion.
 - Desktop: a 16rem frosted sidebar inside the app, with the ring mark beside the name. Phones: a floating, frosted, rounded tab bar. Welcome, sign-in and setup have neither.
-- Sign-in, sign-up, forgotten password and code screens share `components/auth/auth-frame.tsx`: the night photo with the earbud line on the left (wide screens only, stays put while the form scrolls), the ring mark, title and form on the right. The other way in is a full-width secondary button under a divider.
+- Sign-in, sign-up, forgotten password and code screens share `components/auth/auth-frame.tsx`: the night photo with the earbud line on the left (wide screens only, stays put while the form scrolls), the ring mark, title and form on the right. The other way in is a one-line text link under the form.
+- Sign-up asks one thing per screen with a 3-part progress bar: account, birthday, agreement. Without JavaScript all three show at once.
+  On phones the main button waits at the bottom of the screen.
+- The birthday is three big boxes (year, month, day) that move on as you type. Underneath it shows the date written out,
+  never an age or a pass/fail: the 18+ check happens only on the server, so trying years until one passes doesn't work.
+- Phones: the floating tab bar is a pill; the selected tab's icon sits in a small lit pill.
 - Chat fills the window: list beside the thread on wide screens, one pane on phones. My messages are flat deep purple with white text.
 - A profile reads like an artist's page: photo and name, the anthem, numbered lists, then words and facts.
-- Selected filters and tabs are raised with light purple text. Filled deep purple is for the main button and picked choices in forms.
+- Selected filter chips and tabs are filled light lilac with black text. Filled electric violet is for the main button and picked choices in forms.
 - Block and Report are quiet, at the end of a profile. A category with nobody in it shows no number.
 - Saving shows itself while editing, and on Profile and Settings only when it fails.
 - A 60rem content column. Forms are one column. Corners: controls 10px, groups 14px, dialogs 16px.

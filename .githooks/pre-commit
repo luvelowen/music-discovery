@@ -1,0 +1,4 @@
+#!/bin/sh
+# Stops a commit that contains something that looks like a password or API key.
+# Turned on once with: npm.cmd run hooks
+exec node scripts/check-secrets.ts --staged

@@ -2,34 +2,37 @@
 
 /*
   The whole visual system. The reasons behind it are in DESIGN.md.
-  Laid out like a music player: sidebar, big titles, grouped lists.
+  "Encore" (v0.2): a music player after dark. Spotify's neutral blacks and pill buttons,
+  Deezer's electric violet, Apple Music's big titles and grouped lists, Tinder's one-question-at-a-time sign-up.
 
-  Exactly four colors: black, white, a light purple and a deep purple.
-  Every other token below is one of those four mixed with another, never a new color.
+  Four colors: black, white, a light lilac and an electric violet.
+  Every other token below is one of those mixed with another, never a new color. Still no gradients.
 */
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-montserrat), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   /* The four colors */
   --color-night: #000000;
   --color-chalk: #ffffff;
-  --color-accent: #b9a6f5;
-  --color-deep: #5b3bc4;
+  --color-accent: #cbb8ff;
+  --color-deep: #7c3aed;
 
-  /* Mixes of the four */
-  --color-sidebar: color-mix(in oklab, var(--color-deep) 9%, var(--color-night));
-  --color-surface: color-mix(in oklab, var(--color-deep) 17%, var(--color-night));
-  --color-raised: color-mix(in oklab, var(--color-deep) 34%, var(--color-night));
-  --color-line: color-mix(in oklab, var(--color-chalk) 17%, var(--color-night));
-  --color-edge: color-mix(in oklab, var(--color-chalk) 50%, var(--color-night));
-  --color-muted: color-mix(in oklab, var(--color-chalk) 66%, var(--color-night));
-  --color-deep-lit: color-mix(in oklab, var(--color-deep) 82%, var(--color-chalk));
+  /* Mixes of the four. Surfaces are neutral greys, so the violet only means "this matters". */
+  --color-sidebar: color-mix(in oklab, var(--color-chalk) 5%, var(--color-night));
+  --color-surface: color-mix(in oklab, var(--color-chalk) 9%, var(--color-night));
+  --color-raised: color-mix(in oklab, var(--color-chalk) 16%, var(--color-night));
+  --color-line: color-mix(in oklab, var(--color-chalk) 15%, var(--color-night));
+  --color-edge: color-mix(in oklab, var(--color-chalk) 45%, var(--color-night));
+  --color-muted: color-mix(in oklab, var(--color-chalk) 68%, var(--color-night));
+  --color-glow: color-mix(in oklab, var(--color-deep) 26%, var(--color-night));
+  --color-deep-lit: color-mix(in oklab, var(--color-deep) 84%, var(--color-chalk));
   /* No red: errors are white, marked with an icon and words. */
   --color-danger: var(--color-chalk);
 
-  --radius-control: 0.625rem;
-  --radius-panel: 0.875rem;
-  --radius-dialog: 1rem;
+  --radius-control: 0.75rem;
+  --radius-panel: 1.125rem;
+  --radius-dialog: 1.5rem;
 }
 
 @layer base {
@@ -80,11 +83,20 @@
   }
 }
 
+/* Montserrat Bold, tightened, for the big Apple Music-style titles. */
 @utility title {
-  font-size: clamp(1.875rem, 3vw, 2.125rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.125rem);
   font-weight: 700;
-  line-height: 1.18;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   overflow-wrap: anywhere;
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 @utility gutter {

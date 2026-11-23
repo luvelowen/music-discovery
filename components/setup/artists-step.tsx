@@ -71,7 +71,7 @@ export function ArtistsStep({ editing }: StepProps) {
             <ul className="flex flex-wrap gap-2">
               {suggestions.map((artist) => (
                 <li key={artist.id}>
-                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-control bg-surface px-3.5 text-sm transition-colors hover:bg-line">
+                  <button type="button" onClick={() => add(artist.name)} className="min-h-11 rounded-full bg-surface px-4 text-sm transition-colors hover:bg-raised">
                     {artistName(artist, locale)}
                   </button>
                 </li>
