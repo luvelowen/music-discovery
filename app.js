@@ -3,7 +3,7 @@
  * No server, no accounts. The card and friends list live in this browser's storage only.
  * Every piece of text reaches the page through textContent, never as HTML.
  */
-import { blend, compare, decode, emptyCard, encode, fromFriends, LIMITS, pack, sanitize, sharedCount, clean, toArtist } from './card.js';
+import { blend, compare, CONTACTS, decode, emptyCard, encode, fromFriends, LIMITS, pack, sanitize, sharedCount, clean, toArtist, toHandle } from './card.js';
 import { DATA } from './data.js';
 import { STRINGS } from './i18n.js';
 import { storyImage } from './story.js';
@@ -56,6 +56,14 @@ const t = () => STRINGS[state.lang];
 const w = () => DATA.words[state.lang];
 const genreName = (id) => DATA.genreNames[state.lang][id] ?? id;
 const artistLabel = (artist) => (state.lang === 'mn' && DATA.artists.find((known) => known.id === artist.id)?.mn) || artist.name;
+const APPS = { instagram: 'Instagram', telegram: 'Telegram', messenger: 'Messenger' };
+const contactKinds = (card) => Object.keys(CONTACTS).filter((kind) => card.contacts?.[kind]);
+
+/** Buttons that open a friend's chat in the app they chose. The address is always rebuilt from the username. */
+const messageButtons = (card) => contactKinds(card).map((kind) => h('a', {
+  class: 'btn btn-secondary btn-big', href: CONTACTS[kind].url(card.contacts[kind]), target: '_blank', rel: 'noopener noreferrer',
+}, icon('chat'), t().friend.message(APPS[kind])));
+
 const same = (a, b) => JSON.stringify(pack(a, DATA)) === JSON.stringify(pack(b, DATA));
 
 // ---------- Building elements safely ----------
@@ -87,6 +95,7 @@ const ICONS = {
   check: ['M20 6 9 17l-5-5'],
   right: ['M9 18l6-6-6-6'],
   plus: ['M5 12h14', 'M12 5v14'],
+  chat: ['M7.9 20A9 9 0 1 0 4 16.1L2 22z'],
   image: ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z', 'M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21'],
   download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
 };
@@ -356,9 +365,18 @@ function tracksStep(draft) {
 function nameStep(draft) {
   const words = t().make;
   const input = h('input', { class: 'input', id: 'nickname', value: draft.name, autocomplete: 'nickname', maxlength: String(LIMITS.name * 2), autocapitalize: 'none', spellcheck: 'false', 'aria-describedby': 'nickname-help' });
+  const handles = Object.fromEntries(Object.keys(CONTACTS).map((kind) => [kind, h('input', {
+    class: 'input', id: `contact-${kind}`, value: draft.contacts?.[kind] ? (kind === 'messenger' ? draft.contacts[kind] : `@${draft.contacts[kind]}`) : '',
+    placeholder: words.contactPlaceholder[kind], autocomplete: 'off', autocapitalize: 'none', spellcheck: 'false', maxlength: '120', inputmode: 'url',
+  })]));
   return stepFrame(4, words.nameTitle, words.nameBody, [
     h('label', { class: 'field', for: 'nickname' }, h('span', { text: words.nameLabel }), input),
     h('p', { class: 'help', id: 'nickname-help', text: words.nameHelp }),
+    h('fieldset', { class: 'contacts' },
+      h('legend', { text: words.contactsTitle }),
+      Object.keys(CONTACTS).map((kind) => h('label', { class: 'field', for: `contact-${kind}` }, h('span', { text: APPS[kind] }), handles[kind])),
+      h('p', { class: 'help', text: words.contactsHelp }),
+    ),
   ], {
     nextLabel: state.card ? words.save : words.finish,
     next: () => {
@@ -368,7 +386,21 @@ function nameStep(draft) {
         input.focus();
         return words.nameError;
       }
+      const contacts = {};
+      for (const kind of Object.keys(CONTACTS)) {
+        const typed = handles[kind].value.trim();
+        handles[kind].removeAttribute('aria-invalid');
+        if (!typed) continue;
+        const handle = toHandle(kind, typed);
+        if (!handle) {
+          handles[kind].setAttribute('aria-invalid', 'true');
+          handles[kind].focus();
+          return words.contactError(APPS[kind]);
+        }
+        contacts[kind] = handle;
+      }
       draft.name = name;
+      draft.contacts = contacts;
       state.card = { ...draft };
       saveCard();
       state.draft = null;
@@ -445,7 +477,9 @@ function mePage() {
       ),
       slot,
     ]),
-    h('section', { class: 'section extras' }, storyButton, storySlot, install),
+    h('section', { class: 'section extras' },
+      contactKinds(state.card).length > 0 && h('p', { class: 'small muted', text: words.reachable(contactKinds(state.card).map((kind) => APPS[kind]).join(', ')) }),
+      storyButton, storySlot, install),
     h('p', { class: 'note', text: words.note }),
   );
 }
@@ -474,7 +508,8 @@ async function friendPage(code) {
     ? h('p', { class: 'actions muted', text: words.own })
     : h('div', { class: 'actions' }, state.card && save, state.card && h('button', { type: 'button', class: 'btn btn-secondary btn-big', onclick: () => shareCard(state.card, slot) }, icon('share'), words.reply));
 
-  const view = h('div', { class: 'page' }, cardView(card, [actions, slot]));
+  const chats = !own && contactKinds(card).length > 0 && h('div', { class: 'actions' }, messageButtons(card));
+  const view = h('div', { class: 'page' }, cardView(card, [actions, chats, slot]));
   if (own) return view;
 
   if (!state.card) {

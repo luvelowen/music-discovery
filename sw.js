@@ -3,7 +3,7 @@
  * It keeps copies of the site's own files only. It never sees, stores or sends a card:
  * cards live after the # in links and in the page's own storage.
  */
-const CACHE = 'mixtape-v0.4.0';
+const CACHE = 'mixtape-v0.4.1';
 const FILES = [
   './', 'index.html', 'style.css', 'fonts.css', 'app.js', 'card.js', 'data.js', 'i18n.js', 'story.js',
   'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'photos/ub-night.jpg',

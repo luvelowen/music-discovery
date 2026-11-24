@@ -16,7 +16,30 @@ export function clean(value, max) {
   return [...value.normalize('NFC').replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, '').replace(/\s+/g, ' ').trim()].slice(0, max).join('').trim();
 }
 
-export const emptyCard = () => ({ name: '', genres: [], artists: [], tracks: [], anthem: -1 });
+export const emptyCard = () => ({ name: '', genres: [], artists: [], tracks: [], anthem: -1, contacts: {} });
+
+/**
+ * Optional usernames so friends can message each other in apps they already use.
+ * Only the username is kept, rebuilt into a fixed address, so a link can't point anywhere else.
+ */
+export const CONTACTS = {
+  instagram: { pattern: /^[A-Za-z0-9._]{1,30}$/, url: (name) => `https://instagram.com/${name}`, hosts: ['instagram.com', 'www.instagram.com'] },
+  telegram: { pattern: /^[A-Za-z][A-Za-z0-9_]{4,31}$/, url: (name) => `https://t.me/${name}`, hosts: ['t.me', 'telegram.me'] },
+  messenger: { pattern: /^[A-Za-z0-9.]{5,50}$/, url: (name) => `https://m.me/${name}`, hosts: ['m.me', 'facebook.com', 'www.facebook.com', 'fb.com'] },
+};
+
+/** "@saraa", "saraa" or "instagram.com/saraa" → "saraa". Anything else → "". */
+export function toHandle(kind, text) {
+  let value = clean(text, 120);
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    if (CONTACTS[kind].hosts.includes(url.hostname.toLowerCase())) value = url.pathname.split('/').filter(Boolean)[0] ?? '';
+  } catch {
+    // Not an address: treat it as a username.
+  }
+  value = value.replace(/^@/, '');
+  return CONTACTS[kind].pattern.test(value) ? value : '';
+}
 
 /** "Хурд" and "hurd" are the same favourite. Unknown names get their own id. */
 export function toArtist(text, known) {
@@ -56,7 +79,15 @@ export function sanitize(raw, data) {
   }
   const anthem = Number.isInteger(raw.h) && raw.h >= 0 && raw.h < tracks.length ? raw.h : -1;
 
-  return { name, genres, artists, tracks, anthem };
+  const contacts = {};
+  if (raw.c && typeof raw.c === 'object') {
+    for (const kind of Object.keys(CONTACTS)) {
+      const handle = typeof raw.c[kind] === 'string' ? toHandle(kind, raw.c[kind]) : '';
+      if (handle) contacts[kind] = handle;
+    }
+  }
+
+  return { name, genres, artists, tracks, anthem, contacts };
 }
 
 /** The short form that goes into a link: genres and listed artists as numbers. */
@@ -71,6 +102,7 @@ export function pack(card, data) {
     }),
     t: card.tracks.map((track) => [track.title, track.artist]),
     ...(card.anthem >= 0 ? { h: card.anthem } : {}),
+    ...(Object.keys(card.contacts ?? {}).length ? { c: card.contacts } : {}),
   };
 }
 

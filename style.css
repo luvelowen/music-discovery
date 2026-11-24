@@ -227,3 +227,6 @@ dialog .buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap
 .section-sm { margin-top: 0.75rem; }
 .section h2 + .small { margin-top: -0.25rem; }
 .block { display: block; }
+
+.contacts { display: grid; gap: 1rem; margin: 2rem 0 0; padding: 0; border: 0; }
+.contacts legend { padding: 0; margin-bottom: 1rem; font-weight: 700; }
