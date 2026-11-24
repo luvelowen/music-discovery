@@ -1,6 +1,6 @@
 {
   "name": "music-discovery",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=22.18.0" },
@@ -13,7 +13,9 @@
     "moderate": "node scripts/moderate.ts",
     "backup": "node scripts/backup.ts",
     "check-secrets": "node scripts/check-secrets.ts",
-    "hooks": "git config core.hooksPath .githooks"
+    "hooks": "git config core.hooksPath .githooks",
+    "site": "node scripts/serve-site.ts",
+    "site:build": "node scripts/build-site.ts"
   },
   "dependencies": {
     "lucide-react": "1.70.0",

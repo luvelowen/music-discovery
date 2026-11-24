@@ -8,6 +8,17 @@ Everything is saved in `data/app.db` on the computer running the app.
 
 **It is not online and not yet safe to open to the public.** Read [the launch checklist](docs/LAUNCH.md) first.
 
+## Two versions in this repository
+
+| | Main app (`app/`, `lib/`) | **Mixtape site (`site/`), v0.3** |
+| --- | --- | --- |
+| What it does | Accounts, Discover, connections, chat, reports | Make a music card, send it as a link, see what you share |
+| Stores people's data | Yes, in `data/app.db` | **No.** Cards stay on each person's phone and inside the links they send |
+| Needs before launch | Lawyer, age check, moderator, server (see LAUNCH.md) | Mongolian web hosting with HTTPS. See [site/README.md](site/README.md) |
+| Try it | `npm.cmd run dev` | `npm.cmd run site`, then http://localhost:8080 |
+
+The Mixtape site is the one to launch first. The main app stays here, unchanged, for later.
+
 ## Running it
 
 You need [Node.js](https://nodejs.org) 22.18 or newer. Open a terminal in this folder.

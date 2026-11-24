@@ -72,10 +72,21 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
 - A 60rem content column. Forms are one column. Corners: controls 10px, groups 14px, dialogs 16px.
 - **Music categories are words only. No pictures, tiles or covers.**
 
+## Mixtape site (v0.3, `site/`)
+
+The no-server version uses the same look, written as plain CSS in `site/style.css` with the same tokens and values.
+
+- Change a color or size in `app/globals.css`, then make the same change in `site/style.css`.
+- Making a card is one question per screen with a 4-part progress bar: genres, artists, songs, nickname. The main button waits at the bottom on phones.
+- A card reads like an artist's page: initial, name, anthem, then genres and numbered lists.
+- A friend's card shows "In common" right under their name: a count, then the shared genres, artists and songs, and "New to you". Never a score or percentage.
+- Phones get the floating pill tab bar (My card, Friends) once a card exists. Desktop gets the same two links in the header.
+- Fonts and the photo are served from the site itself. Nothing loads from anywhere else.
+
 ## Photo
 
 `public/photos/ub-night.jpg`, by @naranbayar_1, Unsplash photo-1613739519297-e7947a931ba4,
-[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page only.
+[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page only, in the main app and the Mixtape site.
 
 ## Before calling a change done
 
