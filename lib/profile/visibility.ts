@@ -17,14 +17,13 @@ export function getVisibleProfile(
   profile: Profile,
   viewer: Viewer,
   privacy: Privacy = DEFAULT_PRIVACY,
-  viewerDates = false,
 ): Profile {
   const connected = viewer === 'connection';
   const songs = connected || privacy.showTracks;
   return {
     username: profile.username,
-    // All or nothing. Leaving out only "dating" made a dating-only person the one with an empty list.
-    seeking: viewerDates ? profile.seeking : [],
+    // Everyone is here for music and friends, so there is nothing to show about it.
+    seeking: [],
     genres: profile.genres,
     artists: connected || privacy.showArtists ? profile.artists : [],
     tracks: songs ? profile.tracks.map((track) => visibleTrack(track, connected, privacy)) : [],

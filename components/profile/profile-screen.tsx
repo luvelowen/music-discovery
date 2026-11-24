@@ -59,7 +59,7 @@ export function ProfileScreen() {
       </div>
 
       <ProfileCard
-        profile={getVisibleProfile(profile, viewer, social.privacy, true)}
+        profile={getVisibleProfile(profile, viewer, social.privacy)}
         actions={
           <>
             <ButtonLink href="/profile/edit"><Pencil className="size-4" aria-hidden />{t.me.edit}</ButtonLink>
@@ -71,8 +71,7 @@ export function ProfileScreen() {
       />
 
       <p aria-live="polite" className="mt-6 max-w-2xl text-xs leading-relaxed text-muted">
-        {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}{' '}
-        {profile.seeking.includes('dating') && t.profile.datingNote}
+        {viewer === 'stranger' ? t.profile.strangerNote : t.profile.connectionNote}
       </p>
 
       {(missing.length > 0 || hidden) && (

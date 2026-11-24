@@ -24,7 +24,7 @@
 
 ## Placeholders to replace
 
-- The name "Music, dates & friends" and "Дуу, болзоо, найз"
+- The name "Music & friends" and "Дуу, найз"
 - The temporary browser-tab icon
 - The short list of suggested artists, which should be checked with local listeners
 - The empty operator, contact and location settings

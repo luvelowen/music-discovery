@@ -1,8 +1,8 @@
 # Safety and privacy plan
 
-**Decided 2026-11-22: dating + friends + music, for any adult 18+.** This replaces the student-only pilot.
-Because it includes dating, there is no version of this app for minors. Some will try to join anyway,
-so the protective defaults stay.
+**Decided 2026-11-22: friends + music, for any adult 18+.** Dating was removed on 2026-11-24 at the owner's request.
+It is still adults-only, with private messages between strangers who connect, so there is no version for minors.
+Some will try to join anyway, so the protective defaults stay.
 
 The 18+ check runs on the server at sign-up, but it **believes the date people type**. It is not verification.
 
@@ -19,7 +19,7 @@ This document separates what exists from what is missing.
 | The browser blocks location, camera and microphone for this app | `next.config.ts` | None known |
 | Photos are redrawn, and stripped again on the server | `lib/profile/resize-photo.ts`, `lib/server/photo.ts` | Nobody reviews what a photo shows |
 | Only adults with a confirmed email, a finished profile and no suspension meet | `lib/server/members.ts` | Age is self-declared |
-| Dating is shown only to people who also chose it. Others see no choice at all | `lib/profile/visibility.ts` | Someone can switch dating on just to look |
+| No dating. Older dating choices read as friends and are never shown | `lib/profile/parse.ts`, `lib/profile/visibility.ts` | Old copies of the database still hold them until backups expire |
 | People meet only over a shared intention | `lib/social/policy.ts` | No gender or preference filter |
 | Hidden from Discover until switched on | `lib/social/types.ts` | None known |
 | Search looks only at what the searcher may see | `lib/server/people.ts` | None known |
@@ -73,7 +73,7 @@ Whether they may be held as evidence, and for how long, is undecided.
 - How is age confirmed?
 - Where is the server?
 - Who moderates, in Mongolian, and during which hours?
-- Are gender and dating preference collected later, and with what consent?
+- If dating ever comes back, which gender and preference data, and with what consent?
 
 ## Never build
 

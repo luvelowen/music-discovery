@@ -17,7 +17,6 @@ import { LIMITS, MOMENTS, OUTINGS } from '@/lib/profile/types';
 import { AnswerFields } from './answer-fields';
 import { ChipPicker } from './chip-picker';
 import { IdentityFields, type IdentityHandle } from './identity-fields';
-import { SeekingPicker } from './seeking-picker';
 
 export function ProfileEditor() {
   const { t, locale } = useI18n();
@@ -52,10 +51,6 @@ export function ProfileEditor() {
 
         <SettingsSection title={words.identity}>
           <div className="py-2"><IdentityFields handle={identity} /></div>
-        </SettingsSection>
-
-        <SettingsSection title={t.profile.seeking}>
-          <SeekingPicker />
         </SettingsSection>
 
         <SettingsSection id="music" title={words.music}>

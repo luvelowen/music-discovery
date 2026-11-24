@@ -8,7 +8,7 @@ import { SOCIAL_LIMITS, type Privacy, type Relation } from './types.ts';
  */
 export type Member = { id: string; profile: Profile; privacy: Privacy };
 
-/** People meet only over something they both want. This keeps dating-only people away from friends-only people. */
+/** People meet only over something they both want. Today that is always friends: dating was removed on 2026-11-24. */
 export function sharesSeeking(me: Profile, them: Profile) {
   return me.seeking.some((item) => them.seeking.includes(item));
 }
@@ -22,7 +22,7 @@ export function isInDiscover(me: Member, them: Member) {
   return me.id !== them.id && them.privacy.discoverable && sharesSeeking(me.profile, them.profile);
 }
 
-/** Someone I already know stays listed whatever they change to, or dropping out would show they chose dating only. */
+/** Someone I already know stays listed whatever they change to. */
 export function isListed(me: Member, them: Member, relation: Relation) {
   return isInDiscover(me, them) || (relation !== 'none' && me.id !== them.id && them.privacy.discoverable);
 }
@@ -35,7 +35,7 @@ export function canView(me: Member, them: Member, relation: Relation) {
 export function seeMember(me: Member, them: Member, relation: Relation): Profile | null {
   if (!canView(me, them, relation)) return null;
   const viewer = relation === 'connected' ? 'connection' : 'stranger';
-  return getVisibleProfile(them.profile, viewer, them.privacy, me.profile.seeking.includes('dating'));
+  return getVisibleProfile(them.profile, viewer, them.privacy);
 }
 
 export type RequestProblem = 'unavailable' | 'notAccepting' | 'needsSharedGenre' | 'dailyLimit';

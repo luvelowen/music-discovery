@@ -4,7 +4,7 @@
 
 ## Direction (changed by the owner on 2026-11-22, colors narrowed on 2026-11-23, "Encore" v0.2 on 2026-11-24)
 
-Dating, friends and music for adults in Ulaanbaatar, after dark.
+Music and friends for adults in Ulaanbaatar, after dark. (Dating was removed on 2026-11-24.)
 **v0.2 "Encore": the owner asked for new colors, a new font and a design inspired by Deezer, Apple Music, Spotify, Tinder and Equals.**
 Still black, white and two purples, now brighter: Spotify's neutral grey surfaces and pill buttons, Deezer's electric violet,
 Apple Music's structure (sidebar, tab bar, big bold titles, grouped lists), Tinder's one-question-per-screen sign-up and Equals' calm, plain wording.
@@ -20,7 +20,7 @@ The owner rejected bright red and pink, category pictures, and pages full of pho
 | 3 | Delete the template chrome | No eyebrows, pills, icon circles, decorative blocks or filler |
 | 4 | Break the three-card row | No rows of cards. Lists, and grouped rounded lists in settings |
 | 5 | Swap emojis for icons | A few plain Lucide icons, only where they help |
-| 6 | Use real photos and screens | One real photo of Ulaanbaatar, on welcome and beside the sign-in forms. People’s own photos after they connect. No more |
+| 6 | Use real photos and screens | One real photo of Ulaanbaatar, on the welcome page only. People’s own photos after they connect. No more |
 | 7 | Write a specific headline | The earbud line |
 | 8 | Cut the scroll fade-ins | Nothing animates on scroll |
 | 9 | Remove fake testimonials | No quotes, ratings, counts or logos until real |
@@ -58,7 +58,7 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
   Check in the browser by measuring the letter against two different fallbacks.
 - Buttons and filter chips are pills. Inputs are 52px tall with 12px corners. A light press-down on tap is the only motion.
 - Desktop: a 16rem frosted sidebar inside the app, with the ring mark beside the name. Phones: a floating, frosted, rounded tab bar. Welcome, sign-in and setup have neither.
-- Sign-in, sign-up, forgotten password and code screens share `components/auth/auth-frame.tsx`: the night photo with the earbud line on the left (wide screens only, stays put while the form scrolls), the ring mark, title and form on the right. The other way in is a one-line text link under the form.
+- Sign-in, sign-up, forgotten password and code screens share `components/auth/auth-frame.tsx`: one centred column on black with the ring mark, title and form. No photo (owner's request, 2026-11-24). The other way in is a one-line text link under the form.
 - Sign-up asks one thing per screen with a 3-part progress bar: account, birthday, agreement. Without JavaScript all three show at once.
   On phones the main button waits at the bottom of the screen.
 - The birthday is three big boxes (year, month, day) that move on as you type. Underneath it shows the date written out,
@@ -75,7 +75,7 @@ Tokens live in `app/globals.css`. Never type a hex value into a screen.
 ## Photo
 
 `public/photos/ub-night.jpg`, by @naranbayar_1, Unsplash photo-1613739519297-e7947a931ba4,
-[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page and beside the sign-in forms on wide screens.
+[Unsplash license](https://unsplash.com/license). Shown dimmed on the welcome page only.
 
 ## Before calling a change done
 

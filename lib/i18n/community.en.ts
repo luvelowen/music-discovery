@@ -14,9 +14,7 @@ export const communityEn = {
 
   discover: {
     title: 'Who’s playing your songs?',
-    body: 'Closest taste first. Dates, friends or both.',
-    all: 'All',
-    mode: 'Show people here for',
+    body: 'Closest taste first. Friends who hear what you hear.',
     hidden: 'You’re hidden. You can look around, but other people can’t find you.',
     show: 'Show me in Discover',
     communities: 'Categories',
@@ -117,7 +115,7 @@ export const communityEn = {
     pastChats: 'Closed chats',
     pastChatsBody: 'People who wrote to you before a chat closed. You can still report them.',
     dates: 'Meeting someone',
-    datesBody: 'For a first date or a first gig together.',
+    datesBody: 'For a first meet-up or a first gig together.',
     dateTips: [
       'Meet somewhere busy, and arrange your own way there and home.',
       'Tell a friend where you’ll be and when you’ll be back.',

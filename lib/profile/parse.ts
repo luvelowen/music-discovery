@@ -49,7 +49,7 @@ export function parseProfile(raw: string | null): Profile {
     if (links.filter((link) => link.provider === result.link.provider).length < PROVIDERS[result.link.provider].max) links.push(result.link);
   }
 
-  // Profiles saved before dating existed start as friends only. Dating is never switched on for someone.
+  // Music and friends only. A saved "dating" choice (before 2026-11-24) is dropped here and gone at the next save.
   const chosen = SEEKING.filter((item) => asList(data.seeking).includes(item));
   const seeking: Seeking[] = chosen.length ? chosen : ['friends'];
   const photo = asText(data.photo, LIMITS.photoDataLength);

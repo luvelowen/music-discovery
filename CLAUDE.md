@@ -3,7 +3,7 @@
 @DESIGN.md
 
 - The 13 rules in DESIGN.md apply to every visual change. The owner asked for them to always be kept in mind.
-- The concept is dating + friends + music for any adult, 18+. No student requirement and no minors.
+- The concept is music + friends for any adult, 18+. Dating was removed on 2026-11-24 at the owner's request: don't bring it back without asking. No student requirement and no minors.
 - The look ("Encore", v0.2) follows Apple Music's structure, on black, with four colors: black, white, a light lilac and an electric violet, plus Spotify-style neutral grey surfaces and pill buttons. Categories are text only: the first 20 music genres from Spotify's Browse page. No emergency numbers. Don't reintroduce red, pink, gradients or extra pictures.
 - Secrets live only in `.env.local`. Read docs/SECURITY.md before adding any key. Run `npm.cmd run check-secrets` before pushing.
 - `data/` holds real accounts. Never commit, print, delete or test against it. Use `APP_DB_PATH` with a throwaway file for tests.

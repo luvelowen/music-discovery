@@ -99,7 +99,7 @@ test('strangers never receive photo, bio or links', () => {
   assert.equal(seen.photo, null);
   assert.deepEqual(seen.links, []);
   assert.ok(!('futureField' in seen));
-  assert.deepEqual(getVisibleProfile(profile, 'connection', undefined, true), profile);
+  assert.deepEqual(getVisibleProfile(profile, 'connection'), { ...profile, seeking: [] });
 });
 
 test('damaged or edited saved data cannot get in', () => {
@@ -116,12 +116,13 @@ test('damaged or edited saved data cannot get in', () => {
   assert.equal(parsed.photo, null);
 });
 
-test('removed genres disappear from saved profiles, and dating is never switched on for anyone', () => {
+test('removed genres and the removed dating choice disappear from saved profiles', () => {
   const old = parseProfile(JSON.stringify({ genres: ['morinKhuur', 'longSong', 'throatSinging', 'ethnoFusion', 'composedSongs', 'jazz'] }));
   assert.deepEqual(old.genres, ['jazz']);
   assert.deepEqual(old.seeking, ['friends']);
   assert.deepEqual(parseProfile('{"seeking":["hookups"]}').seeking, ['friends']);
-  assert.deepEqual(parseProfile('{"seeking":["dating"]}').seeking, ['dating']);
+  assert.deepEqual(parseProfile('{"seeking":["dating"]}').seeking, ['friends']);
+  assert.deepEqual(parseProfile('{"seeking":["friends","dating"]}').seeking, ['friends']);
 });
 
 test('a profile needs a genre and a valid username', () => {

@@ -11,7 +11,6 @@ import { GENRE_IDS, type GenreId } from '@/lib/music/genres';
 import { usePeople } from '@/lib/people/provider';
 import type { DiscoverPage, PeopleProblem } from '@/lib/people/types';
 import { useProfile } from '@/lib/profile/store';
-import { SEEKING, type Seeking } from '@/lib/profile/types';
 import { useSocial } from '@/lib/social/store';
 import { CommunityShelf } from './community-shelf';
 
@@ -25,14 +24,11 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
   const { social, change } = useSocial();
   const { getDiscover, revision } = usePeople();
 
-  const [choice, setChoice] = useState<Seeking | 'all'>('all');
   const [typed, setTyped] = useState('');
   const [search, setSearch] = useState('');
   const [limit, setLimit] = useState(STEP);
   const [page, setPage] = useState<DiscoverPage | null>(null);
   const [problem, setProblem] = useState<PeopleProblem | null>(null);
-  // The filter exists only for someone who chose both.
-  const mode = profile.seeking.length > 1 ? choice : 'all';
   const settledSearch = useDeferredValue(search);
 
   useEffect(() => {
@@ -45,7 +41,6 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
     async function load() {
       const query = new URLSearchParams({ limit: String(limit) });
       if (community) query.set('genre', community);
-      if (mode !== 'all') query.set('seeking', mode);
       if (settledSearch) query.set('search', settledSearch);
       const result = await getDiscover(query);
       if (!current) return;
@@ -60,13 +55,13 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
       current = false;
       clearInterval(timer);
     };
-  }, [community, mode, settledSearch, limit, revision, getDiscover]);
+  }, [community, settledSearch, limit, revision, getDiscover]);
 
   // Followed first, then the genres I picked, then the rest.
   const order = new Set<GenreId>([...social.communities, ...profile.genres, ...GENRE_IDS]);
   const communities = [...order].map((id) => ({ id, count: page?.counts[id] ?? 0, joined: social.communities.includes(id) }));
   const joined = community !== null && social.communities.includes(community);
-  const filtered = Boolean(community || settledSearch || mode !== 'all');
+  const filtered = Boolean(community || settledSearch);
 
   return (
     <div className="gutter pt-8 pb-16">
@@ -95,24 +90,6 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
             className="h-12 w-full rounded-full bg-surface pr-4 pl-11 text-base placeholder:text-muted focus:bg-raised"
           />
         </label>
-        {profile.seeking.length > 1 ? (
-          <div role="group" aria-label={words.mode} className="flex gap-1.5 md:order-1">
-            {(['all', ...SEEKING] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={mode === option}
-                onClick={() => {
-                  setChoice(option);
-                  setLimit(STEP);
-                }}
-                className={cn('min-h-11 min-w-11 rounded-full px-4 text-sm', mode === option ? 'bg-accent font-semibold text-night' : 'bg-surface text-chalk/85 hover:bg-raised')}
-              >
-                {option === 'all' ? words.all : t.seeking[option]}
-              </button>
-            ))}
-          </div>
-        ) : <span />}
       </div>
 
       <section aria-labelledby="communities-title" className="mt-5">
@@ -161,7 +138,6 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
                 onClick={() => {
                   setTyped('');
                   setSearch('');
-                  setChoice('all');
                 }}
               >
                 {words.showEveryone}

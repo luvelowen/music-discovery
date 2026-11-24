@@ -2,7 +2,8 @@ import type { Artist } from '../music/artists.ts';
 import type { GenreId } from '../music/genres.ts';
 import type { MusicLink } from '../music/providers.ts';
 
-export const SEEKING = ['friends', 'dating'] as const;
+// Music and friends only. Dating was removed on 2026-11-24 at the owner's request; older saved choices read as friends.
+export const SEEKING = ['friends'] as const;
 export type Seeking = (typeof SEEKING)[number];
 
 export const MOMENTS = ['commute', 'lateNight', 'gettingReady', 'workout', 'working', 'cooking', 'walking', 'driving'] as const;
@@ -23,7 +24,7 @@ export type Track = { title: string; artist: string };
 export type Profile = {
   username: string;
   bio: string;
-  /** Dating is only ever shown to someone who also chose it. */
+  /** Always ['friends'] since dating was removed. Kept so older saved profiles still read correctly. */
   seeking: Seeking[];
   photo: string | null;
   /** In the order picked. */

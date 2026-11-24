@@ -54,7 +54,7 @@ export const accountEn = {
   agreeBody: 'Here is what the app keeps about you. Read it, then agree.',
   step: (step: number, total: number) => `Step ${step} of ${total}`,
   next: 'Continue',
-  consent: 'I agree that my email, scrambled password, profile and choices, including dating if I pick it, are saved in this app’s database until I delete my account, and that my email address is used to send me codes. I agree to the Privacy notice and Community rules.',
+  consent: 'I agree that my email, scrambled password, profile and choices are saved in this app’s database until I delete my account, and that my email address is used to send me codes. I agree to the Privacy notice and Community rules.',
   consentNote: 'The database is a file on the computer running the app. Codes are sent by an email service, which may be outside Mongolia and sees only your email address and the code. You can see or download your data at any time, and delete your account unless it is suspended.',
   working: 'One moment',
   errors: {

@@ -17,7 +17,6 @@ export async function GET(request: Request) {
     const genre = query.get('genre');
     const page = discover(db, user.id, {
       genre: isGenreId(genre) ? genre : null,
-      seeking: query.get('seeking'),
       search: query.get('search'),
       limit: Math.floor(Number(query.get('limit'))) || undefined,
     });
