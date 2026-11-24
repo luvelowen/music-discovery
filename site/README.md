@@ -11,6 +11,7 @@ Same concept and same "Encore" design as the main app, but **nothing is stored o
 - **Friends list**, and **From your friends**: artists your friends love that you don't have yet, one tap to add (v0.4).
 - **Group blend**: pick friends and see what the whole group shares, then what most of you like (v0.4).
 - **Story image**: your card as a 1080×1920 picture for Instagram or Facebook stories, made on the phone (v0.4).
+- **Message buttons**: add an Instagram, Telegram or Messenger username (optional). Friends get one-tap buttons that open your chat in that app. Chat itself stays in those apps (v0.4.1).
 - **Install as an app** and **works offline**: the service worker keeps the site's own files, never any card (v0.4).
 
 ## How it works

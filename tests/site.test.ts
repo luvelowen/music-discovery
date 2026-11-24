@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { blend, clean, compare, decode, encode, fromFriends, LIMITS, pack, sanitize, sharedCount } from '../site/card.js';
+import { blend, clean, compare, decode, encode, fromFriends, LIMITS, pack, sanitize, sharedCount, toHandle, CONTACTS } from '../site/card.js';
 import { DATA } from '../site/data.js';
 
 const card = {
@@ -9,6 +9,7 @@ const card = {
   artists: [{ id: 'the-hu', name: 'The HU' }, { id: 'custom:altan urag', name: 'Altan Urag' }],
   tracks: [{ title: 'Wolf Totem', artist: 'The HU' }, { title: 'Хөх тэнгэр', artist: '' }],
   anthem: 1,
+  contacts: { instagram: 'saraa.music' },
 };
 
 const raw = async (text: string) => {
@@ -26,7 +27,7 @@ test('a card survives the trip through a link, compressed and plain', async () =
 
 test('the link only ever holds what the card shows', async () => {
   const packed = pack(card, DATA);
-  assert.deepEqual(Object.keys(packed).sort(), ['a', 'g', 'h', 'n', 't', 'v']);
+  assert.deepEqual(Object.keys(packed).sort(), ['a', 'c', 'g', 'h', 'n', 't', 'v']);
   assert.equal(packed.a[0], DATA.artists.findIndex((artist) => artist.id === 'the-hu'), 'listed artists travel as numbers');
 });
 
@@ -115,4 +116,17 @@ test('a group blend shows what everyone shares, then what most share', () => {
   assert.deepEqual(result.mostGenres.map((entry: { item: string; count: number }) => [entry.item, entry.count]), [['indie', 2], ['jazz', 2]]);
   assert.deepEqual(result.mostArtists.map((entry: { item: { id: string } }) => entry.item.id), ['b']);
   assert.equal(blend([person('alone', [], [])]), null);
+});
+
+test('message handles are only usernames, rebuilt into fixed addresses', () => {
+  assert.equal(toHandle('instagram', '@saraa.music'), 'saraa.music');
+  assert.equal(toHandle('instagram', 'https://www.instagram.com/saraa.music/?igsh=tracking'), 'saraa.music');
+  assert.equal(toHandle('telegram', 't.me/saraa_mn'), 'saraa_mn');
+  assert.equal(toHandle('messenger', 'facebook.com/saraa.bat'), 'saraa.bat');
+  for (const [kind, bad] of [['instagram', 'evil.com/x'], ['instagram', 'javascript:alert(1)'], ['telegram', 'ab'], ['messenger', '<b>x</b>'], ['instagram', 'a b']]) {
+    assert.equal(toHandle(kind as keyof typeof CONTACTS, bad), '', `refused: ${bad}`);
+  }
+  const card = sanitize({ v: 1, n: 'x', c: { instagram: 'https://evil.example/phish', telegram: '@saraa_mn', whatsapp: '99112233' } }, DATA)!;
+  assert.deepEqual(card.contacts, { telegram: 'saraa_mn' }, 'unknown apps and foreign addresses are dropped');
+  assert.equal(CONTACTS.telegram.url(card.contacts.telegram!), 'https://t.me/saraa_mn');
 });
