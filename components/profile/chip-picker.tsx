@@ -27,7 +27,7 @@ export function ChipPicker<T extends string>({ label, options, names, chosen, ma
               else if (!blocked) onChange([...chosen, option]);
             }}
             className={cn(
-              'min-h-11 rounded-control px-3.5 text-sm',
+              'min-h-11 rounded-full px-4 text-sm',
               active ? 'bg-deep font-semibold text-chalk' : blocked ? 'bg-raised text-muted' : 'bg-raised hover:text-accent',
             )}
           >

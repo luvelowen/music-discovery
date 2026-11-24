@@ -49,7 +49,7 @@ export function ProfileScreen() {
               type="button"
               aria-pressed={viewer === option}
               onClick={() => setViewer(option)}
-              className={cn('min-h-11 rounded-control px-3 text-sm', viewer === option ? 'bg-raised font-semibold text-accent' : 'text-muted hover:text-chalk')}
+              className={cn('min-h-11 rounded-full px-4 text-sm', viewer === option ? 'bg-accent font-semibold text-night' : 'bg-surface text-chalk/85 hover:bg-raised')}
             >
               {t.profile[option]}
             </button>

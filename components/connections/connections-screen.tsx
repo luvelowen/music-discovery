@@ -50,7 +50,7 @@ export function ConnectionsScreen() {
             type="button"
             aria-pressed={tab === key}
             onClick={() => setPicked(key)}
-            className={cn('min-h-11 rounded-control px-3.5 text-sm', tab === key ? 'bg-raised font-semibold text-accent' : 'text-muted hover:text-chalk')}
+            className={cn('min-h-11 rounded-full px-4 text-sm', tab === key ? 'bg-accent font-semibold text-night' : 'bg-surface text-chalk/85 hover:bg-raised')}
           >
             {words[key]}{count > 0 && <span className="tabular-nums"> {count}</span>}
           </button>

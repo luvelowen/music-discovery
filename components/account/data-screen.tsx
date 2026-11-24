@@ -49,7 +49,7 @@ export function DataScreen({ file, record, photoSize, sessions, attempts, checke
       <div className="flex flex-col items-start justify-between gap-4 pb-8 sm:flex-row sm:items-end">
         <PageTitle title={words.title} body={words.body} />
         <div className="flex shrink-0 flex-wrap gap-2">
-          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-control bg-deep px-5 py-2 font-semibold text-chalk hover:bg-deep-lit">{words.download}</a>
+          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-full bg-deep px-6 py-2 font-bold text-chalk hover:bg-deep-lit">{words.download}</a>
           <Button variant="secondary" onClick={() => router.refresh()}>{words.refresh}</Button>
         </div>
       </div>

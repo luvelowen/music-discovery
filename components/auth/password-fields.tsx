@@ -2,7 +2,6 @@
 
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/field';
 import { useI18n } from '@/lib/i18n/provider';
 import type { AuthError } from '@/lib/server/accounts';
@@ -24,10 +23,18 @@ export function PasswordFields({ choosing, error }: { choosing?: boolean; error?
         maxLength={128}
         help={choosing ? words.passwordHelp : undefined}
         error={error === 'password' ? words.errors.password : null}
+        className="pr-14"
+        // Inside the box, on the right, where people expect it.
         action={
-          <Button variant="secondary" className="w-12 shrink-0 px-0!" aria-label={visible ? words.hidePassword : words.showPassword} onClick={() => setVisible(!visible)}>
-            {visible ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
-          </Button>
+          <button
+            type="button"
+            aria-label={visible ? words.hidePassword : words.showPassword}
+            aria-pressed={visible}
+            onClick={() => setVisible(!visible)}
+            className="absolute top-1 right-1 grid size-11 place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-chalk"
+          >
+            {visible ? <EyeOff className="size-5" aria-hidden /> : <Eye className="size-5" aria-hidden />}
+          </button>
         }
       />
       {choosing && (

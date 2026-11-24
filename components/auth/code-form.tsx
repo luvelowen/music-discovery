@@ -45,7 +45,7 @@ export function CodeForm({ purpose, email, delivery }: { purpose: Purpose; email
           inputMode="numeric"
           autoComplete="one-time-code"
           maxLength={9}
-          className="tracking-[0.3em]"
+          className="display text-center text-2xl tracking-[0.35em] placeholder:tracking-normal"
           error={codeError}
         />
         {resetting && <PasswordFields choosing error={error} />}

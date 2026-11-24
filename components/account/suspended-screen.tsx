@@ -25,7 +25,7 @@ export function SuspendedScreen({ contact }: { contact: string | null }) {
           </div>
         </dl>
         <div className="mt-6 flex flex-wrap gap-2.5">
-          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-control bg-deep px-5 py-2 font-semibold text-chalk hover:bg-deep-lit">
+          <a href="/api/export" download className="inline-flex min-h-11 items-center justify-center rounded-full bg-deep px-6 py-2 font-bold text-chalk hover:bg-deep-lit">
             {t.account.data.download}
           </a>
           <form action={logOutAction}>

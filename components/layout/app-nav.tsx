@@ -51,15 +51,18 @@ export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center',
-                side ? 'min-h-11 gap-3 rounded-control px-2.5' : 'relative min-h-15 flex-col justify-center gap-0.5 text-[0.6875rem] font-medium tracking-tight',
-                side && (active ? 'bg-raised font-semibold text-chalk' : 'text-chalk/85 hover:bg-surface'),
-                !side && (active ? 'text-accent' : 'text-muted'),
+                side ? 'min-h-11 gap-3 rounded-full px-3.5' : 'relative min-h-14 flex-col justify-center gap-1 text-[0.6875rem] font-semibold tracking-tight',
+                side && (active ? 'bg-glow font-bold text-chalk' : 'text-chalk/80 hover:bg-surface hover:text-chalk'),
+                !side && (active ? 'text-chalk' : 'text-muted'),
               )}
             >
-              <Icon className={cn('size-5 shrink-0', side && 'text-accent', !side && 'size-6')} strokeWidth={active ? 2.2 : 1.7} aria-hidden />
+              {/* On phones the selected tab's icon sits in a small lit pill, as in Apple Music and Spotify. */}
+              <span className={cn(!side && 'grid h-8 w-14 place-items-center rounded-full transition-colors', !side && active && 'bg-glow text-accent')}>
+                <Icon className={cn('size-5 shrink-0', side && 'text-accent', !side && 'size-[1.375rem]')} strokeWidth={active ? 2.3 : 1.8} aria-hidden />
+              </span>
               {t.community.nav[item.key]}
               {count > 0 && (
-                <span className={cn('font-semibold text-accent', side ? 'ml-auto' : 'absolute top-1.5 left-1/2 ml-3')}>{count}</span>
+                <span className={cn('font-bold', side ? 'ml-auto text-accent' : 'absolute top-1 left-1/2 ml-2.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-deep px-1 text-[0.625rem] text-chalk')}>{count}</span>
               )}
             </Link>
           </li>
@@ -72,7 +75,7 @@ export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
     return (
       // A floating frosted bar, as in Apple's music app on phones.
       <nav aria-label={t.community.nav.label} className="sticky bottom-0 z-20 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] lg:hidden">
-        <div className="rounded-[1.75rem] border border-line bg-sidebar/80 px-1 shadow-[0_8px_32px_var(--color-night)] backdrop-blur-xl backdrop-saturate-150">
+        <div className="mx-auto max-w-md rounded-full border border-line bg-sidebar/85 px-1.5 shadow-[0_8px_32px_var(--color-night)] backdrop-blur-xl backdrop-saturate-150">
           {list}
         </div>
       </nav>
@@ -88,7 +91,7 @@ export function AppNav({ placement }: { placement: 'side' | 'bottom' }) {
       <nav aria-label={t.community.nav.label}>{list}</nav>
       <div className="mt-auto pt-6">
         <LanguageSwitcher />
-        <Link href="/profile" className="mt-2 flex min-h-14 items-center gap-3 rounded-control px-2.5 hover:bg-surface">
+        <Link href="/profile" className="mt-2 flex min-h-14 items-center gap-3 rounded-full px-2.5 hover:bg-surface">
           <Avatar profile={profile} className="size-9 text-sm" />
           <span className="min-w-0 truncate text-sm">{profile.username}</span>
         </Link>

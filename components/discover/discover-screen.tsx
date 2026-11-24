@@ -92,7 +92,7 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
               setLimit(STEP);
             }}
             placeholder={words.search}
-            className="h-11 w-full rounded-control bg-raised pr-3 pl-10 text-base placeholder:text-muted"
+            className="h-12 w-full rounded-full bg-surface pr-4 pl-11 text-base placeholder:text-muted focus:bg-raised"
           />
         </label>
         {profile.seeking.length > 1 ? (
@@ -106,7 +106,7 @@ export function DiscoverScreen({ community }: { community: GenreId | null }) {
                   setChoice(option);
                   setLimit(STEP);
                 }}
-                className={cn('min-h-11 min-w-11 rounded-control px-3.5 text-sm', mode === option ? 'bg-raised font-semibold text-accent' : 'text-muted hover:text-chalk')}
+                className={cn('min-h-11 min-w-11 rounded-full px-4 text-sm', mode === option ? 'bg-accent font-semibold text-night' : 'bg-surface text-chalk/85 hover:bg-raised')}
               >
                 {option === 'all' ? words.all : t.seeking[option]}
               </button>

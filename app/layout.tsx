@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Manrope, Montserrat } from 'next/font/google';
 import { AppShell } from '@/components/layout/app-shell';
 import { AccountProvider } from '@/lib/account/provider';
 import { ChatProvider } from '@/lib/chat/provider';
@@ -11,8 +11,10 @@ import { getDb } from '@/lib/server/db';
 import { currentUser } from '@/lib/server/session';
 import './globals.css';
 
-// Apple devices use their own system font. Everyone else gets Inter, which really contains Ө ө Ү ү.
-const inter = Inter({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], variable: '--font-inter' });
+// Manrope for reading, Montserrat for big titles. Both really contain Ө ө Ү ү (checked in the browser).
+// next/font copies them into the app, so no visitor's browser asks Google for anything.
+const manrope = Manrope({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], variable: '--font-manrope', display: 'swap' });
+const montserrat = Montserrat({ subsets: ['latin', 'cyrillic', 'cyrillic-ext'], variable: '--font-montserrat', weight: ['700', '800'], display: 'swap' });
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -28,8 +30,8 @@ export const viewport: Viewport = { themeColor: '#000000', viewportFit: 'cover',
 export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const [{ locale }, user] = await Promise.all([getI18n(), currentUser()]);
   return (
-    <html lang={locale} className={inter.variable}>
-      <body className="flex min-h-dvh flex-col font-sans">
+    <html lang={locale} className={`${manrope.variable} ${montserrat.variable}`}>
+      <body className="flex min-h-dvh flex-col bg-night font-sans">
         <I18nProvider initialLocale={locale}>
           {/* Only this person's own data is passed on, and never the password's scrambled value. */}
           <AccountProvider user={user ? { id: user.id, email: user.email, emailChecked: emailCheckedAt(getDb(), user.id) !== null, account: toAccount(user) } : null}>

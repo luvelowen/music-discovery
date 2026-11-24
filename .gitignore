@@ -13,3 +13,18 @@ next-env.d.ts
 *.db
 *.db-journal
 *.sqlite
+
+# Private papers, such as the brief for the lawyer. Also listed in .git/info/exclude on this computer.
+/private/
+
+# Keys and certificates. Secrets live only in .env.local, never in the repository.
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa*
+credentials*.json
+service-account*.json
+.vercel/
+.netlify/
