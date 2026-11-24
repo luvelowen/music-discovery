@@ -8,6 +8,7 @@ import { ARTISTS } from '../lib/music/artists.ts';
 import { GENRE_IDS } from '../lib/music/genres.ts';
 import { en } from '../lib/i18n/en.ts';
 import { mn } from '../lib/i18n/mn.ts';
+import { writeIcons } from './site-icons.ts';
 
 // Only plain words: wording that is a function (counts, names) is written in site/i18n.js instead.
 const words = (source: Record<string, unknown>) => Object.fromEntries(Object.entries(source).filter(([, value]) => typeof value === 'string'));
@@ -34,4 +35,5 @@ writeFileSync(
   'site/data.js',
   `// Made by scripts/build-site.ts from lib/music and lib/i18n. Don't edit by hand.\nexport const DATA = ${JSON.stringify(data, null, 1)};\n`,
 );
-console.log(`site/data.js: ${data.genres.length} genres, ${data.artists.length} artists.`);
+writeIcons('site');
+console.log(`site/data.js and icons: ${data.genres.length} genres, ${data.artists.length} artists.`);

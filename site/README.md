@@ -1,7 +1,17 @@
-# Mixtape (v0.3): the no-server version
+# Mixtape: the no-server version
 
 Make a music card, send it to friends as a link, see what you have in common.
 Same concept and same "Encore" design as the main app, but **nothing is stored on any server**.
+
+## Features
+
+- **Music card**: genres, artists, songs with an anthem, nickname. Made one question per screen.
+- **Send by link**: the phone's share sheet, or copy the link.
+- **In common**: opening a friend's link shows what you share and what's new to you.
+- **Friends list**, and **From your friends**: artists your friends love that you don't have yet, one tap to add (v0.4).
+- **Group blend**: pick friends and see what the whole group shares, then what most of you like (v0.4).
+- **Story image**: your card as a 1080×1920 picture for Instagram or Facebook stories, made on the phone (v0.4).
+- **Install as an app** and **works offline**: the service worker keeps the site's own files, never any card (v0.4).
 
 ## How it works
 
@@ -41,6 +51,18 @@ Any Mongolian web hosting with HTTPS works, because these are plain files. The c
 
 `.htaccess` sets the security rules on Apache hosts (most cPanel hosts): https only, no framing, nothing loads from other sites.
 If your host uses nginx instead, send them the headers listed in `.htaccess` and ask them to add them.
+
+## Or host it on GitHub Pages (free)
+
+GitHub Pages serves the files from GitHub's servers, which are **outside Mongolia**. The site stores nothing,
+so GitHub only sees what every web host sees: visitors' internet addresses, in its own logs.
+
+```powershell
+npm.cmd run site:deploy
+```
+
+This copies only the `site/` folder to the `gh-pages` branch. The address is https://luvelowen.github.io/music-discovery/.
+GitHub Pages can't use `.htaccess`, so the security rules come from the page itself (`index.html`), which covers almost all of them.
 
 ## Try it on this computer
 

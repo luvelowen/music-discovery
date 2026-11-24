@@ -164,3 +164,47 @@ export function compare(me, them) {
 }
 
 export const sharedCount = (result) => result.genres.length + result.artists.length + result.tracks.length;
+
+/** Artists my friends love that I don't have yet, most-loved first. */
+export function fromFriends(me, friends, max = 12) {
+  const found = new Map();
+  for (const friend of friends) {
+    for (const artist of friend.artists) {
+      if (me.artists.some((mine) => mine.id === artist.id)) continue;
+      const entry = found.get(artist.id) ?? { artist, by: [] };
+      if (!entry.by.includes(friend.name)) entry.by.push(friend.name);
+      found.set(artist.id, entry);
+    }
+  }
+  return [...found.values()]
+    .sort((a, b) => b.by.length - a.by.length || a.artist.name.localeCompare(b.artist.name))
+    .slice(0, max);
+}
+
+/**
+ * What a group shares: everything everyone has, then what most of them have,
+ * so a group with nothing in common still finds a starting point.
+ */
+export function blend(cards) {
+  if (cards.length < 2) return null;
+  const [first, ...rest] = cards;
+  const tally = (pick, key) => {
+    const counts = new Map();
+    for (const card of cards) {
+      for (const item of new Map(pick(card).map((value) => [key(value), value])).values()) {
+        const entry = counts.get(key(item)) ?? { item, count: 0 };
+        entry.count += 1;
+        counts.set(key(item), entry);
+      }
+    }
+    return [...counts.values()].filter((entry) => entry.count >= 2 && entry.count < cards.length).sort((a, b) => b.count - a.count).slice(0, 8);
+  };
+  return {
+    size: cards.length,
+    genres: first.genres.filter((id) => rest.every((card) => card.genres.includes(id))),
+    artists: first.artists.filter((artist) => rest.every((card) => card.artists.some((other) => other.id === artist.id))),
+    tracks: first.tracks.filter((track) => rest.every((card) => card.tracks.some((other) => trackKey(other) === trackKey(track)))),
+    mostGenres: tally((card) => card.genres, (id) => id),
+    mostArtists: tally((card) => card.artists, (artist) => artist.id),
+  };
+}

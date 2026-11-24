@@ -82,6 +82,8 @@ The no-server version uses the same look, written as plain CSS in `site/style.cs
 - A friend's card shows "In common" right under their name: a count, then the shared genres, artists and songs, and "New to you". Never a score or percentage.
 - Phones get the floating pill tab bar (My card, Friends) once a card exists. Desktop gets the same two links in the header.
 - Fonts and the photo are served from the site itself. Nothing loads from anywhere else.
+- Friends shows a "Group blend" button and a "From your friends" list (artist, who loves them, a + to add). Blend picks friends as violet chips.
+- The story image (1080×1920) uses the same four colors, the ring mark, Montserrat for the name and a violet pill with the address.
 
 ## Photo
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { clean, compare, decode, encode, LIMITS, pack, sanitize, sharedCount } from '../site/card.js';
+import { blend, clean, compare, decode, encode, fromFriends, LIMITS, pack, sanitize, sharedCount } from '../site/card.js';
 import { DATA } from '../site/data.js';
 
 const card = {
@@ -93,4 +93,26 @@ test('text is cleaned the same way everywhere', () => {
   assert.equal(clean('  a \n\t b  ', 10), 'a b');
   assert.equal(clean(42, 10), '');
   assert.equal(clean('Өөрийн дуу', 4), 'Өөри');
+});
+
+test('friends suggest the artists I don\'t have yet, most-loved first', () => {
+  const me = { ...card, artists: [{ id: 'the-hu', name: 'The HU' }] };
+  const friends = [
+    { name: 'A', genres: [], artists: [{ id: 'nujabes', name: 'Nujabes' }, { id: 'the-hu', name: 'The HU' }], tracks: [], anthem: -1 },
+    { name: 'B', genres: [], artists: [{ id: 'nujabes', name: 'Nujabes' }, { id: 'bts', name: 'BTS' }], tracks: [], anthem: -1 },
+  ];
+  const found = fromFriends(me, friends);
+  assert.deepEqual(found.map((entry: { artist: { id: string } }) => entry.artist.id), ['nujabes', 'bts']);
+  assert.deepEqual(found[0].by, ['A', 'B']);
+});
+
+test('a group blend shows what everyone shares, then what most share', () => {
+  const person = (name: string, genres: string[], artists: string[]) => ({ name, genres, artists: artists.map((id) => ({ id, name: id })), tracks: [], anthem: -1 });
+  const result = blend([person('me', ['rock', 'indie', 'jazz'], ['a', 'b']), person('x', ['rock', 'indie'], ['a']), person('y', ['rock', 'jazz'], ['b', 'a'])])!;
+  assert.equal(result.size, 3);
+  assert.deepEqual(result.genres, ['rock']);
+  assert.deepEqual(result.artists.map((artist: { id: string }) => artist.id), ['a']);
+  assert.deepEqual(result.mostGenres.map((entry: { item: string; count: number }) => [entry.item, entry.count]), [['indie', 2], ['jazz', 2]]);
+  assert.deepEqual(result.mostArtists.map((entry: { item: { id: string } }) => entry.item.id), ['b']);
+  assert.equal(blend([person('alone', [], [])]), null);
 });

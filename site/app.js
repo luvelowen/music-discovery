@@ -3,9 +3,10 @@
  * No server, no accounts. The card and friends list live in this browser's storage only.
  * Every piece of text reaches the page through textContent, never as HTML.
  */
-import { compare, decode, emptyCard, encode, LIMITS, pack, sanitize, sharedCount, clean, toArtist } from './card.js';
+import { blend, compare, decode, emptyCard, encode, fromFriends, LIMITS, pack, sanitize, sharedCount, clean, toArtist } from './card.js';
 import { DATA } from './data.js';
 import { STRINGS } from './i18n.js';
+import { storyImage } from './story.js';
 
 // ---------- Storage: wrapped, because private windows can refuse it ----------
 const KEYS = { card: 'mixtape.card', friends: 'mixtape.friends', lang: 'mixtape.lang', pending: 'mixtape.pending' };
@@ -37,7 +38,19 @@ const state = {
   friends: loadFriends(),
   draft: null,
   first: true,
+  pick: null,
+  install: null,
 };
+
+const saveCard = () => write(KEYS.card, pack(state.card, DATA));
+
+// Chrome and Android offer "install"; keep the offer for the button on My card.
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  state.install = event;
+  if (currentPage() === 'me') route({ keepFocus: true });
+});
+const onIPhone = () => /iP(hone|ad|od)/.test(navigator.userAgent) && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches;
 
 const t = () => STRINGS[state.lang];
 const w = () => DATA.words[state.lang];
@@ -74,6 +87,8 @@ const ICONS = {
   check: ['M20 6 9 17l-5-5'],
   right: ['M9 18l6-6-6-6'],
   plus: ['M5 12h14', 'M12 5v14'],
+  image: ['M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z', 'M9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z', 'M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21'],
+  download: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
 };
 function icon(name, label) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -355,7 +370,7 @@ function nameStep(draft) {
       }
       draft.name = name;
       state.card = { ...draft };
-      write(KEYS.card, pack(state.card, DATA));
+      saveCard();
       state.draft = null;
       // Came here from a friend's link: go back and see what you share.
       const pending = read(KEYS.pending, null, 'session');
@@ -372,10 +387,56 @@ function makePage(step) {
   return [genresStep, artistsStep, tracksStep, nameStep][step - 1](draft);
 }
 
+/** Makes the story picture, then opens the share sheet, or shows it with a Save button. */
+async function shareStory(button, slot) {
+  const words = t().me;
+  button.disabled = true;
+  slot.replaceChildren(h('p', { class: 'small muted', role: 'status', text: words.storyBusy }));
+  try {
+    const file = await storyImage(state.card, {
+      appName: DATA.appName[state.lang], storyTitle: words.storyTitle, storyCta: words.storyCta,
+      anthem: t().card.anthem, artists: t().card.artists, genre: genreName, artist: artistLabel,
+      address: `${location.host}${location.pathname.replace(/index\.html$/, '')}`.replace(/\/$/, ''),
+    });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        slot.replaceChildren();
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return slot.replaceChildren();
+      }
+    }
+    const url = URL.createObjectURL(file);
+    slot.replaceChildren(
+      h('p', { class: 'small muted', role: 'status', text: words.storySaved }),
+      h('img', { class: 'story-preview', src: url, alt: words.storyTitle, width: '270', height: '480' }),
+      h('a', { class: 'btn btn-secondary', href: url, download: 'music-card.png', text: words.download }),
+    );
+  } catch {
+    slot.replaceChildren(h('p', { class: 'alert', role: 'alert', text: words.storyFail }));
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function mePage() {
   if (!state.card) return emptyState(t().me.none);
   const words = t().me;
   const slot = h('div', { class: 'small' });
+  const storySlot = h('div', { class: 'story-slot' });
+  const storyButton = h('button', { type: 'button', class: 'btn btn-secondary btn-big', onclick: () => shareStory(storyButton, storySlot) }, icon('image'), words.story);
+  const install = state.install
+    ? h('button', {
+        type: 'button', class: 'btn btn-quiet',
+        onclick: async () => {
+          const offer = state.install;
+          state.install = null;
+          await offer.prompt();
+          route({ keepFocus: true });
+        },
+      }, icon('download'), words.install)
+    : onIPhone() ? h('p', { class: 'small muted', text: words.iosInstall }) : null;
   return h('div', { class: 'page' },
     cardView(state.card, [
       h('div', { class: 'actions' },
@@ -384,6 +445,7 @@ function mePage() {
       ),
       slot,
     ]),
+    h('section', { class: 'section extras' }, storyButton, storySlot, install),
     h('p', { class: 'note', text: words.note }),
   );
 }
@@ -449,9 +511,96 @@ function friendsPage() {
     page.append(h('p', { class: 'callout muted', text: words.empty }));
     return page;
   }
-  const list = h('ul', { class: 'group section' },
-    state.friends.map((friend) => friendRow(friend, state.card ? sharedCount(compare(state.card, friend)) : 0, words)));
-  page.append(list);
+  if (state.card) page.append(h('div', { class: 'actions start' }, h('a', { class: 'btn btn-primary', href: '#/blend' }, icon('users'), words.blend)));
+  page.append(h('ul', { class: 'group section' },
+    state.friends.map((friend) => friendRow(friend, state.card ? sharedCount(compare(state.card, friend)) : 0, words))));
+
+  const ideas = state.card ? fromFriends(state.card, state.friends) : [];
+  if (ideas.length) {
+    page.append(h('section', { class: 'section' },
+      h('h2', { text: words.discover }),
+      h('p', { class: 'small muted', text: words.discoverBody }),
+      h('ul', { class: 'group section-sm' }, ideas.map(({ artist, by }) => h('li', {},
+        h('span', { class: 'grow' }, h('span', { class: 'friend-name', text: artistLabel(artist) }), h('span', { class: 'small muted block', text: words.likedBy(by) })),
+        h('button', {
+          type: 'button', class: 'icon-btn', 'aria-label': words.add(artistLabel(artist)),
+          onclick: () => {
+            if (state.card.artists.length >= LIMITS.artists) {
+              announce(words.full);
+              return alertIn(page, words.full);
+            }
+            state.card = { ...state.card, artists: [...state.card.artists, artist] };
+            saveCard();
+            announce(words.added(artistLabel(artist)));
+            route({ keepFocus: true });
+          },
+        }, icon('plus')),
+      ))),
+    ));
+  }
+  return page;
+}
+
+function alertIn(page, text) {
+  page.querySelector('.alert')?.remove();
+  page.append(h('p', { class: 'alert', role: 'alert', text }));
+}
+
+function blendPage() {
+  const words = t().blend;
+  if (!state.card) return emptyState(t().me.none);
+  const page = h('div', { class: 'page' }, h('h1', { class: 'title', tabindex: '-1', text: words.title }), h('p', { class: 'lead', text: words.body }));
+  if (!state.friends.length) {
+    page.append(h('p', { class: 'callout muted', text: words.needFriends }));
+    return page;
+  }
+  // Starts with up to three friends picked, so there's something to see right away.
+  if (!state.pick) state.pick = new Set(state.friends.slice(0, 3).map((friend) => friend.name));
+  const results = h('div', { 'aria-live': 'polite' });
+  const paint = () => {
+    const chosen = state.friends.filter((friend) => state.pick.has(friend.name));
+    const result = blend([state.card, ...chosen]);
+    if (!result) return results.replaceChildren(h('p', { class: 'callout muted', text: words.pickMore }));
+    const line = (title, items) => items.length > 0 && h('div', { class: 'section-sm' }, h('h3', { class: 'small muted', text: title }), h('p', { text: items.join(', ') }));
+    const everyone = [
+      line(t().card.genres, result.genres.map(genreName)),
+      line(t().card.artists, result.artists.map(artistLabel)),
+      line(t().card.tracks, result.tracks.map((track) => track.title)),
+    ].filter(Boolean);
+    const most = [...result.mostGenres.map((entry) => [genreName(entry.item), entry.count]), ...result.mostArtists.map((entry) => [artistLabel(entry.item), entry.count])];
+    results.replaceChildren(
+      h('section', { class: 'callout' },
+        h('div', { class: 'shared-head' }, h('span', { class: 'big-count', text: String(sharedCount(result)) }), h('h2', { text: words.everyone })),
+        everyone.length ? everyone : h('p', { class: 'muted', text: words.none }),
+      ),
+      most.length > 0 && h('section', { class: 'section' },
+        h('h2', { text: words.most }),
+        h('ul', { class: 'group section-sm' }, most.map(([name, count]) => h('li', {}, h('span', { class: 'grow', text: name }), h('span', { class: 'small muted', text: words.of(count, result.size) })))),
+      ),
+    );
+  };
+  page.append(
+    h('section', { class: 'section' },
+      h('h2', { text: words.pick }),
+      h('div', { class: 'chips section-sm', role: 'group', 'aria-label': words.pick },
+        h('button', { type: 'button', class: 'chip', 'aria-pressed': 'true', disabled: true, text: `${words.you} · ${state.card.name}` }),
+        state.friends.slice(0, 30).map((friend) => {
+          const chip = h('button', {
+            type: 'button', class: 'chip', 'aria-pressed': String(state.pick.has(friend.name)), text: friend.name,
+            onclick: () => {
+              if (state.pick.has(friend.name)) state.pick.delete(friend.name);
+              else if (state.pick.size < 8) state.pick.add(friend.name);
+              chip.setAttribute('aria-pressed', String(state.pick.has(friend.name)));
+              paint();
+            },
+          });
+          return chip;
+        }),
+      ),
+    ),
+    results,
+  );
+  paint();
   return page;
 }
 
@@ -532,7 +681,7 @@ function paintChrome(page = currentPage()) {
 
   const making = page === 'make';
   const items = state.card ? [['me', '#/me', 'user'], ['friends', '#/friends', 'users']] : [];
-  const current = (key) => (page === key ? 'page' : null);
+  const current = (key) => (page === key || (key === 'friends' && page === 'blend') ? 'page' : null);
 
   document.getElementById('links').replaceChildren(...(making ? [] : items.map(([key, href]) => h('a', { href, 'aria-current': current(key), text: words.nav[key] }))));
 
@@ -560,10 +709,10 @@ function paintChrome(page = currentPage()) {
 
 function currentPage() {
   const [, page = ''] = (location.hash.slice(1) || '/').split('/');
-  return { '': 'welcome', make: 'make', me: 'me', c: 'friend', friends: 'friends', privacy: 'privacy' }[page] ?? 'missing';
+  return { '': 'welcome', make: 'make', me: 'me', c: 'friend', friends: 'friends', blend: 'blend', privacy: 'privacy' }[page] ?? 'missing';
 }
 
-const TITLES = { welcome: null, make: (words) => words.welcome.start, me: (words) => words.nav.me, friend: () => null, friends: (words) => words.nav.friends, privacy: (words) => words.nav.privacy, missing: (words) => words.notFound };
+const TITLES = { welcome: null, make: (words) => words.welcome.start, me: (words) => words.nav.me, friend: () => null, friends: (words) => words.nav.friends, blend: (words) => words.blend.title, privacy: (words) => words.nav.privacy, missing: (words) => words.notFound };
 
 let routing = 0;
 async function route({ keepFocus = false } = {}) {
@@ -578,6 +727,7 @@ async function route({ keepFocus = false } = {}) {
   else if (name === 'me') view = mePage();
   else if (name === 'friend') view = await friendPage(arg);
   else if (name === 'friends') view = friendsPage();
+  else if (name === 'blend') view = blendPage();
   else if (name === 'privacy') view = privacyPage();
   else view = emptyState(t().notFound);
   if (ticket !== routing || !view) return; // A newer page replaced this one while it loaded.
@@ -613,3 +763,8 @@ window.addEventListener('storage', () => {
   state.friends = loadFriends();
 });
 route();
+
+// Offline: a service worker keeps the site's files. It never stores or sends any card.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
