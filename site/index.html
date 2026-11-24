@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#000000">
+  <meta name="color-scheme" content="dark">
+  <!-- Card links never leave as a referrer, and nothing loads from anywhere but this site. -->
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="Дуртай хөгжмийнхөө картыг хийгээд найзууддаа илгээ. Бүртгэл хэрэггүй.">
+  <title>Дуу, найз</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="Дуу, найз">
+  <link rel="preload" href="fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/montserrat-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main" id="skip">Үндсэн хэсэг рүү алгасах</a>
+  <header class="top">
+    <a class="brand" href="#/" id="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true" class="mark"><rect width="32" height="32" rx="8" class="mark-bg"/><circle cx="16" cy="16" r="9.5" class="mark-ring"/><circle cx="16" cy="16" r="3" class="mark-dot"/></svg>
+      <span id="brand-name">Дуу, найз</span>
+    </a>
+    <nav class="links" id="links" aria-label="Цэс"></nav>
+    <div class="lang" role="group" id="lang"></div>
+  </header>
+  <main id="main" tabindex="-1">
+    <noscript><p class="wrap muted">Энэ сайт JavaScript ашигладаг. This site needs JavaScript.</p></noscript>
+  </main>
+  <p class="sr-only" role="status" aria-live="polite" id="status"></p>
+  <nav class="tabbar" id="tabbar" aria-label="Цэс" hidden></nav>
+  <footer class="foot" id="foot"></footer>
+  <dialog id="dialog"></dialog>
+</body>
+</html>

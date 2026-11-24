@@ -2,7 +2,6 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { GenreId } from '../music/genres.ts';
 import { artistName } from '../music/artists.ts';
 import type { DiscoverPage, MyReport, Overview, PeopleError, PeopleInput, Seen } from '../people/types.ts';
-import { SEEKING, type Seeking } from '../profile/types.ts';
 import { parseProfile } from '../profile/parse.ts';
 import { compareMusic } from '../social/shared.ts';
 import { canView, isListed, requestProblem, seeMember } from '../social/policy.ts';
@@ -77,15 +76,13 @@ export function getOverview(db: DatabaseSync, meId: string, now = Date.now()): O
   return overview;
 }
 
-export type DiscoverQuery = { genre?: GenreId | null; seeking?: string | null; search?: string | null; limit?: number };
+export type DiscoverQuery = { genre?: GenreId | null; search?: string | null; limit?: number };
 
 export function discover(db: DatabaseSync, meId: string, query: DiscoverQuery = {}, now = Date.now()): DiscoverPage {
   const me = getMember(db, meId);
   if (!me) return { people: [], total: 0, counts: {} };
 
   const sent = sentToday(db, meId, now);
-  const wanted: Seeking | undefined = SEEKING.find((item) => item === query.seeking);
-  const dates = me.profile.seeking.includes('dating');
   const search = query.search?.normalize('NFC').trim().slice(0, 80).toLocaleLowerCase();
   const counts: Partial<Record<GenreId, number>> = {};
   const found: { seen: Seen; rank: number }[] = [];
@@ -96,8 +93,6 @@ export function discover(db: DatabaseSync, meId: string, query: DiscoverQuery = 
     const seen = toSeen(me, them, relation, sent);
     if (!seen) continue;
     const { profile } = seen;
-    // Without dating, "friends" means everyone listed and "dating" means nobody, so the filter tells them nothing.
-    if (wanted && (dates ? !profile.seeking.includes(wanted) : wanted === 'dating')) continue;
     // Search only what this viewer can see, so it can't be used to probe hidden artists.
     if (search) {
       const words = [profile.username, ...profile.artists.flatMap((artist) => [artist.name, artistName(artist, 'mn')])];

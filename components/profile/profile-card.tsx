@@ -7,7 +7,6 @@ import { useI18n } from '@/lib/i18n/provider';
 import { artistName } from '@/lib/music/artists';
 import type { Profile } from '@/lib/profile/types';
 import { Avatar } from './avatar';
-import { SeekingTags } from './seeking-tags';
 
 type Props = { profile: Profile; actions?: ReactNode; note?: ReactNode; focus?: boolean };
 
@@ -17,7 +16,7 @@ type Props = { profile: Profile; actions?: ReactNode; note?: ReactNode; focus?: 
  */
 export function ProfileCard({ profile, actions, note, focus }: Props) {
   const { t, locale } = useI18n();
-  const { username, bio, seeking, genres, artists, tracks, anthem, answers, moments, outings, links } = profile;
+  const { username, bio, genres, artists, tracks, anthem, answers, moments, outings, links } = profile;
   const heading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -37,7 +36,6 @@ export function ProfileCard({ profile, actions, note, focus }: Props) {
         <Avatar profile={profile} className="size-32 text-5xl sm:size-44 sm:text-6xl" />
         <div className="min-w-0">
           <h1 ref={heading} tabIndex={focus ? -1 : undefined} className="text-[clamp(1.875rem,5vw,3rem)] leading-[1.1] font-bold [overflow-wrap:anywhere]">{username}</h1>
-          <SeekingTags seeking={seeking} className="mt-1.5 font-medium text-accent" />
           {bio && <p dir="auto" className="mt-3 max-w-lg leading-relaxed whitespace-pre-line [overflow-wrap:anywhere]">{bio}</p>}
           {note}
           {actions && <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">{actions}</div>}

@@ -6,7 +6,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { ReportButton } from '@/components/people/report-button';
 import { ReportDialog } from '@/components/people/report-dialog';
 import { Avatar } from '@/components/profile/avatar';
-import { SeekingTags } from '@/components/profile/seeking-tags';
 import { Button, ButtonLink } from '@/components/ui/button';
 import { cn } from '@/components/ui/cn';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -189,7 +188,6 @@ function OpenThread({ person, reported, onReported }: Props) {
           <Avatar profile={seen} className="size-10 text-lg" />
           <div className="min-w-0">
             <h1 className="truncate font-bold">{seen.username}</h1>
-            <SeekingTags seeking={seen.seeking} className="truncate text-xs text-muted" />
           </div>
         </Link>
         <Button variant="quiet" className="w-11 shrink-0 px-0!" aria-label={t.community.person.report} onClick={() => reportDialog.current?.showModal()}>

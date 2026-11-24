@@ -125,7 +125,7 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
         }}
         // A problem disappears as soon as someone starts fixing it.
         onChange={() => problem && setProblem(undefined)}
-        className="mt-8 flex flex-1 flex-col lg:flex-none"
+        className="mt-8 flex flex-1 flex-col sm:flex-none"
       >
         <div data-step={0} hidden={stepped && step !== 0} className="space-y-5">
           <TextField
@@ -172,7 +172,7 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
         {general && <p role="alert" className="mt-5 text-sm leading-relaxed text-danger">{general}</p>}
 
         {/* On phones the main button waits at the bottom, where the thumb is. */}
-        <div className="sticky bottom-0 -mx-5 mt-auto bg-night px-5 pt-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:static lg:mx-0 lg:mt-7 lg:p-0">
+        <div className="sticky bottom-0 -mx-5 mt-auto bg-night px-5 pt-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mt-7 sm:p-0">
           {/* Always a submit button, so Enter works too. Before the last step, submitting only moves on. */}
           <Button type="submit" disabled={pending} className="h-13 w-full text-base disabled:opacity-70">
             {pending ? words.working : last ? submit : words.next}
@@ -183,7 +183,7 @@ export function AuthForm({ mode, email }: { mode: keyof typeof ACTIONS; email?: 
       {mode === 'forgot' ? (
         <Link href={email ? '/settings' : '/login'} className="mt-4 inline-flex min-h-11 items-center self-center text-sm font-semibold text-accent hover:underline">{t.setup.back}</Link>
       ) : (
-        <div className="mt-4 flex items-center justify-center gap-1 text-sm lg:mt-8 lg:border-t lg:border-line lg:pt-6">
+        <div className="mt-4 flex items-center justify-center gap-1 text-sm sm:mt-8 sm:border-t sm:border-line sm:pt-6">
           <span className="text-muted">{joining ? words.haveAccount : words.noAccount}</span>
           <ButtonLink href={joining ? '/login' : '/signup'} variant="quiet" className="px-2! font-bold">
             {joining ? words.logIn : words.signUp}

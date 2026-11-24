@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { Avatar } from '@/components/profile/avatar';
-import { SeekingTags } from '@/components/profile/seeking-tags';
 import { useI18n } from '@/lib/i18n/provider';
 import { artistName } from '@/lib/music/artists';
 import type { Seen } from '@/lib/people/types';
@@ -31,7 +30,6 @@ export function PersonCard({ person }: { person: Seen }) {
         <h3 className="font-semibold [overflow-wrap:anywhere]">
           <Link href={`/people/${person.id}`} className="inline-flex min-h-7 items-center underline-offset-4 hover:underline">{seen.username}</Link>
         </h3>
-        <SeekingTags seeking={seen.seeking} className="text-sm text-accent" />
         <p className="mt-1 text-sm leading-relaxed [overflow-wrap:anywhere]">
           <span className="text-muted">{both.length ? words.both : words.differentTaste}: </span>
           {(both.length ? both : seen.genres.map((id) => t.genres[id])).join(', ')}

@@ -22,7 +22,7 @@ const text = (form: FormData, key: string) => {
 };
 const number = (form: FormData, key: string) => Number(text(form, key) || NaN);
 
-// The subject and body never say it's a dating app: someone else may see the notification.
+// The subject and body never name the app's purpose: someone else may see the notification.
 async function write({ to, kind, code }: verification.CodeMail): Promise<Mail> {
   const words = (await getI18n()).t.account.mail;
   if (kind === 'exists') return { to, subject: words.existsSubject, text: words.existsBody };

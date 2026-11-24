@@ -21,7 +21,7 @@ import { connect, NOW, PASS, world } from './world.ts';
 type DB = ReturnType<typeof world>['db'];
 const userOf = (db: DB, id: string) => db.prepare('SELECT * FROM users WHERE id = ?').get(id) as unknown as accounts.UserRow;
 const rename = (db: DB, id: string, username: string) => accounts.saveChanges(db, id, [{ id: 'n', kind: 'profile', patch: { username } }], NOW);
-const seek = (db: DB, id: string, seeking: ('friends' | 'dating')[]) => accounts.saveChanges(db, id, [{ id: 's', kind: 'profile', patch: { seeking } }], NOW);
+const seek = (db: DB, id: string, seeking: string[]) => accounts.saveChanges(db, id, [{ id: 's', kind: 'profile', patch: { seeking: seeking as never } }], NOW);
 const report = (db: DB, me: string, personId: string, change: object = {}) =>
   applyPeople(db, me, { kind: 'report', personId, id: crypto.randomUUID(), reason: 'underage', details: '', block: false, evidence: true, ...change }, NOW);
 const write = (db: DB, from: string, to: string, text: string) => chat.applyChat(db, from, { kind: 'send', personId: to, id: crypto.randomUUID(), text }, NOW);
@@ -107,18 +107,22 @@ test('a closed chat looks the same whether they removed, blocked or were suspend
   assert.deepEqual(looks[2], looks[0]);
 });
 
-test('without dating, nothing shows which connection switched to dating only', () => {
+test('accounts saved with dating before it was removed read as friends and stay listed', () => {
   const { db, person } = world();
   const me = person('me_friend');
-  const people = [['stays_friends', ['friends']], ['adds_dating', ['friends', 'dating']], ['only_dating', ['dating']]] as const;
-  const ids = people.map(([name]) => person(name, { profile: { seeking: ['friends'] } }));
+  const ids = [person('adds_dating'), person('only_dating')];
   ids.forEach((id) => connect(db, me, id));
-  ids.forEach((id, index) => seek(db, id, [...people[index]![1]]));
+  // Saved data as it looked before 2026-11-24, written straight into the database.
+  const old = db.prepare("UPDATE users SET profile = json_set(profile, '$.seeking', json(?)) WHERE id = ?");
+  old.run('["friends","dating"]', ids[0]!);
+  old.run('["dating"]', ids[1]!);
 
   for (const id of ids) assert.deepEqual(getPerson(db, me, id, NOW)!.profile.seeking, []);
-  assert.deepEqual(getOverview(db, me, NOW).connected.map((seen) => seen.profile.seeking), [[], [], []]);
-  for (const query of [{}, { seeking: 'friends' }]) assert.equal(discover(db, me, query, NOW).total, 3, 'nobody drops out of the list');
-  assert.equal(discover(db, me, { seeking: 'dating' }, NOW).total, 0);
+  assert.equal(discover(db, me, {}, NOW).total, 2, 'nobody drops out of the list');
+  for (const id of ids) assert.deepEqual(accounts.accountOf(db, id).profile.seeking, ['friends']);
+  // Dating can't be saved again, even by a forged request.
+  seek(db, me, ['dating']);
+  assert.deepEqual(accounts.accountOf(db, me).profile.seeking, ['friends']);
   for (const item of exportData(db, userOf(db, me)).connections) assert.deepEqual(Object.keys(item), ['id', 'username', 'at']);
 });
 

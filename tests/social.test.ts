@@ -69,17 +69,14 @@ test('someone unconfirmed sees nobody and can do nothing', () => {
   assert.deepEqual(go(db, me, 'send', them), { ok: false, error: 'notReady' });
 });
 
-test('dating is shown only to people who chose it, and intentions must overlap', () => {
+test('dating is gone: an older dating choice reads as friends, and everyone can meet', () => {
   const { db, person } = world();
   const friends = person('friends');
-  const both = person('both', { profile: { seeking: ['friends', 'dating'] } });
-  const dater = person('dater', { profile: { seeking: ['dating'] } });
-  assert.deepEqual(names(db, friends), ['both']);
-  assert.deepEqual(getPerson(db, friends, both)!.profile.seeking, [], 'all or nothing, so an empty list gives nothing away');
-  assert.equal(getPerson(db, friends, dater), null);
-  assert.deepEqual(go(db, friends, 'send', dater), { ok: false, error: 'unavailable' });
-  assert.deepEqual(getPerson(db, dater, both)!.profile.seeking, ['friends', 'dating']);
-  assert.deepEqual(names(db, friends, { seeking: 'dating' }), [], 'the filter cannot reveal who dates');
+  const old = person('old_dater');
+  db.prepare("UPDATE users SET profile = json_set(profile, '$.seeking', json('[\"dating\"]')) WHERE id = ?").run(old);
+  assert.deepEqual(names(db, friends), ['old_dater']);
+  assert.deepEqual(getPerson(db, friends, old)!.profile.seeking, [], 'nobody sees what anyone is here for');
+  assert.ok(go(db, friends, 'send', old).ok);
 });
 
 test('a request and an acceptance connect both people', () => {
@@ -329,7 +326,7 @@ test('artist and song switches also cover the anthem, for strangers only', () =>
   const profile: Profile = { ...EMPTY_PROFILE, tracks: [{ title: 'Song', artist: 'Band' }], anthem: { title: 'Song', artist: 'Band' } };
   assert.equal(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showTracks: false }).anthem, null);
   assert.deepEqual(getVisibleProfile(profile, 'stranger', { ...DEFAULT_PRIVACY, showArtists: false }).anthem, { title: 'Song', artist: '' });
-  assert.deepEqual(getVisibleProfile(profile, 'connection', { ...DEFAULT_PRIVACY, showTracks: false }, true), profile);
+  assert.deepEqual(getVisibleProfile(profile, 'connection', { ...DEFAULT_PRIVACY, showTracks: false }), { ...profile, seeking: [] });
 });
 
 test('damaged social data falls back to the safe defaults', () => {

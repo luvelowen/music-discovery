@@ -9,13 +9,13 @@ import { profileEn } from './profile.en.ts';
 
 export const en = {
   // A description, not a brand. Change it here and in mn.ts once a name is chosen.
-  appName: 'Music, dates & friends',
+  appName: 'Music & friends',
   languageLabel: 'Language',
   skip: 'Skip to content',
 
   welcome: {
     title: 'Find the person you’d give your left earbud to.',
-    body: 'Dates and friends in Ulaanbaatar, through the music you listen to. For adults 18+.',
+    body: 'Find friends in Ulaanbaatar through the music you listen to. For adults 18+.',
     photo: 'Ulaanbaatar at night',
     credit: 'Ulaanbaatar. Photo: @naranbayar_1 on Unsplash',
   },
@@ -34,7 +34,7 @@ export const en = {
     count: (count: number, max: number) => `${count} of ${max} added`,
   },
 
-  seeking: { friends: 'Friends', dating: 'Dating' } satisfies Record<Seeking, string>,
+  seeking: { friends: 'Friends' } satisfies Record<Seeking, string>,
 
   genresStep: {
     title: 'What do you listen to?',
@@ -76,8 +76,6 @@ export const en = {
     body: 'Use a nickname. You don’t need your real name, workplace or contact details here.',
     username: 'Username',
     usernameHelp: 'Everyone can see this. 3–24 letters, numbers, dots or underscores.',
-    seeking: 'What are you here for?',
-    seekingHelp: 'Pick one or both. Dating is shown only to people who picked it too. People without dating don’t see what anyone picked.',
     bio: 'Short bio (optional)',
     bioHelp: 'Only connections see this.',
     bioPlaceholder: 'Learning bass. Always looking for new indie bands.',
@@ -113,7 +111,6 @@ export const en = {
     strangerNote: 'Your photo, bio and links are hidden from people you haven’t connected with.',
     connectionNote: 'People you accept as connections see your whole profile.',
     seeking: 'Here for',
-    datingNote: 'Only people who also chose dating see that you did.',
     genres: 'Genres',
     artists: 'On repeat',
     tracks: 'Favorite songs',

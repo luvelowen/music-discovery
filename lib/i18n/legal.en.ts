@@ -14,7 +14,7 @@ export const legalEn = {
     sections: [
       ['What we save and why',
         'Your email and a scrambled password, to let you log in and to send you codes.',
-        'Your profile and choices, including dating if you pick it, to show you to people you may want to meet.',
+        'Your profile and choices, to show you to people you may want to meet.',
         'Connections, requests, blocks and reports, to run those features and keep people safe.',
         'Messages, only after you separately agree to chat.',
         'When you agreed or withdrew, and the words you agreed to, as proof of your choice.',
@@ -23,7 +23,6 @@ export const legalEn = {
         'Nobody finds you in Discover until you switch that on.',
         'People who can see your profile see your username, genres, answers, listening moments and outings, plus artists and songs unless you hide those.',
         'Only connections see your photo, bio and links, and only they can message you.',
-        'Dating is shown only to people who also chose dating. People who didn’t choose it don’t see what anyone is here for.',
         'If you send a request, that person can see your profile even while you are hidden.',
         'The moderator sees reports, and messages only when a reporter attaches them. Whoever runs the server can technically read the database, because messages aren’t end-to-end encrypted.'],
       ['Who it is shared with',
@@ -54,7 +53,7 @@ export const legalEn = {
     sections: [
       ['Adults only', 'You must be 18 or over. Report anyone who may be younger.'],
       ['Be yourself', 'A nickname is fine. Pretending to be someone else, or using someone else’s photo, is not.'],
-      ['Ask, and accept no', 'Connecting is not consent to dating, meeting or anything sexual. Don’t pressure anyone, or find another way to reach someone who declined or blocked you.'],
+      ['Ask, and accept no', 'Connecting is not consent to meeting up or anything sexual. Don’t pressure anyone, or find another way to reach someone who declined or blocked you.'],
       ['No harm', 'No bullying, hate, threats, stalking or sharing someone’s private messages and details.', 'No unwanted sexual content, and nothing sexual involving a minor, ever.'],
       ['No selling or scams', 'Don’t ask for money, codes, passwords or intimate photos. No spam, sex work offers or recruiting.'],
       ['Meet safely', 'Choose a busy place, tell a friend, and get yourself there and home. In danger, get somewhere safe and contact the police.'],

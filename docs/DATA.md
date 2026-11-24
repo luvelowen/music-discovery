@@ -45,7 +45,7 @@ every hour it runs, by `lib/server/cleanup.ts`.
 
 - Without SMTP settings, emails are text files in `data/outbox`, with readable codes. They are cleared after a day
   at the next send, and when that account is deleted. A public address never does this.
-- With SMTP settings, the email service receives the address and the code, and nothing about dating, music or
+- With SMTP settings, the email service receives the address and the code, and nothing about music or
   the profile. **With Gmail that is a transfer abroad**, so sign-up asks for consent.
 
 **What this does not protect against**
@@ -64,7 +64,7 @@ Law on Personal Data Protection (2021), from the unofficial English translation:
 
 | Article | Rule | What it means for us |
 | --- | --- | --- |
-| 4.1.12, 9.1 | Correspondence, sexual and gender orientation, and sexual relations are sensitive personal secrets | Chat and dating preferences are the most protected data we could hold |
+| 4.1.12, 9.1 | Correspondence, sexual and gender orientation, and sexual relations are sensitive personal secrets | Chat is the most protected data we hold. Dating preferences are no longer collected (removed 2026-11-24) |
 | 7, 8 | Consent must state purpose, controller, data list, duration, publication, sharing and withdrawal | A separate, clear consent screen |
 | 10 | Biometric collection is limited to listed cases | No face-scan age checks |
 | 14.1 | Transfer abroad is prohibited without a legal or treaty basis, or the person's consent | A database abroad needs at least consent |
@@ -87,14 +87,15 @@ Also found in the official texts:
 | --- | --- | --- |
 | **Supabase, self-hosted in a Mongolian data center (provisional recommendation)** | Data stays in Mongolia, same technology | Someone must maintain, secure and back up the server |
 | Supabase cloud in Seoul or Tokyo | Easiest. Managed for us | Data leaves Mongolia, and may break the server rule even with consent |
-| Split: ordinary data abroad, sensitive data in Mongolia | Less to maintain locally | Complicated, and dating intent may itself be sensitive |
+| Split: ordinary data abroad, sensitive data in Mongolia | Less to maintain locally | Complicated, and chat is sensitive wherever it is |
 
 [Supabase has no Mongolia region](https://supabase.com/docs/guides/platform/regions).
 
 ## Questions for the lawyer
 
 1. Does order A/90 bind a private app, and for all data or only sensitive data?
-2. Is choosing "dating", without gender or preference, already sensitive data?
+2. ~~Is choosing "dating" already sensitive data?~~ Dating was removed on 2026-11-24. Older choices are dropped when read.
+   Ask only: may old backups that still contain them be kept until they expire?
 3. Is consent enough for hosting in Seoul?
 4. Which age check is lawful without biometrics?
 5. How long may reports and deleted-account records be kept?
